@@ -33,56 +33,96 @@ class Clothes :
     clothesid : str
     label : LaundryLabel
     volume : float
+    orderid : str = field(default = None)
     status : ClothesState = field(default = ClothesState.PREPARING)
 
 
-class LaundryBag(dict) : ## TODO : laundryBag 단일 객체가 아닌, 모든 laundrybag을 포함하는 클래스가 필요하다
-    def __init__(self, laundrybagid: str) :
-        super().__init__(*arg, **kw)
-        self.laundrybagid = laundrybagid
-        self.assignedMachine = None # laundryMachine
-        self.createdTime = None
-        self.clothesBag = {}
-
-    def combine(self, clothes : Clothes) :
-        if self.laundrylabel not in self.clothesBag :
-            self.clothesBag[clothes.laundrylabel] = [clothes]
-            if self.createdTime is None :
-                self.createdTime = datetime.now() ## 합쳐진 가장 첫 시점 <- 늦게 들어왔더라도, 먼저 들어온 빨래의 대기시간이 길면, 함께 빨리 빨래 큐에 들어갈 수 있다.
-        elif self.laundrylabel in self.clothesBag :
-            self.clothesBag[clothes.laundrylabel].append(clothes)
-        else :
-            print('cannot allocate because (1. volume exceeded) or (2. laundrylabels are different)')
+class LaundryBag(list) :
+    def __init__(self, clothes_list : List[Clothes], createdTime : datetime) :
+        super().__init__(clothes_list)
+        self.createdTime = createdTime
 
     @property
     def volume(self) :
-        return sum(clothes.volume for clothes in self.clothesBag)
+        return sum(clothes.volume for clothes in self)
 
     @property
-    def laundrylabel(self) :
-        return next((clothes.label for clothes in self.clothesBag), None)
+    def label(self) :
+        return next((clothes.label for clothes in self), None)
+
+
+# class LaundryBag(dict) : ## TODO : laundryBag 단일 객체가 아닌, 모든 laundrybag을 포함하는 클래스가 필요하다
+#     def __init__(self, laundrybagid: str) :
+#         super().__init__(*arg, **kw)
+#         self.laundrybagid = laundrybagid
+#         self.assignedMachine = None # laundryMachine
+#         self.createdTime = None
+#         self.clothesBag = {}
+
+#     def combine(self, clothes : Clothes) :
+#         if self.laundrylabel not in self.clothesBag :
+#             self.clothesBag[clothes.laundrylabel] = [clothes]
+#             if self.createdTime is None :
+#                 self.createdTime = datetime.now() ## 합쳐진 가장 첫 시점 <- 늦게 들어왔더라도, 먼저 들어온 빨래의 대기시간이 길면, 함께 빨리 빨래 큐에 들어갈 수 있다.
+#         elif self.laundrylabel in self.clothesBag :
+#             self.clothesBag[clothes.laundrylabel].append(clothes)
+#         else :
+#             print('cannot allocate because (1. volume exceeded) or (2. laundrylabels are different)')
+
+#     @property
+#     def volume(self) :
+#         return sum(clothes.volume for clothes in self.clothesBag)
+
+#     @property
+#     def laundrylabel(self) :
+#         return next((clothes.label for clothes in self.clothesBag), None)
         
 
-
-class Order :
-    def __init__(self, orderid: str, received_at : datetime, clothesBag : List[Clothes] = [], orderstate: OrderState = OrderState.SENDING) :
+class Order(list) :
+    def __init__(self, 
+                 orderid: str, 
+                 clothes_list : List[Clothes],
+                 received_at : datetime, 
+                 orderstate: OrderState = OrderState.SENDING):
+        super().__init__(clothes_list)
         self.orderid = orderid
         self.received_at = received_at
         self.orderstate = orderstate
-        self.clothesBag = clothesBag
 
-    # implement if user can cancel by clothes. allow only cancel by Order Unit.
-    # @property
-    # def clothesBag(self) :
-    #     return [clothes for clothes in self.clothesBag if self.orderstate == OrderState.PREPARING]
+        for clothes in self :
+            clothes.orderid = self.orderid
 
-    def __len__(self) :
-        return len(self.clothesBag)
+        def pop(self, index) :
+            # self[index].orderid = None # TODO : Not working
+            return super().pop(index)
 
-    def sortbyLaundryLabel(self, laundryBag : LaundryBag) :
-        for clothes in self.clothesBag :
-            laundryBag.combine(clothes)
-            clothes.status = ClothesState.DIVIDED
+        def remove(self, item) :
+            item.orderid = None
+            super().remove(item)
+
+        def __setitem__(self, index, item):
+            # super().__setitem__(index, item)
+            raise NotImplementedError
+
+        def insert(self, index, item):
+            # super().insert(index, item)
+            raise NotImplementedError
+
+        def append(self, item):
+            # super().append(item)
+            raise NotImplementedError
+
+        def extend(self, other):
+            # if isinstance(other, type(self)):
+            #     super().extend(other)
+            # else:
+            #     super().extend(item for item in other)
+            raise NotImplementedError
+
+        @property
+        def volume(self) :
+            return sum(clothes.volume for clothes in self)
+
 
 
 
@@ -98,8 +138,8 @@ class LaundryMachine :
     def volumeContained(self) :
         return sum(bag.volume for bag in self.containedBags)
 
-    def assign_laundryBag(self, laundryBag : LaundryBag) :
-        pass
+    # def assign_laundryBag(self, laundryBag : LaundryBag) :
+    #     pass
 
 
 class User :
