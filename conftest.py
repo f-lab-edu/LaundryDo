@@ -1,8 +1,20 @@
+from uuid import uuid4
+import random
+
 from model import Clothes, LaundryLabel, Order, User
 from datetime import datetime
 import pytest
 
 time_now = datetime(2023, 7, 12, 20, 48, 13)
+
+
+def new_clothes() :
+    clothesid = str(uuid4())[:4]
+    label = random.choice([LaundryLabel.WASH, LaundryLabel.DRY, LaundryLabel.HAND])
+    volume = random.random()
+    status = random.choice([ClothesState.PREPARING, ClothesState.CANCELLED, ClothesState.DIVIDED, ClothesState.PROCESSING, ClothesState.DONE])
+
+    return Clothes(clothesid, label, volume, status)
 
 @pytest.fixture
 def new_user() :
