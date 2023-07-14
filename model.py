@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import List, Dict
 from enum import Enum
 
+LAUNDRYBAG_MAXVOLUME = LAUNDRYMACHINE_MAXVOLUME = 25
+
 class OrderState(Enum) :
     SENDING = '이동중'
     PREPARING = '준비중'
@@ -24,31 +26,53 @@ class LaundryLabel(Enum) :
 
 class MachineState(Enum) :
     READY = '준비'
-    RUNNING = '가동중'
+    RUNNING = '세탁중'
     DONE = '세탁완료' # 세탁 완료 후 laundryBag이 reclaim되어야 다시 '준비'상태로 돌아갈 수 있다.                                                                                                                                                                                                                                                                                                                                                                 꺼내야하는 상태
     BROKEN = '고장'
 
-@dataclass(unsafe_hash = True)
 class Clothes :
-    clothesid : str
-    label : LaundryLabel
-    volume : float
-    orderid : str = field(default = None)
-    status : ClothesState = field(default = ClothesState.PREPARING)
+    def __init__(self, 
+                id : str,
+                label : LaundryLabel,
+                volume : float,
+                orderid : str = None,
+                status : ClothesState = ClothesState.PREPARING,
+                received_at : datetime = None
+                ) :
+        self.id = id
+        self.label = label
+        self.volume = volume
+        self.orderid = orderid
+        self.status = status
+        self.received_at = received_at
+            
+    def __lt__(self, other) :
+        if isinstance(other, Clothes) :
+            return self.received_at < other.received_at
+        else :
+            raise TypeError(f'{type(other)} cannot be compared with Clothes class.')
 
 
 class LaundryBag(list) :
-    def __init__(self, clothes_list : List[Clothes], createdTime : datetime) :
+    def __init__(self, clothes_list : List[Clothes], label : LaundryLabel, createdTime: datetime) :
         super().__init__(clothes_list)
         self.createdTime = createdTime
+        self.label = label
+        self.maxVolume = maxVolume
+
+        # 옷상태를 '세탁분류' 상태로 전환
+        for clothes in self :
+            clothes.status = ClothesState.DIVIDED
+
 
     @property
-    def volume(self) :
+    def volumeContained(self) :
         return sum(clothes.volume for clothes in self)
 
     @property
     def label(self) :
         return next((clothes.label for clothes in self), None)
+
 
 
 # class LaundryBag(dict) : ## TODO : laundryBag 단일 객체가 아닌, 모든 laundrybag을 포함하는 클래스가 필요하다
@@ -91,6 +115,7 @@ class Order(list) :
 
         for clothes in self :
             clothes.orderid = self.orderid
+            clothes.received_at = self.received_at
 
         def pop(self, index) :
             # self[index].orderid = None # TODO : Not working
