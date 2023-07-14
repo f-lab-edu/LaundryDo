@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict
 from enum import Enum
 
@@ -16,6 +16,7 @@ class ClothesState(Enum) :
     PREPARING = '준비중'
     DIVIDED = '세탁분류' # 세탁 라벨에 따라 분류된 상태
     PROCESSING = '세탁중'
+    STOPPED = '일시정지' # 세탁기 고장이나 외부 요인으로 세탁 일시 중지
     DONE = '세탁완료'
 
 class LaundryLabel(Enum) :
@@ -26,9 +27,30 @@ class LaundryLabel(Enum) :
 
 class MachineState(Enum) :
     READY = '준비'
+    STOP = '정지'
     RUNNING = '세탁중'
     DONE = '세탁완료' # 세탁 완료 후 laundryBag이 reclaim되어야 다시 '준비'상태로 돌아갈 수 있다.                                                                                                                                                                                                                                                                                                                                                                 꺼내야하는 상태
     BROKEN = '고장'
+
+
+def time_required_for_volume(time, volume) : 
+    if 0 < volume <= 10 :
+        time *= 1
+    elif 10 < volume < 20 :
+        time *= 1.5
+    elif 20 <= volume < 25 :
+        time *= 2
+    else :
+        raise ValueError(f'{volume} is not valid unit.')
+    return int(time )
+
+LaundryTimeTable = {
+    LaundryLabel.WASH :  60,
+    LaundryLabel.DRY :  80,
+    LaundryLabel.HAND : 100
+}
+
+
 
 class Clothes :
     def __init__(self, 
@@ -47,60 +69,10 @@ class Clothes :
         self.received_at = received_at
             
     def __lt__(self, other) :
-        if isinstance(other, Clothes) :
+        if other.__class__ is self.__class__ :
             return self.received_at < other.received_at
         else :
             raise TypeError(f'{type(other)} cannot be compared with Clothes class.')
-
-
-class LaundryBag(list) :
-    def __init__(self, clothes_list : List[Clothes], label : LaundryLabel, createdTime: datetime) :
-        super().__init__(clothes_list)
-        self.createdTime = createdTime
-        self.label = label
-        self.maxVolume = maxVolume
-
-        # 옷상태를 '세탁분류' 상태로 전환
-        for clothes in self :
-            clothes.status = ClothesState.DIVIDED
-
-
-    @property
-    def volumeContained(self) :
-        return sum(clothes.volume for clothes in self)
-
-    @property
-    def label(self) :
-        return next((clothes.label for clothes in self), None)
-
-
-
-# class LaundryBag(dict) : ## TODO : laundryBag 단일 객체가 아닌, 모든 laundrybag을 포함하는 클래스가 필요하다
-#     def __init__(self, laundrybagid: str) :
-#         super().__init__(*arg, **kw)
-#         self.laundrybagid = laundrybagid
-#         self.assignedMachine = None # laundryMachine
-#         self.createdTime = None
-#         self.clothesBag = {}
-
-#     def combine(self, clothes : Clothes) :
-#         if self.laundrylabel not in self.clothesBag :
-#             self.clothesBag[clothes.laundrylabel] = [clothes]
-#             if self.createdTime is None :
-#                 self.createdTime = datetime.now() ## 합쳐진 가장 첫 시점 <- 늦게 들어왔더라도, 먼저 들어온 빨래의 대기시간이 길면, 함께 빨리 빨래 큐에 들어갈 수 있다.
-#         elif self.laundrylabel in self.clothesBag :
-#             self.clothesBag[clothes.laundrylabel].append(clothes)
-#         else :
-#             print('cannot allocate because (1. volume exceeded) or (2. laundrylabels are different)')
-
-#     @property
-#     def volume(self) :
-#         return sum(clothes.volume for clothes in self.clothesBag)
-
-#     @property
-#     def laundrylabel(self) :
-#         return next((clothes.label for clothes in self.clothesBag), None)
-        
 
 class Order(list) :
     def __init__(self, 
@@ -150,21 +122,119 @@ class Order(list) :
 
 
 
+class LaundryBag(list) :
+    def __init__(self, clothes_list : List[Clothes], createdTime: datetime) :
+        super().__init__(clothes_list)
+        self.createdTime = createdTime
 
-class LaundryMachine :
-    def __init__(self, laundrymachineid: str, startTime : datetime, estimatedEndTime : datetime, maxVolume : float ) :
-        self.laundrymachineid = laundrymachineid
-        self.startTime = startTime
-        self.estimatedEndTime = estimatedEndTime
-        self.maxVolume = maxVolume
-        self.containedBags = [] # List[LaundryBag]
+        # 옷상태를 '세탁분류' 상태로 전환
+        for clothes in self :
+            clothes.status = ClothesState.DIVIDED
+
 
     @property
     def volumeContained(self) :
-        return sum(bag.volume for bag in self.containedBags)
+        return sum(clothes.volume for clothes in self)
 
-    # def assign_laundryBag(self, laundryBag : LaundryBag) :
-    #     pass
+    def update_clothes_status(self, status: ClothesState) :
+        [setattr(clothes, 'status', status) for clothes in self]
+
+    @property
+    def label(self) :
+        return next((clothes.label for clothes in self), None)
+
+    def __lt__(self, other) :
+        if other.__class__ is self.__class__ :
+            return self.createdTime < other.createdTime
+        else :
+            raise TypeError(f'{type(other)} cannot be compared with {self.__class__} class.')
+
+
+
+
+
+
+class LaundryMachine :
+    def __init__(self, id: str) :
+        self.id = id
+        self.contained = None # LaundryBag
+        
+        self.startTime = None
+        self.lastupdateTime = None
+        self.runtime = timedelta(minutes = 0)
+        
+        self.status = MachineState.READY
+
+    @property
+    def volumeContained(self) :
+        if self.contained is None : return None
+        return self.contained.volumeContained
+
+    @property
+    def label(self) :
+        if self.contained is None : return None
+        return self.contained.label
+
+    @property
+    def requiredTime(self) :
+        if self.label is None : 
+            return None
+        return time_required_for_volume(LaundryTimeTable[self.label], self.volumeContained)
+
+    def get_runtime(self, exec_time : datetime) :
+
+        if self.lastupdateTime and self.status == MachineState.RUNNING :
+            return self.runtime + (exec_time - self.lastupdateTime)
+        else :
+            return self.runtime
+            
+
+
+    def remainingTime(self, exec_time: datetime) :
+        return timedelta(minutes = self.requiredTime) - self.get_runtime(exec_time)
+                    
+
+    def can_contain(self, laundryBag : LaundryBag) :
+        return laundryBag.volumeContained <= LAUNDRYMACHINE_MAXVOLUME 
+
+
+    def putLaundryBag(self, laundrybag : LaundryBag) :
+        if self.can_contain(laundrybag) and self.status not in [MachineState.RUNNING, MachineState.BROKEN]: 
+            self.contained = laundrybag
+        else :
+            raise ValueError('cannot contain the bag, too large.')
+
+
+    def start(self, exec_time: datetime) :
+        if self.status == MachineState.RUNNING :
+            raise ValueError('machine is already running')
+        elif self.status == MachineState.BROKEN :
+            raise ValueError('machine is broken.')
+
+        if self.contained is None :
+            raise ValueError('No LaundryBag in the Machine')
+
+        self.startTime = exec_time
+        self.lastupdateTime = self.startTime
+        self.status = MachineState.RUNNING
+
+
+    def resume(self, exec_time: datetime) : 
+        if self.status == MachineState.STOP : 
+            self.lastupdateTime = exec_time
+            self.status = MachineState.RUNNING
+        else :
+            raise ValueError(f'cannot resume when {self.status}')
+
+
+    def stop(self, exec_time: datetime) :
+        if self.status == MachineState.RUNNING :
+            self.status = MachineState.STOP
+            # now = datetime.now()
+            self.runtime += exec_time - self.lastupdateTime
+            self.lastupdateTime = exec_time
+        else :
+            raise ValueError(f'cannot stop when {self.status}')
 
 
 class User :
