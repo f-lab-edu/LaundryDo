@@ -1,7 +1,9 @@
-import pytest
-
+import random
 from uuid import uuid4
-from model import Clothes, Order, LaundryLabel, LaundryBag, User
+
+import pytest
+    
+from model import Clothes, ClothesState, Order, LaundryLabel, LaundryBag, LaundryMachine, User, MachineState, LAUNDRYBAG_MAXVOLUME
 
 from typing import List, Dict
 
@@ -26,8 +28,46 @@ def divide_order(order : Order)  -> List[LaundryBag] :
 
 def put_in_laundrybag(laundryBagDict : Dict[LaundryLabel, List[Clothes]]) :
 
+    # sortlaundryBagDict = {}
+    laundryBagList = []
     for laundrylabel, clothes_list in laundryBagDict.items() :
-        LaundryBag(clothes_list = clothes_list, label = laundrylabel, createdTime = datetime.now())
+        # sort by date
+        clothes_list.sort()
+
+        # split clothes_list by max volume
+        
+        laundryBag = LaundryBag(clothes_list = [], createdTime = datetime.now())
+        
+
+        while clothes_list :
+            clothes = clothes_list.pop()
+            if clothes.volume + laundryBag.volumeContained <= LAUNDRYBAG_MAXVOLUME :
+                laundryBag.append(clothes)
+            else :
+                laundryBagList.append(laundryBag)
+                laundryBag = LaundryBag(clothes_list = [clothes], createdTime = datetime.now())
+
+        # sortlaundryBagDict[laundrylabel] = laundryBagQueue
+        
+
+
+    return laundryBagList
+
+
+def new_clothes(label = None, volume = None, status = None) :
+
+    id = str(uuid4())[:4]
+    if label is None :
+        label = random.choice([LaundryLabel.WASH, LaundryLabel.DRY, LaundryLabel.HAND])
+
+    if volume is None : 
+        volume = random.randint(5, 15)
+    if status is None :
+        status = random.choice([ClothesState.PREPARING, ClothesState.CANCELLED, ClothesState.DIVIDED, ClothesState.PROCESSING, ClothesState.DONE])
+    return Clothes(id = id, label = label, volume = volume, status = status)
+            
+
+            
     
 
 
@@ -45,9 +85,9 @@ def test_sort_clothes_by_time() :
 
 
 
-#############
-#    User   #
-#############
+########
+# User #
+########
 def test_user_request_new_order(new_user, new_order) :
     new_user.request_order(new_order)
 
@@ -93,25 +133,114 @@ def test_multiple_orders_divided_into_laundrybags(new_order) :
 ##############
 
 
-def test_laundrybag_clothes_status_changed_to_divided(new_order) :
-    orders = new_order
+def test_laundrybag_clothes_status_changed_to_divided() :
+    laundryBag = LaundryBag([new_clothes() for _ in range(10)], createdTime = today)    
+
+    assert all([clothes.status == ClothesState.DIVIDED for clothes in laundryBag])
 
 
-def test_laundrybags_with_same_laundryLabel_combine_into_same_laundbag() :
+def test_laundrybags_with_same_laundryLabel_combine_into_same_laundrybag(new_order) :
+    laundrylabeldict = divide_order(new_order)
+    laundryBagList = put_in_laundrybag(laundrylabeldict)
+
+    for laundryBag in laundryBagList :
+        assert len(set(clothes.label for clothes in laundryBag)) == 1
+
+
+def test_laundrybags_sorted_by_time() :
+    longtimeago_laundryBag = LaundryBag([new_clothes() for _ in range(10)], createdTime = longtimeago)    
+    yesterday_laundryBag = LaundryBag([new_clothes() for _ in range(10)], createdTime = yesterday)    
+    today_laundryBag = LaundryBag([new_clothes() for _ in range(10)], createdTime = today)    
+
+    assert sorted([today_laundryBag, yesterday_laundryBag, longtimeago_laundryBag]) == [longtimeago_laundryBag, yesterday_laundryBag, today_laundryBag ]
+
+
+##################
+# LaundryMachine #
+##################
+
+def test_fail_to_laundryMachine_put_laundryBag_exceed_max_volume() :
+    machine1 = LaundryMachine(id = 'TROMM1')
+    laundryBag = LaundryBag([new_clothes() for _ in range(5)], createdTime = today)    
+    
+    with pytest.raises(ValueError) :
+        machine1.putLaundryBag(laundryBag)
+
+
+def test_laundryMachine_returns_requiredTime() :
+    machine1 = LaundryMachine(id = 'TROMM1')
+    laundryBag = LaundryBag([new_clothes(label = LaundryLabel.WASH, volume = 3) for _ in range(5)], createdTime = today)    
+
+    machine1.putLaundryBag(laundryBag)
+
+    assert machine1.requiredTime == 90
+
+
+def test_laundryMachine_returns_runtime() :
+    machine1 = LaundryMachine(id = 'TROMM1')
+    laundryBag = LaundryBag([new_clothes(label = LaundryLabel.WASH, volume = 3) for _ in range(5)], createdTime = today)    
+
+    machine1.putLaundryBag(laundryBag)
+
+    machine1.start(exec_time = datetime(2023, 7, 14, 17, 0))
+
+    ## TODO : laundryMachine needs to update runtime in 
     pass
 
 
+def test_laundryMachine_returns_remaining_time() :
+    machine1 = LaundryMachine(id = 'TROMM1')
+    laundryBag = LaundryBag([new_clothes(label = LaundryLabel.WASH, volume = 3) for _ in range(5)], createdTime = today)    
+
+    machine1.putLaundryBag(laundryBag)
+
+    machine1.start(exec_time = datetime(2023, 7, 14, 17, 0))
+
+    assert machine1.remainingTime(exec_time = datetime(2023, 7, 14, 17, 20)) == timedelta(minutes = 70)
 
 
-def test_laundrybag_has_same_laundrylabel() :
-    pass
+def test_laundryMachine_stop_and_resume_returns_remaining_time() :
+    machine1 = LaundryMachine(id = 'TROMM1')
+    laundryBag = LaundryBag([new_clothes(label = LaundryLabel.WASH, volume = 3) for _ in range(5)], createdTime = today)    
+
+    machine1.putLaundryBag(laundryBag)
+    
+    machine1.start(exec_time = datetime(2023, 7, 14, 17, 0))
+    machine1.stop(exec_time= datetime(2023, 7, 14, 17, 5))
+    assert machine1.status == MachineState.STOP \
+            and machine1.remainingTime(exec_time = datetime(2023, 7, 14, 17, 10)) == timedelta(minutes = 90 - 5)
+
+    machine1.resume(exec_time = datetime(2023, 7, 14, 17, 15))
+    assert machine1.status == MachineState.RUNNING \
+            and machine1.remainingTime(exec_time = datetime(2023, 7, 14, 17, 20)) == timedelta(minutes = 90 - 10)
 
 
-def test_allocate_laundrybag_into_laundryMachine() :
+def test_running_laundryMachine_stops_if_requiredTime_passed() :
+    # TODO : continuous monitoring on laundrymachine state is required, maybe event listening...?
     pass
 
 
 def test_fail_to_allocate_laundrybag_into_laundryMachine_if_broken_or_running() :
+    machine1 = LaundryMachine(id = 'TROMM1')
+    laundryBag = LaundryBag([new_clothes() for _ in range(5)], createdTime = today)    
+
+    machine1.status = MachineState.BROKEN
+
+    with pytest.raises(ValueError) :
+        machine1.putLaundryBag(laundryBag)
+
+
+def test_laundryMachine_is_empty_when_laundry_is_done() :
+    ## ClothesState == 'DONE' and laundryMachine.contained is None and laundryMachine.MachineState == DONE
     pass
 
 
+#################
+# reclaim order #
+#################
+
+def test_clothes_finished_laundry_reclaim_by_orderid() :
+    pass
+
+def test_check_every_clothes_by_orderid_reclaimed() :
+    pass
