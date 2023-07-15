@@ -1,9 +1,11 @@
 import random
+from tabnanny import check
 from uuid import uuid4
+from venv import create
 
 import pytest
     
-from model import Clothes, ClothesState, Order, LaundryLabel, LaundryBag, LaundryMachine, User, MachineState, LAUNDRYBAG_MAXVOLUME
+from model import Clothes, ClothesState, Order, LaundryLabel, LaundryBag, LaundryMachine, OrderState, User, MachineState, LAUNDRYBAG_MAXVOLUME
 
 from typing import List, Dict
 
@@ -16,13 +18,15 @@ longtimeago = today - timedelta(days=10)
 
 # clothes, order, laundrybag, user
 
-def divide_order(order : Order)  -> List[LaundryBag] :
+def divide_order(order_list : List[Order])  -> List[LaundryBag] :
     laundrylabeldict = {}
-    for clothes in order :
-        if clothes.label in laundrylabeldict : 
-            laundrylabeldict[clothes.label].append(clothes)
-        else :
-            laundrylabeldict[clothes.label] = [clothes]
+
+    for order in order_list :
+        for clothes in order :
+            if clothes.label in laundrylabeldict : 
+                laundrylabeldict[clothes.label].append(clothes)
+            else :
+                laundrylabeldict[clothes.label] = [clothes]
 
     return laundrylabeldict
 
@@ -54,6 +58,42 @@ def put_in_laundrybag(laundryBagDict : Dict[LaundryLabel, List[Clothes]]) :
     return laundryBagList
 
 
+def reclaim_clothes_into_order(laundryBag_list: List[LaundryBag]) -> List[Order]:
+    assert all([clothes.status == ClothesState.DONE for laundryBag in laundryBag_list for clothes in laundryBag])
+
+    reclaimed_dict = {}
+
+    for laundryBag in laundryBag_list :
+        for clothes in laundryBag :
+            clothes.status = ClothesState.RECLAIMED
+            if clothes.orderid not in reclaimed_dict :
+                reclaimed_dict[clothes.orderid] = [clothes]
+            else :
+                reclaimed_dict[clothes.orderid].append(clothes)
+    
+    reclaimed_list = []
+    for orderid, reclaimed in reclaimed_dict.items() :
+        reclaimed_list.append(Order(id = orderid, clothes_list = reclaimed, status = OrderState.RECLAIMING))
+
+
+    return reclaimed_list
+
+
+    
+        
+
+def check_clothes_in_order_is_fully_reclaimed(order : Order) :
+    for clothes in order :
+        if clothes.status != ClothesState.RECLAIMED :
+            return False
+    return True
+
+def change_order_status(order : Order) :
+    if check_clothes_in_order_is_fully_reclaimed(order) :
+        order.status = OrderState.SHIP_READY
+
+        
+
 def new_clothes(label = None, volume = None, status = None) :
 
     id = str(uuid4())[:4]
@@ -67,7 +107,15 @@ def new_clothes(label = None, volume = None, status = None) :
     return Clothes(id = id, label = label, volume = volume, status = status)
             
 
-            
+
+
+
+
+
+
+
+
+
     
 
 
@@ -118,7 +166,7 @@ def test_order_sort_by_laundrybags() :
     clothes4 = Clothes(id = str(uuid4())[:4], label = LaundryLabel.WASH, volume = 0.3)
     order = Order('order1', received_at = today, clothes_list = [clothes1, clothes2, clothes3, clothes4])
 
-    laundrylabeldict = divide_order(order)
+    laundrylabeldict = divide_order([order])
 
     assert len(laundrylabeldict) == 2
 
@@ -140,7 +188,7 @@ def test_laundrybag_clothes_status_changed_to_divided() :
 
 
 def test_laundrybags_with_same_laundryLabel_combine_into_same_laundrybag(new_order) :
-    laundrylabeldict = divide_order(new_order)
+    laundrylabeldict = divide_order([new_order])
     laundryBagList = put_in_laundrybag(laundrylabeldict)
 
     for laundryBag in laundryBagList :
@@ -234,13 +282,35 @@ def test_laundryMachine_is_empty_when_laundry_is_done() :
     ## ClothesState == 'DONE' and laundryMachine.contained is None and laundryMachine.MachineState == DONE
     pass
 
+## TODO : run on multiple laundryjob cycles
 
 #################
 # reclaim order #
 #################
 
 def test_clothes_finished_laundry_reclaim_by_orderid() :
-    pass
+    orderid_list = ['EUNSUNG_o3_230715', 'SAM_o18_230714', 'LUKE_01_230716']
+    
+    freshly_done_laundrybags = []
+
+    for i in range(len(orderid_list)) :
+        orderid = orderid_list[i]
+        clothes_list = [new_clothes() for _ in range(5)]
+        for clothes in clothes_list : # assign orderid to clothes
+            clothes.orderid = orderid
+            
+
+        laundryBag = LaundryBag(clothes_list, createdTime = None)
+        for clothes in laundryBag :
+            clothes.status = ClothesState.DONE
+        freshly_done_laundrybags.append(laundryBag)
+
+    reclaimed_order_list = reclaim_clothes_into_order(freshly_done_laundrybags)
+
+    assert set([order.id for order in reclaimed_order_list]) == set(orderid_list)
+        
 
 def test_check_every_clothes_by_orderid_reclaimed() :
     pass
+
+
