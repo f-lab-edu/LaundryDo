@@ -7,15 +7,13 @@ import pytest
 
 time_now = datetime(2023, 7, 12, 20, 48, 13)
 
-@pytest.fixture
-def new_clothes() :
-    ## TODO : they are not really random. random fixed.
-    clothesid = str(uuid4())[:4]
-    label = random.choice([LaundryLabel.WASH, LaundryLabel.DRY, LaundryLabel.HAND])
-    volume = random.random()
-    status = random.choice([ClothesState.PREPARING, ClothesState.CANCELLED, ClothesState.DIVIDED, ClothesState.PROCESSING, ClothesState.DONE])
 
-    return Clothes(clothesid = clothesid, label = label, volume = volume, status = status)
+def new_clothes() :
+    id = str(uuid4())[:4]
+    label = random.choice([LaundryLabel.WASH, LaundryLabel.DRY, LaundryLabel.HAND])
+    volume = random.randint(5, 15)
+    status = random.choice([ClothesState.PREPARING, ClothesState.CANCELLED, ClothesState.DIVIDED, ClothesState.PROCESSING, ClothesState.DONE])
+    return Clothes(id = id, label = label, volume = volume, status = status)
 
 @pytest.fixture
 def new_user() :
@@ -23,9 +21,7 @@ def new_user() :
     return user1
 
 @pytest.fixture
-def new_order(new_clothes) :
-    
-    order = Order('order1', received_at = time_now, clothes_list = [new_clothes for _ in range(10)])
+def new_order() :
+    order = Order('order1', received_at = time_now, clothes_list = [new_clothes() for _ in range(10)])
 
     return order
-
