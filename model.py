@@ -9,15 +9,18 @@ class OrderState(Enum) :
     SENDING = '이동중'
     PREPARING = '준비중'
     WASHING = '빨래중'
+    RECLAIMING = '정리중'
+    SHIP_READY = '배송준비완료'
     SHIPPING = '배송중'
 
 class ClothesState(Enum) :
     CANCELLED = '취소'
     PREPARING = '준비중'
-    DIVIDED = '세탁분류' # 세탁 라벨에 따라 분류된 상태
+    DIVIDED = '세탁전분류' # 세탁 라벨에 따라 분류된 상태
     PROCESSING = '세탁중'
     STOPPED = '일시정지' # 세탁기 고장이나 외부 요인으로 세탁 일시 중지
     DONE = '세탁완료'
+    RECLAIMED = '세탁후분류'
 
 class LaundryLabel(Enum) :
     WASH = '물세탁'
@@ -76,25 +79,25 @@ class Clothes :
 
 class Order(list) :
     def __init__(self, 
-                 orderid: str, 
+                 id: str, 
                  clothes_list : List[Clothes],
-                 received_at : datetime, 
-                 orderstate: OrderState = OrderState.SENDING):
+                 received_at : datetime = None, ## TODO : received time by each status? 
+                 status: OrderState = OrderState.SENDING):
         super().__init__(clothes_list)
-        self.orderid = orderid
+        self.id = id
         self.received_at = received_at
-        self.orderstate = orderstate
+        self.status = status
 
         for clothes in self :
-            clothes.orderid = self.orderid
+            clothes.orderid = self.id
             clothes.received_at = self.received_at
 
         def pop(self, index) :
-            # self[index].orderid = None # TODO : Not working
+            # self[index].id = None # TODO : Not working
             return super().pop(index)
 
         def remove(self, item) :
-            item.orderid = None
+            item.id = None
             super().remove(item)
 
         def __setitem__(self, index, item):
@@ -124,7 +127,7 @@ class Order(list) :
 
 class LaundryBag(list) :
     def __init__(self, clothes_list : List[Clothes], createdTime: datetime) :
-        super().__init__(clothes_list)
+        super().__init__(clothes_list) ## TODO : if clothes does not have orderid, it cannot be in laundrybag
         self.createdTime = createdTime
 
         # 옷상태를 '세탁분류' 상태로 전환
@@ -244,17 +247,17 @@ class User :
         self.orderlist = orderlist
 
     def request_order(self, order: Order) :
-        order.orderstate = OrderState.PREPARING
+        order.status = OrderState.PREPARING
         self.orderlist.append(order)
 
     def cancel_order(self, order: Order) :
-        [selected_order] = [submitted_order for submitted_order in self.orderlist if submitted_order.orderid == order.orderid]
+        [selected_order] = [submitted_order for submitted_order in self.orderlist if submitted_order.id == order.id]
 
 
-        if selected_order and (selected_order.orderstate == OrderState.PREPARING or selected_order.orderstate == OrderState.SENDING) :
+        if selected_order and (selected_order.status == OrderState.PREPARING or selected_order.status == OrderState.SENDING) :
             self.orderlist.remove(selected_order)
         else :
-            print(f'order id {order.orderid} does not exist.')
+            print(f'order id {order.id} does not exist.')
 
 
     def request_order_history(self) :
