@@ -20,4 +20,4 @@ jobs :
             docker build . --tag fastapi
       - name : Run Docker container
         run : |
-            docker run --port 80:80 fastapi
+            docker run -p 80:80 fastapi
