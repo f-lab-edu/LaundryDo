@@ -1,0 +1,23 @@
+# build docker container
+name : Build FastAPI Server Container
+
+on:
+  [push] # :
+  # branches : [$default-branch]
+  # pull_request :
+  #   branches : [$default-branch]
+
+jobs :
+  build :
+
+    runs-on: ubuntu-latest
+    
+    steps :
+      - uses : actions/checkout@v3
+      - name : build Docker image
+        run : |
+            cd ./app
+            docker build . --tag FastAPI
+      - name : Run Docker container
+        run : |
+            docker run FastAPI --port 80:80
