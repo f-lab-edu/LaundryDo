@@ -9,29 +9,27 @@ class OrderState(Enum) :
     CANCELLED = '취소'
     SENDING = '이동중'
     PREPARING = '준비중'
-    WASHING = '빨래중'
+    WASHING = '세탁중'
     RECLAIMING = '정리중'
     SHIP_READY = '배송준비완료'
     SHIPPING = '배송중'
+    DONE = '완료'
 
-class OrderState(Enum):
-    SENDING = "이동중"
-    PREPARING = "준비중"
-    WASHING = "빨래중"
-    RECLAIMING = "정리중"
-    SHIP_READY = "배송준비완료"
-    SHIPPING = "배송중"
 
 
 class ClothesState(Enum):
     CANCELLED = "취소"
     PREPARING = "준비중"
-    DIVIDED = "세탁전분류"  # 세탁 라벨에 따라 분류된 상태
+    DISTRIBUTED = "세탁전분류"  # 세탁 라벨에 따라 분류된 상태
     PROCESSING = "세탁중"
     STOPPED = "일시정지"  # 세탁기 고장이나 외부 요인으로 세탁 일시 중지
     DONE = "세탁완료"
     RECLAIMED = "세탁후분류"
 
+class BagState(Enum) :
+    READY = '세탁준비'
+    RUN = '세탁중'
+    DONE = '세탁완료'
 
 class LaundryLabel(Enum):
     WASH = "물세탁"
@@ -84,7 +82,6 @@ class Clothes:
             return self.received_at < other.received_at
         else:
             raise TypeError(f"{type(other)} cannot be compared with Clothes class.")
-
 
 class Order(list):
     def __init__(
@@ -141,10 +138,15 @@ class LaundryBag(list):
             clothes_list
         )  ## TODO : if clothes does not have orderid, it cannot be in laundrybag
         self.createdTime = createdTime
+        self.status = BagState.READY
 
         # 옷상태를 '세탁분류' 상태로 전환
         for clothes in self:
-            clothes.status = ClothesState.DIVIDED
+            clothes.status = ClothesState.DISTRIBUTED
+
+    def can_contain(self, volume : float) :
+        return self.volumeContained + volume <= LAUNDRYBAG_MAXVOLUME
+
 
     @property
     def volumeContained(self):
@@ -176,6 +178,9 @@ class LaundryMachine:
         self.runtime = timedelta(minutes=0)
 
         self.status = MachineState.READY
+
+        ## TODO : sort by least recent used machine.
+        ## TODO : max volume may be different.
 
     @property
     def volumeContained(self):
@@ -213,9 +218,11 @@ class LaundryMachine:
     def putLaundryBag(self, laundrybag: LaundryBag):
         if self.can_contain(laundrybag) and self.status not in [
             MachineState.RUNNING,
-            MachineState.BROKEN,
+            MachineState.BROKEN, ## TODO : if machine is broken for some time, then move laundrybags to other machine
         ]:
+            laundrybag.status = BagState.RUN
             self.contained = laundrybag
+            
         else:
             raise ValueError("cannot contain the bag, too large.")
 
@@ -263,7 +270,7 @@ class User :
         [selected_order] = [
             submitted_order
             for submitted_order in self.orderlist
-            if submitted_order.id == order.id
+            if order == submitted_order
         ]
 
 
@@ -285,9 +292,6 @@ class User :
     def request_order_history(self) :
         return self.orderlist
 
-
-    def request_order_history(self) :
-        return self.orderlist
 
 
 

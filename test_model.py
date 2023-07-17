@@ -42,7 +42,7 @@ def divide_order(order_list: List[Order]) -> List[LaundryBag]:
 
     return laundrylabeldict
 
-def put_in_laundrybag(laundryBagDict : Dict[LaundryLabel, List[laundryBag]]) :
+def put_in_laundrybag(laundryBagDict : Dict[LaundryLabel, List[LaundryBag]]) :
 
     # sortlaundryBagDict = {}
     laundryBagList = []
@@ -51,7 +51,6 @@ def put_in_laundrybag(laundryBagDict : Dict[LaundryLabel, List[laundryBag]]) :
         clothes_list.sort()
 
         # split clothes_list by max volume
-
         laundryBag = LaundryBag(clothes_list=[], createdTime=datetime.now())
 
         while clothes_list:
@@ -104,7 +103,7 @@ def check_clothes_in_order_is_fully_reclaimed(order: Order):
     return True
 
 
-def change_order_status(order: Order):
+def ship(order: Order):
     if check_clothes_in_order_is_fully_reclaimed(order):
         order.status = OrderState.SHIP_READY
 
@@ -118,9 +117,17 @@ def new_clothes(label=None, volume=None, status=None):
     if volume is None:
         volume = random.randint(5, 15)
     if status is None :
-        status = random.choice([ClothesState.PREPARING, ClothesState.CANCELLED, ClothesState.DIVIDED, ClothesState.PROCESSING, ClothesState.DONE])
+        status = random.choice([ClothesState.PREPARING, ClothesState.CANCELLED, ClothesState.DISTRIBUTED, ClothesState.PROCESSING, ClothesState.DONE])
     return Clothes(id = id, label = label, volume = volume, status = status)
-            
+
+
+
+def allocate(machine_list : List[LaundryMachine], laundryBag : LaundryBag) :
+    available_machines = [machine for machine in machine_list if machine.status == MachineState.READY] # TODO : sorted
+
+    selected_machine = available_machines.pop()
+
+    selected_machine.putLaundryBag(laundryBag)
 
 def fill_requiredLaundryTime() :
     pass
@@ -151,11 +158,8 @@ def test_sort_clothes_by_time():
         id="yellow skirt", volume=0.7, label=LaundryLabel.WASH, received_at=longtimeago
     )
 
-    assert sorted([clothes_yesterday, clothes_longtimeago, clothes_today]) == [
-        clothes_longtimeago,
-        clothes_yesterday,
-        clothes_today,
-    ]
+    assert sorted([clothes_yesterday, clothes_longtimeago, clothes_today]) \
+            == [clothes_longtimeago, clothes_yesterday, clothes_today]
 
 
 ########
@@ -178,11 +182,19 @@ def test_user_cancel_order(new_user, new_order):
 
 def test_user_request_order_status(new_user, new_order) :
     new_user.request_order(new_order)
+    
+    order_status = new_user.request_order_status(new_order)
+
+    assert order_status == OrderState.PREPARING
 
 
 
-def test_user_request_order_history() :
+def test_user_request_order_history(new_user) :
+    for i in range(10) :
+        new_order = Order(id = f'order-{i}', clothes_list = [new_clothes() for _ in range(5)])
+        new_user.request_order(new_order)
 
+    assert len(new_user.request_order_history()) == 10
 
 
 #############
@@ -209,20 +221,28 @@ def test_order_sort_by_laundrybags():
     assert len(laundrylabeldict) == 2
 
 
-def test_multiple_orders_divided_into_laundrybags(new_order):
-    multiple_orders = [new_order for _ in range(10)]
-    laundrybags = divide_order(multiple_orders)
-    laundrybags
+def test_multiple_orders_distributed_into_laundrybags(new_order):
+    multiple_orders = []
+    for i in range(20) :
+        clothes_list = [new_clothes(volume = 1) for _ in range(10)]
+        new_order = Order(id = f'order-{i}', clothes_list = clothes_list, received_at = today )
+        multiple_orders.append(new_order)
+
+    laundrybag_dict = divide_order(multiple_orders)
+    laundrybags = put_in_laundrybag(laundrybag_dict)
+
+    assert len(laundrybags) < len(multiple_orders)
+
 
 ##############
 # LaundryBag #
 ##############
 
 
-def test_laundrybag_clothes_status_changed_to_divided():
+def test_laundrybag_clothes_status_changed_to_distributed():
     laundryBag = LaundryBag([new_clothes() for _ in range(10)], createdTime=today)
 
-    assert all([clothes.status == ClothesState.DIVIDED for clothes in laundryBag])
+    assert all([clothes.status == ClothesState.DISTRIBUTED for clothes in laundryBag])
 
 
 def test_laundrybags_with_same_laundryLabel_combine_into_same_laundrybag(new_order):
@@ -234,19 +254,12 @@ def test_laundrybags_with_same_laundryLabel_combine_into_same_laundrybag(new_ord
 
 
 def test_laundrybags_sorted_by_time():
-    longtimeago_laundryBag = LaundryBag(
-        [new_clothes() for _ in range(10)], createdTime=longtimeago
-    )
-    yesterday_laundryBag = LaundryBag(
-        [new_clothes() for _ in range(10)], createdTime=yesterday
-    )
+    longtimeago_laundryBag = LaundryBag([new_clothes() for _ in range(10)], createdTime=longtimeago)
+    yesterday_laundryBag = LaundryBag([new_clothes() for _ in range(10)], createdTime=yesterday)
     today_laundryBag = LaundryBag([new_clothes() for _ in range(10)], createdTime=today)
 
-    assert sorted([today_laundryBag, yesterday_laundryBag, longtimeago_laundryBag]) == [
-        longtimeago_laundryBag,
-        yesterday_laundryBag,
-        today_laundryBag,
-    ]
+    assert sorted([today_laundryBag, yesterday_laundryBag, longtimeago_laundryBag]) \
+                == [longtimeago_laundryBag, yesterday_laundryBag, today_laundryBag,]
 
 
 ##################
@@ -285,9 +298,7 @@ def test_laundryMachine_returns_runtime():
 
     machine1.start(exec_time=datetime(2023, 7, 14, 17, 0))
 
-    ## TODO : laundryMachine needs to update runtime in
-    pass
-
+    assert machine1.get_runtime(exec_time = datetime(2023, 7, 14, 17, 50)) == timedelta(minutes = 50)
 
 def test_laundryMachine_returns_remaining_time():
     machine1 = LaundryMachine(id="TROMM1")
@@ -371,7 +382,8 @@ def test_clothes_finished_laundry_reclaim_by_orderid():
 
     reclaimed_order_list = reclaim_clothes_into_order(freshly_done_laundrybags)
 
-    assert set([order.id for order in reclaimed_order_list]) == set(orderid_list)
+    assert set([order.id for order in reclaimed_order_list]) == set(orderid_list) and \
+                len(reclaimed_order_list) == len(orderid_list)
 
 
 def test_check_every_clothes_by_orderid_reclaimed():

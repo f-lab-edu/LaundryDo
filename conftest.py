@@ -21,7 +21,7 @@ def new_clothes(label=None, volume=None, status=None):
             [
                 ClothesState.PREPARING,
                 ClothesState.CANCELLED,
-                ClothesState.DIVIDED,
+                ClothesState.DISTRIBUTED,
                 ClothesState.PROCESSING,
                 ClothesState.DONE,
             ]
