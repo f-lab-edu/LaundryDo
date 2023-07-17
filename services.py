@@ -13,8 +13,8 @@ class LaundryService :
     def __init__(self, 
                 order_repository,
                 clothes_repository,
-                laundrybag_repository,
-                machine_repository,
+                Laundrybag_repository,
+                Machine_repository,
                 ): 
 
     def run_process(self, orderid : str) :
@@ -24,7 +24,7 @@ class LaundryService :
         laundrylabeldict = distribute_order([order])
         laundryBagList = put_in_laundrybag(laundrylabeldict)
 
-        machines = machine_repository.all()
+        machines = Machine_repository.all()
 
         # get available machine
         for laundrybag in laundryBagList :

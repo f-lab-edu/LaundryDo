@@ -11,7 +11,7 @@ from model import (
     Order,
     LaundryLabel,
     LaundryBag,
-    machine,
+    Machine,
     OrderState,
     User,
     MachineState,
@@ -268,7 +268,7 @@ def test_laundrybags_sorted_by_time():
 
 
 def test_fail_to_machine_put_laundryBag_exceed_max_volume():
-    machine1 = machine(id="TROMM1")
+    machine1 = Machine(id="TROMM1")
     laundryBag = LaundryBag([new_clothes() for _ in range(5)], createdTime=today)
 
     with pytest.raises(ValueError):
@@ -276,7 +276,7 @@ def test_fail_to_machine_put_laundryBag_exceed_max_volume():
 
 
 def test_machine_returns_requiredTime():
-    machine1 = machine(id="TROMM1")
+    machine1 = Machine(id="TROMM1")
     laundryBag = LaundryBag(
         [new_clothes(label=LaundryLabel.WASH, volume=3) for _ in range(5)],
         createdTime=today,
@@ -288,7 +288,7 @@ def test_machine_returns_requiredTime():
 
 
 def test_machine_returns_runtime():
-    machine1 = machine(id="TROMM1")
+    machine1 = Machine(id="TROMM1")
     laundryBag = LaundryBag(
         [new_clothes(label=LaundryLabel.WASH, volume=3) for _ in range(5)],
         createdTime=today,
@@ -301,7 +301,7 @@ def test_machine_returns_runtime():
     assert machine1.get_runtime(exec_time = datetime(2023, 7, 14, 17, 50)) == timedelta(minutes = 50)
 
 def test_machine_returns_remaining_time():
-    machine1 = machine(id="TROMM1")
+    machine1 = Machine(id="TROMM1")
     laundryBag = LaundryBag(
         [new_clothes(label=LaundryLabel.WASH, volume=3) for _ in range(5)],
         createdTime=today,
@@ -317,7 +317,7 @@ def test_machine_returns_remaining_time():
 
 
 def test_machine_stop_and_resume_returns_remaining_time():
-    machine1 = machine(id="TROMM1")
+    machine1 = Machine(id="TROMM1")
     laundryBag = LaundryBag(
         [new_clothes(label=LaundryLabel.WASH, volume=3) for _ in range(5)],
         createdTime=today,
@@ -343,7 +343,7 @@ def test_running_machine_stops_if_requiredTime_passed():
 
 
 def test_fail_to_allocate_laundrybag_into_machine_if_broken_or_running():
-    machine1 = machine(id="TROMM1")
+    machine1 = Machine(id="TROMM1")
     laundryBag = LaundryBag([new_clothes() for _ in range(5)], createdTime=today)
 
     machine1.status = MachineState.BROKEN

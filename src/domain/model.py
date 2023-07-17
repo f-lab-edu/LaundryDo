@@ -167,7 +167,7 @@ class LaundryBag(list):
             )
 
 
-class machine:
+class Machine:
     def __init__(self, id: str):
         self.id = id
         self.contained = None  # LaundryBag
