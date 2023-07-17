@@ -30,7 +30,7 @@ def divide_order(order_list : List[Order])  -> List[LaundryBag] :
 
     return laundrylabeldict
 
-def put_in_laundrybag(laundryBagDict : Dict[LaundryLabel, List[Clothes]]) :
+def put_in_laundrybag(laundryBagDict : Dict[LaundryLabel, List[laundryBag]]) :
 
     # sortlaundryBagDict = {}
     laundryBagList = []
@@ -92,7 +92,7 @@ def change_order_status(order : Order) :
     if check_clothes_in_order_is_fully_reclaimed(order) :
         order.status = OrderState.SHIP_READY
 
-        
+
 
 def new_clothes(label = None, volume = None, status = None) :
 
@@ -107,7 +107,8 @@ def new_clothes(label = None, volume = None, status = None) :
     return Clothes(id = id, label = label, volume = volume, status = status)
             
 
-
+def fill_requiredLaundryTime() :
+    pass
 
 
 
@@ -148,7 +149,16 @@ def test_user_cancel_order(new_user, new_order ) :
 
     new_user.cancel_order(new_order)
 
-    assert new_user.orderlist == []
+    assert new_user.orderlist[new_user.orderlist.index(new_order)].status == OrderState.CANCELLED \
+             and all([clothes.status == ClothesState.CANCELLED for clothes in new_order])
+
+def test_user_request_order_status(new_user, new_order) :
+    new_user.request_order(new_order)
+
+
+
+def test_user_request_order_history() :
+
 
 
 #############
@@ -172,7 +182,8 @@ def test_order_sort_by_laundrybags() :
 
 def test_multiple_orders_divided_into_laundrybags(new_order) :    
     multiple_orders = [new_order for _ in range(10)]
-
+    laundrybags = divide_order(multiple_orders)
+    laundrybags
 
 
 
@@ -279,7 +290,7 @@ def test_fail_to_allocate_laundrybag_into_laundryMachine_if_broken_or_running() 
 
 
 def test_laundryMachine_is_empty_when_laundry_is_done() :
-    ## ClothesState == 'DONE' and laundryMachine.contained is None and laundryMachine.MachineState == DONE
+    ## ClothesState == 'DONE' and laundryMachine.contained is None and laundryMachine.MachineSta te == DONE
     pass
 
 ## TODO : run on multiple laundryjob cycles

@@ -6,6 +6,7 @@ from enum import Enum
 LAUNDRYBAG_MAXVOLUME = LAUNDRYMACHINE_MAXVOLUME = 25
 
 class OrderState(Enum) :
+    CANCELLED = '취소'
     SENDING = '이동중'
     PREPARING = '준비중'
     WASHING = '빨래중'
@@ -241,7 +242,7 @@ class LaundryMachine :
 
 
 class User :
-    def __init__(self, id: str, address: str, orderlist : List[Order]) :
+    def __init__(self, id: str, address: str, orderlist : List[Order] = []) :
         self.id = id
         self.address = address
         self.orderlist = orderlist
@@ -255,13 +256,26 @@ class User :
 
 
         if selected_order and (selected_order.status == OrderState.PREPARING or selected_order.status == OrderState.SENDING) :
-            self.orderlist.remove(selected_order)
+            selected_order.status = OrderState.CANCELLED
+            # update clothes status
+            for clothes in selected_order :
+                clothes.status = ClothesState.CANCELLED
+
         else :
-            print(f'order id {order.id} does not exist.')
+            print(f'order id {order.id} does not exist. OR order in the laundry cannot be cancelled. your order is in [{selected_order.status}]')
+
+    def request_order_status(self, query_order : Order) :
+        for order in self.orderlist :
+            if order == query_order :
+                return order.status
+        raise ValueError(f'{query_order} cannot be found.')
+                
+    def request_order_history(self) :
+        return self.orderlist
 
 
     def request_order_history(self) :
-        pass
+        return self.orderlist
 
 
 
