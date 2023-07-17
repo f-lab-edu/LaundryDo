@@ -26,7 +26,7 @@ class ClothesState(Enum):
     DONE = "세탁완료"
     RECLAIMED = "세탁후분류"
 
-class BagState(Enum) :
+class LaundryBagState(Enum) :
     READY = '세탁준비'
     RUN = '세탁중'
     DONE = '세탁완료'
@@ -139,7 +139,7 @@ class LaundryBag(list):
             clothes_list
         )  ## TODO : if clothes does not have orderid, it cannot be in laundrybag
         self.createdTime = createdTime
-        self.status = BagState.READY
+        self.status = LaundryBagState.READY
 
         # 옷상태를 '세탁분류' 상태로 전환
         for clothes in self:
@@ -221,7 +221,7 @@ class machine:
             MachineState.RUNNING,
             MachineState.BROKEN, ## TODO : if machine is broken for some time, then move laundrybags to other machine
         ]:
-            laundrybag.status = BagState.RUN
+            laundrybag.status = LaundryBagState.RUN
             self.contained = laundrybag
             
         else:

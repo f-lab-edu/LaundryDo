@@ -1,5 +1,5 @@
 import pytest
-from src.domain.model import Machine, LaundryLabel, MachineState
+from src.domain import Machine, LaundryLabel, MachineState
 from datetime import datetime, timedelta
 
 def test_fail_to_machine_put_laundryBag_exceed_max_volume(laundrybag_factory, clothes_factory):

@@ -3,7 +3,7 @@ import random
 
 from typing import List, Dict
 
-from src.domain.model import Clothes, ClothesState, LaundryBag, LaundryLabel, Order, User, OrderState
+from src.domain import Clothes, ClothesState, LaundryBag, LaundryLabel, Order, User, OrderState
 from datetime import datetime
 import pytest
 

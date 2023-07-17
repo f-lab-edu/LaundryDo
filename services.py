@@ -1,7 +1,7 @@
 from concurrent.futures import wait
 from select import select
 from typing import List, Dict
-from model import Clothes, LaundryBag, LaundryLabel, BagState, LAUNDRYBAG_MAXVOLUME, machine_MAXVOLUME, Order, OrderState
+from model import Clothes, LaundryBag, LaundryLabel, LaundryBagState, LAUNDRYBAG_MAXVOLUME, machine_MAXVOLUME, Order, OrderState
 from repository import UserRepository, OrderRepository, LaundryBagRepository, MachineRepository
 from datetime import datetime
 

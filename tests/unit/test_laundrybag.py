@@ -1,4 +1,4 @@
-from src.domain.model import distribute_order, put_in_laundrybag, ClothesState
+from src.domain import distribute_order, put_in_laundrybag, ClothesState
 from datetime import datetime, timedelta
 
 

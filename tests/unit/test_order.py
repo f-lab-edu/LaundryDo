@@ -1,5 +1,5 @@
 import pytest
-from src.domain.model import (
+from src.domain import (
     LaundryLabel, 
     ClothesState, 
     LaundryBag, 

@@ -1,4 +1,4 @@
-from src.domain.model import OrderState, ClothesState
+from src.domain import OrderState, ClothesState
 
 def test_user_request_new_order(user_factory, order_factory):
     new_user = user_factory()
