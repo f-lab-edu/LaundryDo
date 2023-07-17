@@ -30,7 +30,7 @@ longtimeago = today - timedelta(days=10)
 # clothes, order, laundrybag, user
 
 
-def divide_order(order_list: List[Order]) -> List[LaundryBag]:
+def distribute_order(order_list: List[Order]) -> List[LaundryBag]:
     laundrylabeldict = {}
 
     for order in order_list:
@@ -216,7 +216,7 @@ def test_order_sort_by_laundrybags():
         clothes_list=[clothes1, clothes2, clothes3, clothes4],
     )
 
-    laundrylabeldict = divide_order([order])
+    laundrylabeldict = distribute_order([order])
 
     assert len(laundrylabeldict) == 2
 
@@ -228,7 +228,7 @@ def test_multiple_orders_distributed_into_laundrybags(new_order):
         new_order = Order(id = f'order-{i}', clothes_list = clothes_list, received_at = today )
         multiple_orders.append(new_order)
 
-    laundrybag_dict = divide_order(multiple_orders)
+    laundrybag_dict = distribute_order(multiple_orders)
     laundrybags = put_in_laundrybag(laundrybag_dict)
 
     assert len(laundrybags) < len(multiple_orders)
@@ -246,7 +246,7 @@ def test_laundrybag_clothes_status_changed_to_distributed():
 
 
 def test_laundrybags_with_same_laundryLabel_combine_into_same_laundrybag(new_order):
-    laundrylabeldict = divide_order([new_order])
+    laundrylabeldict = distribute_order([new_order])
     laundryBagList = put_in_laundrybag(laundrylabeldict)
 
     for laundryBag in laundryBagList:
