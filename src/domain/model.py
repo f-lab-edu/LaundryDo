@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 from enum import Enum
 
-LAUNDRYBAG_MAXVOLUME = LAUNDRYMACHINE_MAXVOLUME = 25
+LAUNDRYBAG_MAXVOLUME = machine_MAXVOLUME = 25
 
 class OrderState(Enum) :
     CANCELLED = '취소'
@@ -167,7 +167,7 @@ class LaundryBag(list):
             )
 
 
-class LaundryMachine:
+class machine:
     def __init__(self, id: str):
         self.id = id
         self.contained = None  # LaundryBag
@@ -212,9 +212,9 @@ class LaundryMachine:
         return timedelta(minutes=self.requiredTime) - self.get_runtime(exec_time)
 
     def can_contain(self, laundryBag: LaundryBag):
-        return laundryBag.volumeContained <= LAUNDRYMACHINE_MAXVOLUME
+        return laundryBag.volumeContained <= machine_MAXVOLUME
 
-    def putLaundryBag(self, laundrybag: LaundryBag):
+    def put(self, laundrybag: LaundryBag):
         ## TODO : if machine is broken for some time, then move laundrybags to other machine
         if self.can_contain(laundrybag) and self.status not in [MachineState.RUNNING, MachineState.BROKEN]:
             laundrybag.status = BagState.RUN

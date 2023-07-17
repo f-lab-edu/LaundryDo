@@ -11,7 +11,7 @@ from model import (
     Order,
     LaundryLabel,
     LaundryBag,
-    LaundryMachine,
+    machine,
     OrderState,
     User,
     MachineState,
@@ -122,12 +122,12 @@ def new_clothes(label=None, volume=None, status=None):
 
 
 
-def allocate(machine_list : List[LaundryMachine], laundryBag : LaundryBag) :
+def allocate(machine_list : List[machine], laundryBag : LaundryBag) :
     available_machines = [machine for machine in machine_list if machine.status == MachineState.READY] # TODO : sorted
 
     selected_machine = available_machines.pop()
 
-    selected_machine.putLaundryBag(laundryBag)
+    selected_machine.put(laundryBag)
 
 def fill_requiredLaundryTime() :
     pass
@@ -263,51 +263,51 @@ def test_laundrybags_sorted_by_time():
 
 
 ##################
-# LaundryMachine #
+# machine #
 ##################
 
 
-def test_fail_to_laundryMachine_put_laundryBag_exceed_max_volume():
-    machine1 = LaundryMachine(id="TROMM1")
+def test_fail_to_machine_put_laundryBag_exceed_max_volume():
+    machine1 = machine(id="TROMM1")
     laundryBag = LaundryBag([new_clothes() for _ in range(5)], createdTime=today)
 
     with pytest.raises(ValueError):
-        machine1.putLaundryBag(laundryBag)
+        machine1.put(laundryBag)
 
 
-def test_laundryMachine_returns_requiredTime():
-    machine1 = LaundryMachine(id="TROMM1")
+def test_machine_returns_requiredTime():
+    machine1 = machine(id="TROMM1")
     laundryBag = LaundryBag(
         [new_clothes(label=LaundryLabel.WASH, volume=3) for _ in range(5)],
         createdTime=today,
     )
 
-    machine1.putLaundryBag(laundryBag)
+    machine1.put(laundryBag)
 
     assert machine1.requiredTime == 90
 
 
-def test_laundryMachine_returns_runtime():
-    machine1 = LaundryMachine(id="TROMM1")
+def test_machine_returns_runtime():
+    machine1 = machine(id="TROMM1")
     laundryBag = LaundryBag(
         [new_clothes(label=LaundryLabel.WASH, volume=3) for _ in range(5)],
         createdTime=today,
     )
 
-    machine1.putLaundryBag(laundryBag)
+    machine1.put(laundryBag)
 
     machine1.start(exec_time=datetime(2023, 7, 14, 17, 0))
 
     assert machine1.get_runtime(exec_time = datetime(2023, 7, 14, 17, 50)) == timedelta(minutes = 50)
 
-def test_laundryMachine_returns_remaining_time():
-    machine1 = LaundryMachine(id="TROMM1")
+def test_machine_returns_remaining_time():
+    machine1 = machine(id="TROMM1")
     laundryBag = LaundryBag(
         [new_clothes(label=LaundryLabel.WASH, volume=3) for _ in range(5)],
         createdTime=today,
     )
 
-    machine1.putLaundryBag(laundryBag)
+    machine1.put(laundryBag)
 
     machine1.start(exec_time=datetime(2023, 7, 14, 17, 0))
 
@@ -316,14 +316,14 @@ def test_laundryMachine_returns_remaining_time():
     )
 
 
-def test_laundryMachine_stop_and_resume_returns_remaining_time():
-    machine1 = LaundryMachine(id="TROMM1")
+def test_machine_stop_and_resume_returns_remaining_time():
+    machine1 = machine(id="TROMM1")
     laundryBag = LaundryBag(
         [new_clothes(label=LaundryLabel.WASH, volume=3) for _ in range(5)],
         createdTime=today,
     )
 
-    machine1.putLaundryBag(laundryBag)
+    machine1.put(laundryBag)
 
     machine1.start(exec_time=datetime(2023, 7, 14, 17, 0))
     machine1.stop(exec_time=datetime(2023, 7, 14, 17, 5))
@@ -337,23 +337,23 @@ def test_laundryMachine_stop_and_resume_returns_remaining_time():
     ) == timedelta(minutes=90 - 10)
 
 
-def test_running_laundryMachine_stops_if_requiredTime_passed():
-    # TODO : continuous monitoring on laundrymachine state is required, maybe event listening...?
+def test_running_machine_stops_if_requiredTime_passed():
+    # TODO : continuous monitoring on machine state is required, maybe event listening...?
     pass
 
 
-def test_fail_to_allocate_laundrybag_into_laundryMachine_if_broken_or_running():
-    machine1 = LaundryMachine(id="TROMM1")
+def test_fail_to_allocate_laundrybag_into_machine_if_broken_or_running():
+    machine1 = machine(id="TROMM1")
     laundryBag = LaundryBag([new_clothes() for _ in range(5)], createdTime=today)
 
     machine1.status = MachineState.BROKEN
 
     with pytest.raises(ValueError):
-        machine1.putLaundryBag(laundryBag)
+        machine1.put(laundryBag)
 
 
-def test_laundryMachine_is_empty_when_laundry_is_done() :
-    ## ClothesState == 'DONE' and laundryMachine.contained is None and laundryMachine.MachineSta te == DONE
+def test_machine_is_empty_when_laundry_is_done() :
+    ## ClothesState == 'DONE' and machine.contained is None and machine.MachineSta te == DONE
     pass
 
 

@@ -1,7 +1,7 @@
 from concurrent.futures import wait
 from select import select
 from typing import List, Dict
-from model import Clothes, LaundryBag, LaundryLabel, BagState, LAUNDRYBAG_MAXVOLUME, LAUNDRYMACHINE_MAXVOLUME, Order, OrderState
+from model import Clothes, LaundryBag, LaundryLabel, BagState, LAUNDRYBAG_MAXVOLUME, machine_MAXVOLUME, Order, OrderState
 from repository import UserRepository, OrderRepository, LaundryBagRepository, MachineRepository
 from datetime import datetime
 
@@ -14,7 +14,7 @@ class LaundryService :
                 order_repository,
                 clothes_repository,
                 laundrybag_repository,
-                laundrymachine_repository,
+                machine_repository,
                 ): 
 
     def run_process(self, orderid : str) :
@@ -24,7 +24,7 @@ class LaundryService :
         laundrylabeldict = distribute_order([order])
         laundryBagList = put_in_laundrybag(laundrylabeldict)
 
-        machines = laundrymachine_repository.all()
+        machines = machine_repository.all()
 
         # get available machine
         for laundrybag in laundryBagList :
