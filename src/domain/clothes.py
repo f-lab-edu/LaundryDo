@@ -18,15 +18,16 @@ class LaundryLabel(Enum):
 class Clothes:
     def __init__(
         self,
-        id: str,
+        clothesid: str,
         label: LaundryLabel,
         volume: float,
         orderid: str = None,
         status: ClothesState = ClothesState.PREPARING,
         received_at: datetime = None,
     ):
-        self.id = id
+        self.clothesid = clothesid
         self.label = label
+
         self.volume = volume
         self.orderid = orderid
         self.status = status

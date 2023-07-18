@@ -18,18 +18,18 @@ class OrderState(Enum) :
 class Order(list):
     def __init__(
         self,
-        id: str,
+        orderid: str,
         clothes_list: List[Clothes],
         received_at: datetime = None,  ## TODO : received time by each status?
         status: OrderState = OrderState.SENDING,
     ):
         super().__init__(clothes_list)
-        self.id = id
+        self.orderid = orderid
         self.received_at = received_at
         self.status = status
 
         for clothes in self:
-            clothes.orderid = self.id
+            clothes.orderid = self.orderid
             # clothes.received_at = self.received_at
 
         def pop(self, index):
@@ -37,7 +37,7 @@ class Order(list):
             return super().pop(index)
 
         def remove(self, item):
-            item.id = None
+            item.orderid = None
             super().remove(item)
 
         def __setitem__(self, index, item):

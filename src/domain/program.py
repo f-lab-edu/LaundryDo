@@ -65,7 +65,7 @@ def reclaim_clothes_into_order(laundryBag_list: List[LaundryBag]) -> List[Order]
     reclaimed_list = []
     for orderid, reclaimed in reclaimed_dict.items():
         reclaimed_list.append(
-            Order(id=orderid, clothes_list=reclaimed, status=OrderState.RECLAIMING)
+            Order(orderid=orderid, clothes_list=reclaimed, status=OrderState.RECLAIMING)
         )
 
     return reclaimed_list

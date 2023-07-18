@@ -3,6 +3,7 @@ from src.domain import (User,
                         Clothes, 
                         LaundryBag, 
                         Machine, 
+                        MachineState,
                         LaundryLabel,
                         ClothesState, 
                         OrderState)
@@ -13,7 +14,7 @@ from .setup import metadata
 
 
 users = Table(
-    'users', 
+    'user', 
     metadata,
     Column('id', Integer, primary_key = True, autoincrement = True),
     Column('address', String(255)), # TODO : validate?
@@ -22,50 +23,61 @@ users = Table(
 
 
 orders = Table(
-    'orders',
+    'order',
     metadata,
     Column('id', Integer, primary_key = True, autoincrement = True),
-    Column('clothes_list', ForeignKey('clothes.id')),
+    # Column('clothes_list', ForeignKey('clothes.id')),
+    Column('userid', String(255), ForeignKey('user.id')),
     Column('received_at', Date, nullable = True),
-    Column('status', Enum),
-    Column('orderid', String(255))
+    Column('status', Enum(OrderState)),
+    Column('orderid', String(255)),
 )
 
 clothes = Table(
     'clothes',
     metadata,
     Column('id', Integer, primary_key = True, autoincrement = True), 
-    Column('label', Enum),
-    Column('orderid', String(255), ForeignKey('orders.orderid')),
-    Column('status', Enum),
-    Column('received_at', Enum)
+    Column('clothesid', String(255)),
+    Column('label', Enum(LaundryLabel)),
+    Column('orderid', String(255), ForeignKey('order.orderid')),
+    Column('status', Enum(ClothesState)),
+    Column('received_at', Date)
 )
 
 laundrybags = Table(
-    'laundrybags',
+    'laundrybag',
     metadata,
     Column('id', Integer, primary_key = True, autoincrement = True), 
-    Column('clothes_list', ForeignKey('clothes.id')),
+    Column('clothesid', ForeignKey('clothes.id')),
     Column('created_at', Date),
-    Column('label', Enum),
+    Column('label', Enum(LaundryLabel)),
 )
 
 machines = Table(
-    'machines',
+    'machine',
     metadata,
     Column('id', Integer, primary_key = True, autoincrement = True), 
     Column('machineid', String(255)),
-    Column('contained', ForeignKey('laundrybags.id')),
+    Column('contained', ForeignKey('laundrybag.id')),
     Column('start_time', Date, nullable = True),
     Column('runtime', Interval),
-    Column('status', Enum)
+    Column('status', Enum(MachineState))
 )
 
 
 
 def start_mappers() :
-    user_mapper = mapper(User, users)
-    order_mapper = mapper(Order, orders)
+    order_mapper = mapper(Order, 
+                          orders,
+                          properties = {'clothes' : relationship(Clothes, backref = 'order', cascade="all, delete-orphan" )}
+                         )
+    user_mapper = mapper(User, 
+                         users,
+                         properties={'orders' : relationship(Order, backref = 'user')}
+                        )
     clothes_mapper = mapper(Clothes, clothes)
-    laundrybag_mapper = mapper(LaundryBag, laundrybags)
+    laundrybag_mapper = mapper(LaundryBag, 
+                               laundrybags,
+                               properties= {'clothes' : relationship(Clothes, backref = 'laundrybag')}
+                                )
     machine_mapper = mapper(Machine, machines)

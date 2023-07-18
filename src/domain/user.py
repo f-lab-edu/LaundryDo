@@ -4,10 +4,23 @@ from .order import Order, OrderState
 from typing import List
 
 class User :
-    def __init__(self, id: str, address: str, orderlist : List[Order] = []) :
-        self.id = id
+    def __init__(self, userid: str, address: str, orderlist : List[Order] = []) :
+        self.userid = userid
         self.address = address
         self.orderlist = orderlist
+
+
+    def __repr__(self) :
+        return f"{self.__class__.__name__} id= {self.userid}, address= {self.address}"
+
+    
+    def __hash__(self) :
+        return hash(self.userid)
+
+    def __eq__(self, other) :
+        if self.__class__ == other.__class__ :
+            return self.userid == other.userid
+
 
     def request_order(self, order: Order):
         order.status = OrderState.PREPARING
