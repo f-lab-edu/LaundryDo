@@ -1,3 +1,8 @@
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, clear_mappers
+
+from src.domain.infrastructure.db.sqlalchemy.orm import metadata, start_mappers
+
 from uuid import uuid4
 import random
 
@@ -55,23 +60,20 @@ def order_factory(clothes_factory) :
 @pytest.fixture
 def laundrybag_factory(clothes_factory) :
     def _laundrybag_factory(clothes_list: List[Clothes] = [clothes_factory()], 
-                            createdTime: datetime = time_now):
-        return LaundryBag(clothes_list, createdTime)
+                            created_at: datetime = time_now):
+        return LaundryBag(clothes_list, created_at)
 
     yield _laundrybag_factory
 
 
+@pytest.fixture
+def in_memory_db() :
+    engine = create_engine('sqlite:///:memory:')
+    metadata.create_all(engine)
+    return engine
 
 @pytest.fixture
-def new_user():
-    user1 = User(id="eunsung", address="서울시 송파구", orderlist=[])
-    return user1
-
-
-@pytest.fixture
-def new_order():
-    order = Order(
-        "order1", received_at=time_now, clothes_list=[new_clothes() for _ in range(10)]
-    )
-
-    return order
+def session(in_memory_db) :
+    start_mappers()
+    yield sessionmaker(bind = in_memory_db)()
+    clear_mappers
