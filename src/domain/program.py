@@ -28,7 +28,7 @@ def put_in_laundrybag(laundryBagDict : Dict[LaundryLabel, List[Clothes]]) :
         clothes_list.sort()
 
         # split clothes_list by max volume
-        laundryBag = LaundryBag(clothes_list=[], createdTime=datetime.now())
+        laundryBag = LaundryBag(clothes_list=[], created_at=datetime.now())
 
         while clothes_list:
             clothes = clothes_list.pop()
@@ -37,7 +37,7 @@ def put_in_laundrybag(laundryBagDict : Dict[LaundryLabel, List[Clothes]]) :
             else:
                 laundryBagList.append(laundryBag)
                 laundryBag = LaundryBag(
-                    clothes_list=[clothes], createdTime=datetime.now()
+                    clothes_list=[clothes], created_at=datetime.now()
                 )
 
     return laundryBagList

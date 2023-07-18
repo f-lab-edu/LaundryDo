@@ -1,70 +1,63 @@
 from abc import ABC, abstractmethod
 
-from model import Clothes
+from src.domain import User, Order, Clothes, LaundryBag, Machine
 from typing import List
 
 class UserRepository(ABC) :
-    def __init__(self) :
-    
     @abstractmethod
-    def get(self, user) :
+    def get(self, userid) -> User:
         raise NotImplementedError
     @abstractmethod
-    def all(self) :
+    def list(self) :
         raise NotImplementedError
     @abstractmethod
-    def add(self, user) :
+    def add(self, user: User) :
         raise NotImplementedError
 
 
-class OrderRepository(ABC) :
-    def __init__(self) :
-        
+class OrderRepository(ABC) :        
     @abstractmethod
-    def get(self, order) :
+    def get(self, orderid) -> Order:
         raise NotImplementedError
     @abstractmethod
-    def all(self) :
+    def list(self) :
         raise NotImplementedError
     @abstractmethod
-    def add(self, order) :
+    def add(self, order: Order) :
         raise NotImplementedError
+
 
 class ClothesRepository(ABC) :
-    def __init__(self) :
-        
     @abstractmethod
-    def get(self, order) :
+    def get(self, clothesid) -> Clothes:
         raise NotImplementedError
     @abstractmethod
-    def all(self) :
+    def list(self) :
         raise NotImplementedError
     @abstractmethod
-    def add(self, order) :
+    def add(self, clothes: Clothes) :
         raise NotImplementedError
+
 
 class LaundryBagRepository(ABC) : 
-    def __init__(self) :
-        
     @abstractmethod
-    def get(self, order) :
+    def get(self, laundrybagid) -> LaundryBag :
         raise NotImplementedError
     @abstractmethod
-    def all(self) :
+    def list(self) :
         raise NotImplementedError
     @abstractmethod
-    def add(self, order) :
+    def add(self, laundryBag: LaundryBag) :
         raise NotImplementedError
 
+
 class MachineRepository(ABC) :
-    def __init__(self) :
-    
     @abstractmethod
-    def get(self, machine) :
+    def get(self, machineid) -> Machine :
         raise NotImplementedError
     @abstractmethod
-    def all(self) :
+    def list(self) :
         raise NotImplementedError
     @abstractmethod
-    def add(self, machine) :
+    def add(self, machine : Machine) :
         raise NotImplementedError

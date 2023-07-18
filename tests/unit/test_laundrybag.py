@@ -21,9 +21,9 @@ def test_laundrybags_with_same_laundryLabel_combine_into_same_laundrybag(order_f
 
 
 def test_laundrybags_sorted_by_time(laundrybag_factory):
-    longtimeago_laundryBag = laundrybag_factory(createdTime= longtimeago)
-    yesterday_laundryBag = laundrybag_factory(createdTime= yesterday)
-    today_laundryBag = laundrybag_factory(createdTime= today)
+    longtimeago_laundryBag = laundrybag_factory(created_at= longtimeago)
+    yesterday_laundryBag = laundrybag_factory(created_at= yesterday)
+    today_laundryBag = laundrybag_factory(created_at= today)
 
     assert sorted([today_laundryBag, yesterday_laundryBag, longtimeago_laundryBag]) \
                 == [longtimeago_laundryBag, yesterday_laundryBag, today_laundryBag,]

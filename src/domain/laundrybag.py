@@ -12,11 +12,10 @@ class LaundryBagState(Enum) :
     DONE = '세탁완료'
 
 class LaundryBag(list):
-    def __init__(self, clothes_list: List[Clothes], createdTime: datetime):
-        super().__init__(
-            clothes_list
-        )  ## TODO : if clothes does not have orderid, it cannot be in laundrybag
-        self.createdTime = createdTime
+    def __init__(self, clothes_list: List[Clothes], created_at: datetime):
+        super().__init__(clothes_list)  
+        ## TODO : if clothes does not have orderid, it cannot be in laundrybag
+        self.created_at = created_at
         self.status = LaundryBagState.READY
 
         # 옷상태를 '세탁분류' 상태로 전환
@@ -40,7 +39,7 @@ class LaundryBag(list):
 
     def __lt__(self, other):
         if other.__class__ is self.__class__:
-            return self.createdTime < other.createdTime
+            return self.created_at < other.created_at
         else:
             raise TypeError(
                 f"{type(other)} cannot be compared with {self.__class__} class."

@@ -70,7 +70,7 @@ def test_clothes_finished_laundry_reclaim_by_orderid(clothes_factory):
         for clothes in clothes_list:  # assign orderid to clothes
             clothes.orderid = orderid
 
-        laundryBag = LaundryBag(clothes_list, createdTime=None)
+        laundryBag = LaundryBag(clothes_list, created_at=None)
 
         ## TODO : better way to simulate to update laundry process DONE
         for clothes in laundryBag:

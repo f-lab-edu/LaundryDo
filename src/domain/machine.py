@@ -22,7 +22,7 @@ class Machine:
         self.id = id
         self.contained = None  # LaundryBag
 
-        self.startTime = None
+        self.start_time = None
         self.lastupdateTime = None
         self.runtime = timedelta(minutes=0)
 
@@ -82,8 +82,8 @@ class Machine:
         if self.contained is None:
             raise ValueError("No LaundryBag in the Machine")
 
-        self.startTime = exec_time
-        self.lastupdateTime = self.startTime
+        self.start_time = exec_time
+        self.lastupdateTime = self.start_time
         self.status = MachineState.RUNNING
 
     def resume(self, exec_time: datetime):
