@@ -79,7 +79,7 @@ def test_clothes_finished_laundry_reclaim_by_orderid(clothes_factory):
 
     reclaimed_order_list = reclaim_clothes_into_order(freshly_done_laundrybags)
 
-    assert set([order.id for order in reclaimed_order_list]) == set(orderid_list) and \
+    assert set([order.orderid for order in reclaimed_order_list]) == set(orderid_list) and \
                 len(reclaimed_order_list) == len(orderid_list)
 
 
