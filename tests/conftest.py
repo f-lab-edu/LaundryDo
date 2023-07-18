@@ -18,7 +18,7 @@ time_now = datetime(2023, 7, 12, 20, 48, 13)
 def clothes_factory() :
     def _clothes_factory(label=None, volume=None, status=None, received_at = None):
 
-        id = str(uuid4())[:4]
+        clothesid = str(uuid4())[:4]
         if label is None:
             label = random.choice([LaundryLabel.WASH, LaundryLabel.DRY, LaundryLabel.HAND])
 
@@ -34,26 +34,26 @@ def clothes_factory() :
                     ClothesState.DONE,
                 ]
             )
-        return Clothes(id=id, label=label, volume=volume, status=status, received_at=received_at)
+        return Clothes(clothesid=clothesid, label=label, volume=volume, status=status, received_at=received_at)
     yield _clothes_factory
 
 
 @pytest.fixture
 def user_factory() :
-    def _user_factory(id: str = 'test-username', address: str = 'test-adress', orderlist : List = []) :
-        return User(id = id, address= address, orderlist = orderlist)
+    def _user_factory(userid: str = 'test-username', address: str = 'test-adress', orderlist : List = []) :
+        return User(userid = userid, address= address, orderlist = orderlist)
 
     yield _user_factory
 
 
 @pytest.fixture
 def order_factory(clothes_factory) :
-    def _order_factory(id: str = 'test-order', 
+    def _order_factory(orderid: str = 'test-order', 
                        clothes_list: List = [clothes_factory(received_at = time_now)], 
                        received_at: datetime = None, 
                        status : OrderState = OrderState.SENDING
                     ) :
-        return Order(id, clothes_list, received_at, status)
+        return Order(orderid, clothes_list, received_at, status)
 
     yield _order_factory
 
@@ -66,13 +66,13 @@ def laundrybag_factory(clothes_factory) :
     yield _laundrybag_factory
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def in_memory_db() :
     engine = create_engine('sqlite:///:memory:')
     metadata.create_all(engine)
     return engine
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def session(in_memory_db) :
     start_mappers()
     yield sessionmaker(bind = in_memory_db)()
