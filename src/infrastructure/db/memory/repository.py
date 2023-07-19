@@ -1,4 +1,4 @@
-from domain.repository import (
+from .domain import (
     UserRepository,
     OrderRepository,
     ClothesRepository,

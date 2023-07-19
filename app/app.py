@@ -3,9 +3,11 @@ from src.domain import (
     Order,
     Clothes,
     LaundryBag,
-    Machine
+    Machine,
+    program
 )
 
+from src.application.services.laundry_service import LaundryService
 
 from fastapi import FastAPI
 
@@ -21,6 +23,14 @@ def root():
 
 @app.post("/orders")
 def request_order(new_order):
+    service = LaundryService( 
+                                order_repository,
+                                clothes_repository,
+                                laundrybag_repository,
+                                machine_repository,
+                    )
+
+
     return {"message": "request order"}
 
 

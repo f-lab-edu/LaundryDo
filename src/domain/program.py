@@ -9,8 +9,16 @@ from typing import List, Dict
 from datetime import datetime
 
 
-def request_order(order_repository : OrderRepository) :
-    pass
+def request_order(order_repository : OrderRepository, order : Order) :
+    OrderRepository.add(Order)
+
+def cancel_order(order_repository : OrderRepository, orderid : str) :
+
+    [order] = OrderRepository.get(orderid)
+    if order.status in [OrderState.SENDING, OrderState.PREPARING] :
+        # cancel the order
+        raise NotImplementedError
+    
 
 
 def distribute_order(order_repository : OrderRepository, laundrybag_repository : LaundryBagRepository) -> List[LaundryBag]:

@@ -1,11 +1,11 @@
 from concurrent.futures import wait
 from select import select
 from typing import List, Dict
-from model import Clothes, LaundryBag, LaundryLabel, LaundryBagState, LAUNDRYBAG_MAXVOLUME, machine_MAXVOLUME, Order, OrderState
-from repository import UserRepository, OrderRepository, LaundryBagRepository, MachineRepository
+from .domain import Clothes, LaundryBag, LaundryLabel, LaundryBagState, LAUNDRYBAG_MAXVOLUME, machine_MAXVOLUME, Order, OrderState
+from .repository import UserRepository, OrderRepository, LaundryBagRepository, MachineRepository
 from datetime import datetime
 
-from test_model import check_clothes_in_order_is_fully_reclaimed, distribute_order, reclaim_clothes_into_order
+from .domain.program import distribute_order, check_clothes_in_order_is_fully_reclaimed, reclaim_clothes_into_order
 
 
 class LaundryService :
@@ -13,29 +13,34 @@ class LaundryService :
     def __init__(self, 
                 order_repository,
                 clothes_repository,
-                Laundrybag_repository,
-                Machine_repository,
+                laundrybag_repository,
+                machine_repository,
                 ): 
+
+        self.order_repository = order_repository
+        self.clothes_repository = clothes_repository
+        self.laundrybag_repository = laundrybag_repository
+        self.machine_repository = machine_repository
 
     def run_process(self, orderid : str) :
 
-        order = order_repository.get(orderid)
+        order = self.order_repository.get(orderid)
 
         laundrylabeldict = distribute_order([order])
         laundryBagList = put_in_laundrybag(laundrylabeldict)
 
-        machines = Machine_repository.all()
+        machines = self.machine_repository.all()
 
         # get available machine
         for laundrybag in laundryBagList :
             allocate(machines, laundrybag)
 
         # load laundrybag repo again
-        laundrybags_to_be_reclaimed = laundrybag_repository.all()
+        laundrybags_to_be_reclaimed = self.laundrybag_repository.all()
         reclaimed_list = reclaim_clothes_into_order(laundrybags_to_be_reclaimed)
 
         # load order repo again to check order has benn fully reclaimed
-        orders = order_repository.all()
+        orders = self.order_repository.all()
 
         for order in orders :
             if check_clothes_in_order_is_fully_reclaimed(order) :
