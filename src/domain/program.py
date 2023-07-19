@@ -3,20 +3,30 @@ from .clothes import Clothes, ClothesState, LaundryLabel
 from .order import Order, OrderState
 from .laundrybag import LaundryBag
 
+from .repository import OrderRepository, LaundryBagRepository
+
 from typing import List, Dict
 from datetime import datetime
 
-def distribute_order(order_list: List[Order]) -> List[LaundryBag]:
+
+def request_order(order_repository : OrderRepository) :
+    pass
+
+
+def distribute_order(order_repository : OrderRepository, laundrybag_repository : LaundryBagRepository) -> List[LaundryBag]:
     laundrylabeldict = {}
 
+    order_list = order_repository.list()
+
     for order in order_list:
-        for clothes in order:
+        for clothes in order.clothes_list:
             if clothes.label in laundrylabeldict:
                 laundrylabeldict[clothes.label].append(clothes)
             else:
                 laundrylabeldict[clothes.label] = [clothes]
 
     return laundrylabeldict
+
 
 
 
@@ -32,7 +42,7 @@ def put_in_laundrybag(laundryBagDict : Dict[LaundryLabel, List[Clothes]]) :
 
         while clothes_list:
             clothes = clothes_list.pop()
-            if clothes.volume + laundryBag.volumeContained <= LAUNDRYBAG_MAXVOLUME:
+            if clothes.volume + laundryBag.volume <= LAUNDRYBAG_MAXVOLUME:
                 laundryBag.append(clothes)
             else:
                 laundryBagList.append(laundryBag)

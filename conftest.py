@@ -14,6 +14,7 @@ import config
 import time
 from datetime import datetime
 
+import requests
 from pathlib import Path
 from requests.exceptions import ConnectionError
 
@@ -92,7 +93,7 @@ def wait_for_webapp_to_come_up() :
     while time.time() < deadline :
         try :
             return requests.get(url)
-        except ConenctionError :
+        except ConnectionError :
             time.sleep(0.5)
     pytest.fail('API never came up')
 

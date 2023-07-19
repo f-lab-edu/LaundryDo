@@ -58,7 +58,7 @@ machines = Table(
     metadata,
     Column('id', Integer, primary_key = True, autoincrement = True), 
     Column('machineid', String(255)),
-    Column('contained', ForeignKey('laundrybag.id')),
+    # Column('contained', ForeignKey('laundrybag.id')),
     Column('start_time', Date, nullable = True),
     Column('runtime', Interval),
     Column('status', Enum(MachineState))
@@ -69,15 +69,18 @@ machines = Table(
 def start_mappers() :
     order_mapper = mapper(Order, 
                           orders,
-                          properties = {'clothes' : relationship(Clothes, backref = 'order', cascade="all, delete-orphan" )}
+                          properties = {'clothes_list' : relationship(Clothes, backref = 'order', cascade="save-update" )}
                          )
     user_mapper = mapper(User, 
                          users,
-                         properties={'orders' : relationship(Order, backref = 'user')}
+                         properties={'orders' : relationship(Order, backref = 'user', cascade="all, delete-orphan")}
                         )
     clothes_mapper = mapper(Clothes, clothes)
     laundrybag_mapper = mapper(LaundryBag, 
                                laundrybags,
                                properties= {'clothes' : relationship(Clothes, backref = 'laundrybag')}
                                 )
-    machine_mapper = mapper(Machine, machines)
+    machine_mapper = mapper(Machine, 
+                            machines,
+                            properties = {'contained' : relationship(LaundryBag, backref = 'machine', uselist = False)}
+                            )

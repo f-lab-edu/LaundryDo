@@ -1,6 +1,17 @@
+from src.domain import (
+    User,
+    Order,
+    Clothes,
+    LaundryBag,
+    Machine
+)
+
+
 from fastapi import FastAPI
 
 app = FastAPI()
+
+
 
 
 @app.get("/")
@@ -9,7 +20,7 @@ def root():
 
 
 @app.post("/orders")
-def request_order():
+def request_order(new_order):
     return {"message": "request order"}
 
 

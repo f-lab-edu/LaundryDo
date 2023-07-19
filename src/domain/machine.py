@@ -32,10 +32,10 @@ class Machine:
         ## TODO : max volume may be different.
 
     @property
-    def volumeContained(self):
+    def volume(self):
         if self.contained is None:
             return None
-        return self.contained.volumeContained
+        return self.contained.volume
 
     @property
     def label(self):
@@ -48,7 +48,7 @@ class Machine:
         if self.label is None:
             return None
         return time_required_for_volume(
-            LaundryTimeTable[self.label], self.volumeContained
+            LaundryTimeTable[self.label], self.volume
         )
 
     def get_runtime(self, exec_time: datetime):
@@ -62,7 +62,7 @@ class Machine:
         return timedelta(minutes=self.requiredTime) - self.get_runtime(exec_time)
 
     def can_contain(self, laundryBag: LaundryBag):
-        return laundryBag.volumeContained <= MACHINE_MAXVOLUME
+        return laundryBag.volume <= MACHINE_MAXVOLUME
 
     def put(self, laundrybag: LaundryBag):
         ## TODO : if machine is broken for some time, then move laundrybags to other machine

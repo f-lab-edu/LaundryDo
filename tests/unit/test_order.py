@@ -15,7 +15,7 @@ today = datetime.today()
 def test_clothes_in_an_order_has_all_same_order_id(order_factory, clothes_factory):
 
     new_order = order_factory(clothes_list = [clothes_factory() for _ in range(10)])
-    assert len(set(order.orderid for order in new_order)) == 1
+    assert len(set(order.orderid for order in new_order.clothes_list)) == 1
 
 
 def test_order_sort_by_laundrybags(order_factory, clothes_factory):

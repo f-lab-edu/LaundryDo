@@ -23,11 +23,11 @@ class LaundryBag(list):
             clothes.status = ClothesState.DISTRIBUTED
 
     def can_contain(self, volume : float) :
-        return self.volumeContained + volume <= LAUNDRYBAG_MAXVOLUME
+        return self.volume + volume <= LAUNDRYBAG_MAXVOLUME
 
 
     @property
-    def volumeContained(self):
+    def volume(self):
         return sum(clothes.volume for clothes in self)
 
     def update_clothes_status(self, status: ClothesState):

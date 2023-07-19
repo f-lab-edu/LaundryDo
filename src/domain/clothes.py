@@ -38,3 +38,6 @@ class Clothes:
             return self.received_at < other.received_at
         else:
             raise TypeError(f"{type(other)} cannot be compared with Clothes class.")
+
+    def __repr__(self) :
+        return f'[id = {self.id}, orderid = {self.orderid}, status = {self.status}]'

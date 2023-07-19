@@ -1,3 +1,5 @@
+from src.domain import Order
+
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -8,9 +10,9 @@ def root():
     return {"message": "welcome to LaundryDo"}
 
 
-@app.post("/orders")
-def request_order():
-    return {"message": "request order"}
+@app.post("/orders/")
+def request_order(new_order):
+    return new_order
 
 
 # @app.delete('/orders/{orderid}')
@@ -18,9 +20,9 @@ def request_order():
 #     pass
 
 
-@app.get("/orders")
-def check_order_history():
-    pass
+# @app.get("/orders")
+# def check_order_history(order):
+#     return order
 
 
 @app.get("/orders/{orderid}")
