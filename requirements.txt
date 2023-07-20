@@ -1,3 +1,5 @@
 fastapi[all]
 uvicorn
 pydantic
+databases[aiosqlite]
+ipython

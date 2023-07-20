@@ -1,3 +1,5 @@
+from pydantic import BaseModel
+
 from enum import Enum
 from datetime import datetime
 
@@ -10,12 +12,12 @@ class ClothesState(Enum):
     DONE = "세탁완료"
     RECLAIMED = "세탁후분류"
 
-class LaundryLabel(Enum):
+class LaundryLabel(str, Enum):
     WASH = "물세탁"
     DRY = "드라이클리닝"
     HAND = "손세탁"
 
-class Clothes:
+class Clothes(BaseModel):
     def __init__(
         self,
         clothesid: str,
@@ -32,6 +34,20 @@ class Clothes:
         self.orderid = orderid
         self.status = status
         self.received_at = received_at
+
+        model_config = {
+            "json_schema_extra" : {
+                "examples" : [
+                    {
+                        "clothesid" : "흰 티셔츠",
+                        "description" : "세탁 대상 옷 예시",
+                        "label" : LaundryLabel.DRY,
+                        "volume" : 3,
+                    }
+                ]
+            }
+        }
+
 
     def __lt__(self, other):
         if other.__class__ is self.__class__:

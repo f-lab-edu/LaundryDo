@@ -1,35 +1,38 @@
 from concurrent.futures import wait
 from select import select
 from typing import List, Dict
-from .domain import Clothes, LaundryBag, LaundryLabel, LaundryBagState, LAUNDRYBAG_MAXVOLUME, machine_MAXVOLUME, Order, OrderState
-from .repository import UserRepository, OrderRepository, LaundryBagRepository, MachineRepository
+from src.domain import Clothes, LaundryBag, LaundryLabel, LaundryBagState, Order, OrderState
+from src.domain.spec import LAUNDRYBAG_MAXVOLUME, MACHINE_MAXVOLUME
+
+from src.domain.repository import UserRepository, OrderRepository, LaundryBagRepository, MachineRepository
 from datetime import datetime
 
-from .domain.program import distribute_order, check_clothes_in_order_is_fully_reclaimed, reclaim_clothes_into_order
+from src.domain.program import distribute_order #, check_clothes_in_order_is_fully_reclaimed, reclaim_clothes_into_order
 
 
 class LaundryService :
 
     def __init__(self, 
+                session,
                 order_repository,
                 clothes_repository,
                 laundrybag_repository,
                 machine_repository,
                 ): 
 
-        self.order_repository = order_repository
-        self.clothes_repository = clothes_repository
-        self.laundrybag_repository = laundrybag_repository
-        self.machine_repository = machine_repository
+        self.order_repository = order_repository(session)
+        self.clothes_repository = clothes_repository(session)
+        self.laundrybag_repository = laundrybag_repository(session)
+        self.machine_repository = machine_repository(session)
 
-    def run_process(self, orderid : str) :
+    def run_process(self, order : Order) :
 
-        order = self.order_repository.get(orderid)
+        self.order_repository.add(order)
 
         laundrylabeldict = distribute_order([order])
         laundryBagList = put_in_laundrybag(laundrylabeldict)
 
-        machines = self.machine_repository.all()
+        machines = self.machine_repository.list()
 
         # get available machine
         for laundrybag in laundryBagList :
@@ -40,7 +43,7 @@ class LaundryService :
         reclaimed_list = reclaim_clothes_into_order(laundrybags_to_be_reclaimed)
 
         # load order repo again to check order has benn fully reclaimed
-        orders = self.order_repository.all()
+        orders = self.order_repository.list()
 
         for order in orders :
             if check_clothes_in_order_is_fully_reclaimed(order) :

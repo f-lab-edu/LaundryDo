@@ -12,7 +12,9 @@ metadata = MetaData()
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-engine = create_engine('sqlite:///:memory')
+
+DB_URL = 'sqlite:///./test.db'
+engine = create_engine(DB_URL, connect_args = {'check_same_thread' : False})
 session = sessionmaker(bind = engine)
 
 

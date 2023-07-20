@@ -69,11 +69,11 @@ machines = Table(
 def start_mappers() :
     order_mapper = mapper(Order, 
                           orders,
-                          properties = {'clothes_list' : relationship(Clothes, backref = 'order', cascade="save-update" )}
+                          properties = {'clothes_list' : relationship(Clothes, backref = 'order' )}
                          )
     user_mapper = mapper(User, 
                          users,
-                         properties={'orders' : relationship(Order, backref = 'user', cascade="all, delete-orphan")}
+                         properties={'orders' : relationship(Order, backref = 'user')}
                         )
     clothes_mapper = mapper(Clothes, clothes)
     laundrybag_mapper = mapper(LaundryBag, 

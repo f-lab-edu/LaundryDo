@@ -16,13 +16,13 @@ class OrderState(Enum) :
     SHIPPING = '배송중'
     DONE = '완료'
 
-class Order:
+class Order(BaseModel):
     def __init__(
         self,
         orderid: str,
-        clothes_list: List[Clothes],
+        clothes_list: List[Clothes] = [],
         received_at: datetime | None = None,  ## TODO : received time by each status?
-        status: OrderState = OrderState.SENDING,
+        status: OrderState = OrderState.SENDING, ## TODO : private property
     ):
         # super().__init__(clothes_list)
         self.clothes_list = clothes_list
