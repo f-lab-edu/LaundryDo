@@ -12,6 +12,9 @@
 ![ERD](<img/LaundryDo ERD.png>)
 
 ## Getting Started
+```
+docker-compose -f docker-compose.yml up
+```
 
 ### Setting Environment
 #### Conda
