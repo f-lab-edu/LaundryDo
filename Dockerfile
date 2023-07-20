@@ -5,7 +5,7 @@ COPY requirements.txt requirements.txt
 ENV PYTHONDONTWRITEBYTECODE 1 # Not leaving any pycache
 ENV PYTHONUNBUFFERED 1
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 EXPOSE 80
 
