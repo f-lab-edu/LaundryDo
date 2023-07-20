@@ -3,6 +3,8 @@ from sqlalchemy.orm import sessionmaker, clear_mappers
 
 from src.domain.infrastructure.db.sqlalchemy.orm import metadata, start_mappers
 
+import requests
+from requests.exceptions import ConnectionError
 from uuid import uuid4
 import random
 
@@ -15,8 +17,6 @@ import time
 from datetime import datetime
 
 from pathlib import Path
-from requests.exceptions import ConnectionError
-
 
 import pytest
 
@@ -92,7 +92,7 @@ def wait_for_webapp_to_come_up() :
     while time.time() < deadline :
         try :
             return requests.get(url)
-        except ConenctionError :
+        except ConnectionError :
             time.sleep(0.5)
     pytest.fail('API never came up')
 
