@@ -8,8 +8,10 @@ from src.domain import (User,
                         ClothesState, 
                         OrderState)
 
-from sqlalchemy import Table, Column, ForeignKey, Integer, String, Date, Interval, Enum
+from sqlalchemy import Table, Column, ForeignKey, Integer, String, DateTime, Interval, Enum
 from sqlalchemy.orm import mapper, relationship
+
+from src.domain.laundrybag import LaundryBagState
 from .setup import metadata
 
 
@@ -28,7 +30,7 @@ orders = Table(
     Column('id', Integer, primary_key = True, autoincrement = True),
     # Column('clothes_list', ForeignKey('clothes.id')),
     Column('userid', String(255), ForeignKey('user.id')),
-    Column('received_at', Date, nullable = True),
+    Column('received_at', DateTime, nullable = True),
     Column('status', Enum(OrderState)),
     Column('orderid', String(255)),
 )
@@ -41,15 +43,18 @@ clothes = Table(
     Column('label', Enum(LaundryLabel)),
     Column('orderid', String(255), ForeignKey('order.orderid')),
     Column('status', Enum(ClothesState)),
-    Column('received_at', Date)
+    Column('received_at', DateTime)
 )
 
 laundrybags = Table(
     'laundrybag',
     metadata,
     Column('id', Integer, primary_key = True, autoincrement = True), 
+    Column('laundrybagid', String(255)),
+    Column('status', Enum(LaundryBagState)),
     Column('clothesid', ForeignKey('clothes.id')),
-    Column('created_at', Date),
+    Column('machineid', ForeignKey('machine.id'), nullable = True),
+    Column('created_at', DateTime),
     Column('label', Enum(LaundryLabel)),
 )
 
@@ -58,8 +63,8 @@ machines = Table(
     metadata,
     Column('id', Integer, primary_key = True, autoincrement = True), 
     Column('machineid', String(255)),
-    # Column('contained', ForeignKey('laundrybag.id')),
-    Column('start_time', Date, nullable = True),
+    # Column('laundrybagid', ForeignKey('laundrybag.id')),
+    Column('start_time', DateTime, nullable = True),
     Column('runtime', Interval),
     Column('status', Enum(MachineState))
 )
@@ -73,12 +78,12 @@ def start_mappers() :
                          )
     user_mapper = mapper(User, 
                          users,
-                         properties={'orders' : relationship(Order, backref = 'user')}
+                         properties={'orderlist' : relationship(Order, backref = 'user')}
                         )
     clothes_mapper = mapper(Clothes, clothes)
     laundrybag_mapper = mapper(LaundryBag, 
                                laundrybags,
-                               properties= {'clothes' : relationship(Clothes, backref = 'laundrybag')}
+                               properties= {'clothes_list' : relationship(Clothes, backref = 'laundrybag')}
                                 )
     machine_mapper = mapper(Machine, 
                             machines,

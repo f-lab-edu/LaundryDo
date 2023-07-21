@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
-from src.domain.infrastructure.db.sqlalchemy.orm import metadata, start_mappers
+from src.infrastructure.db.sqlalchemy.orm import start_mappers
+from src.infrastructure.db.sqlalchemy.setup import metadata
 
 import requests
 from requests.exceptions import ConnectionError
@@ -67,9 +68,10 @@ def order_factory(clothes_factory) :
 
 @pytest.fixture
 def laundrybag_factory(clothes_factory) :
-    def _laundrybag_factory(clothes_list: List[Clothes] = [clothes_factory()], 
+    def _laundrybag_factory(laundrybagid: str = 'test-laundrybag',
+                            clothes_list: List[Clothes] = [clothes_factory()], 
                             created_at: datetime = time_now):
-        return LaundryBag(clothes_list, created_at)
+        return LaundryBag(laundrybagid, clothes_list, created_at)
 
     yield _laundrybag_factory
 
@@ -84,7 +86,7 @@ def in_memory_db() :
 def session(in_memory_db) :
     start_mappers()
     yield sessionmaker(bind = in_memory_db)()
-    clear_mappers
+    clear_mappers()
 
 def wait_for_webapp_to_come_up() :
     deadline = time.time() + 10
