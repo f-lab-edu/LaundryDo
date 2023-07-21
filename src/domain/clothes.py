@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+from typing import Annotated, Optional
 from enum import Enum
 from datetime import datetime
 
@@ -17,7 +18,7 @@ class LaundryLabel(str, Enum):
     DRY = "드라이클리닝"
     HAND = "손세탁"
 
-class Clothes(BaseModel):
+class Clothes :#(BaseModel):
     def __init__(
         self,
         clothesid: str,
@@ -27,6 +28,14 @@ class Clothes(BaseModel):
         status: ClothesState = ClothesState.PREPARING,
         received_at: datetime = None,
     ):
+    #     super().__init__(
+    # clothesid : str
+    # label: LaundryLabel
+    # volume: float
+    # orderid: str = None
+    # status: ClothesState = ClothesState.PREPARING
+    # received_at: Optional[datetime] = None
+                        
         self.clothesid = clothesid
         self.label = label
 
@@ -35,18 +44,18 @@ class Clothes(BaseModel):
         self.status = status
         self.received_at = received_at
 
-        model_config = {
-            "json_schema_extra" : {
-                "examples" : [
-                    {
-                        "clothesid" : "흰 티셔츠",
-                        "description" : "세탁 대상 옷 예시",
-                        "label" : LaundryLabel.DRY,
-                        "volume" : 3,
-                    }
-                ]
-            }
-        }
+        # model_config = {
+        #     "json_schema_extra" : {
+        #         "examples" : [
+        #             {
+        #                 "clothesid" : "흰 티셔츠",
+        #                 "description" : "세탁 대상 옷 예시",
+        #                 "label" : LaundryLabel.DRY,
+        #                 "volume" : 3,
+        #             }
+        #         ]
+        #     }
+        # }
 
 
     def __lt__(self, other):
@@ -56,4 +65,4 @@ class Clothes(BaseModel):
             raise TypeError(f"{type(other)} cannot be compared with Clothes class.")
 
     def __repr__(self) :
-        return f'[id = {self.id}, orderid = {self.orderid}, status = {self.status}]'
+        return f'[id = {self.clothesid}, orderid = {self.orderid}, status = {self.status}]'

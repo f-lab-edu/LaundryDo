@@ -18,8 +18,8 @@ class MachineState(Enum):
 
 
 class Machine:
-    def __init__(self, id: str):
-        self.id = id
+    def __init__(self, machineid: str):
+        self.machineid = machineid
         self.contained = None  # LaundryBag
 
         self.start_time = None

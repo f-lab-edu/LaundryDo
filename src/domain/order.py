@@ -16,7 +16,7 @@ class OrderState(Enum) :
     SHIPPING = '배송중'
     DONE = '완료'
 
-class Order(BaseModel):
+class Order:
     def __init__(
         self,
         orderid: str,

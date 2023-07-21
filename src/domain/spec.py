@@ -1,6 +1,7 @@
 from .clothes import LaundryLabel
 
 LAUNDRYBAG_MAXVOLUME = MACHINE_MAXVOLUME = 25
+LAUNDRY_MINVOLUME = 23
 
 LaundryTimeTable = {LaundryLabel.WASH: 60, LaundryLabel.DRY: 80, LaundryLabel.HAND: 100}
 

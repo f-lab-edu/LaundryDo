@@ -1,7 +1,7 @@
-from .spec import LAUNDRYBAG_MAXVOLUME
+from .spec import LAUNDRYBAG_MAXVOLUME, LAUNDRY_MINVOLUME
 from .clothes import Clothes, ClothesState, LaundryLabel
 from .order import Order, OrderState
-from .laundrybag import LaundryBag
+from .laundrybag import LaundryBag, LaundryBagState
 
 from .repository import OrderRepository, LaundryBagRepository
 
@@ -21,7 +21,7 @@ def cancel_order(order_repository : OrderRepository, orderid : str) :
     
 
 
-def distribute_order(order_repository : OrderRepository, laundrybag_repository : LaundryBagRepository) -> List[LaundryBag]:
+def distribute_order(order_repository : OrderRepository) -> List[LaundryBag]:
     laundrylabeldict = {}
 
     order_list = order_repository.list()
@@ -38,25 +38,52 @@ def distribute_order(order_repository : OrderRepository, laundrybag_repository :
 
 
 
-def put_in_laundrybag(laundryBagDict : Dict[LaundryLabel, List[Clothes]]) :
+def put_in_laundrybag(laundrybag_repository : LaundryBagRepository, laundryBagDict : Dict[LaundryLabel, List[Clothes]]) :
 
-    laundryBagList = []
+    laundryBagList = laundrybag_repository.list()
+
+    # for laundrylabel, clothes_list in laundryBagDict.items():
+    #     # sort by date
+    #     clothes_list.sort()
+
+    #     # split clothes_list by max volume
+    #     laundryBag = LaundryBag(clothes_list=[], created_at=datetime.now())
+
+    #     while clothes_list:
+    #         clothes = clothes_list.pop()
+    #         if clothes.volume + laundryBag.volume <= LAUNDRYBAG_MAXVOLUME:
+    #             laundryBag.append(clothes)
+    #         else:
+    #             laundryBagList.append(laundryBag)
+    #             laundryBag = LaundryBag(
+    #                 clothes_list=[clothes], created_at=datetime.now()
+    #             )
+    ###### distribute in existing bags
     for laundrylabel, clothes_list in laundryBagDict.items():
         # sort by date
         clothes_list.sort()
 
-        # split clothes_list by max volume
-        laundryBag = LaundryBag(clothes_list=[], created_at=datetime.now())
+        # 대기 중인 Laundrybag은 항상 한 개 라고 가정.
+        target_bag = laundrybag_repository.get_waitingbag_by_label(label = laundrylabel)[0]
 
-        while clothes_list:
-            clothes = clothes_list.pop()
-            if clothes.volume + laundryBag.volume <= LAUNDRYBAG_MAXVOLUME:
-                laundryBag.append(clothes)
-            else:
-                laundryBagList.append(laundryBag)
-                laundryBag = LaundryBag(
-                    clothes_list=[clothes], created_at=datetime.now()
-                )
+        for clothes in clothes_list :
+            if target_bag.can_contain(clothes.volume) :
+                target_bag.append(clothes)
+            else :
+                if target_bag.volume >= LAUNDRY_MINVOLUME :
+                    target_bag.status = LaundryBagState.READY
+                    ### add to the repository
+                    laundrybag_repository.add(target_bag)
+
+                    target_bag = LaundryBag(laundrybagid = 'tobechanged', clothes_list=[clothes], created_at = datetime.now() ) ## TODO : naming of the laundrybagid
+                else :
+                    raise ValueError('if minvolume is not fulfilled, try other clothes?')
+    
+            
+
+
+
+
 
     return laundryBagList
 
@@ -73,7 +100,7 @@ def reclaim_clothes_into_order(laundryBag_list: List[LaundryBag]) -> List[Order]
     reclaimed_dict = {}
 
     for laundryBag in laundryBag_list:
-        for clothes in laundryBag:
+        for clothes in laundryBag.clothes_list:
             clothes.status = ClothesState.RECLAIMED
             if clothes.orderid not in reclaimed_dict:
                 reclaimed_dict[clothes.orderid] = [clothes]

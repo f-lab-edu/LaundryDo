@@ -11,7 +11,7 @@ class User :
 
 
     def __repr__(self) :
-        return f"{self.__class__.__name__} id= {self.userid}, address= {self.address}"
+        return f"[{self.__class__.__name__} id= {self.userid}, address= {self.address}]"
 
     
     def __hash__(self) :
