@@ -15,23 +15,25 @@ from src.domain import (
     OrderState,
     MachineState,
     ClothesState,
-    LaundryBagState
+    LaundryBagState,
+    LaundryLabel,
+    laundrybag
 )
 
 
 class MemoryUserRepository(UserRepository) :
 
-    def __init__(self) :
-        self.session = {}
+    def __init__(self, users : dict = {}) :
+        self._users = users
 
     def get(self, userid : str) -> User:
-        return self.session.get(userid)
+        return self._users.get(userid)
 
     def list(self) :
-        return self.session.values()
+        return self._users.values()
     
     def add(self, user: User) :
-        self.session[user.id] = user
+        self._users[user.userid] = user
 
 
 
@@ -39,17 +41,17 @@ class MemoryUserRepository(UserRepository) :
 
 class MemoryOrderRepository(OrderRepository) :        
     
-    def __init__(self) :
-        self.session = {}
+    def __init__(self, orders : list) :
+        self._orders = {order.orderid : order for order in orders}
 
     def get(self, orderid : str) -> Order:
-        return self.session.get(orderid)
+        return self._orders.get(orderid)
 
     def list(self) :
-        return self.session.values()
+        return self._orders.values()
     
     def add(self, order: Order) :
-        self.session[order.id] = order
+        self._orders[order.orderid] = order
 
 
 
@@ -57,20 +59,20 @@ class MemoryOrderRepository(OrderRepository) :
 
 class MemoryClothesRepository(ClothesRepository) :
     
-    def __init__(self) :
-        self.session = {}
+    def __init__(self, clothes_dict : dict = {}) :
+        self._clothes_dict = clothes_dict
 
     def get(self, clothesid : str) -> Clothes :
-        return self.session.get(clothesid)
+        return self._clothes_dict.get(clothesid)
 
     def get_by_status(self, status : ClothesState) -> Clothes :
-        return [clothes for clothes in self.session.values() if clothes.status == status]
+        return [clothes for clothes in self._clothes_dict.values() if clothes.status == status]
 
     def list(self) :
-        return self.session.values()
+        return self._clothes_dict.values()
     
     def add(self, clothes : Clothes) :
-        self.session[clothes.id] = clothes
+        self._clothes_dict[clothes.clothesid] = clothes
 
 
 
@@ -78,37 +80,44 @@ class MemoryClothesRepository(ClothesRepository) :
 
 class MemoryLaundryBagRepository(LaundryBagRepository) : 
     
-    def __init__(self) :
-        self.session = {}
+    def __init__(self, laundrybags : dict = {}) :
+        self._laundrybags = {laundrybag.laundrybagid : laundrybag for laundrybag in laundrybags}
 
     def get(self, laundrybagid : str) -> LaundryBagState :
-        return self.session.get(laundrybagid)
+        return self._laundrybags.get(laundrybagid)
 
-    def get_by_status(self, status : LaundryBagState) -> LaundryBag :
-        return [laundrybag for laundrybag in self.session.values() if laundrybag.status == status]
+    def get_by_status(self, status : LaundryBagState) -> list[LaundryBag] :
+        return [laundrybag for laundrybag in self._laundrybags.values() if laundrybag.status == status]
+
+    def get_waitingbag_by_label(self, label : LaundryLabel) -> list[LaundryBag] :
+        '''
+        get list of laundrybags that are LaundryBagState.READY and LaundryLabel
+        '''
+        return [laundrybag for laundrybag in self._laundrybags.values() \
+                    if laundrybag.status == LaundryBagState.COLLECTING and laundrybag.label == label]
 
     def list(self) :
-        return self.session.values()
+        return self._laundrybags.values()
     
     def add(self, laundrybag : LaundryBag) :
-        self.session[laundrybag.id] = laundrybag
+        self._laundrybags[laundrybag.laundrybagid] = laundrybag
 
 
 
 
 class MemoryMachineRepository(MachineRepository) :
     
-    def __init__(self) :
-        self.session = {}
+    def __init__(self, machines : dict = {} ) :
+        self._machines = {}
 
     def get(self, machineid : str) -> Machine :
-        return self.session.get(machineid)
+        return self._machines.get(machineid)
 
     def get_by_status(self, status : MachineState) -> Machine :
-        return [machine for machine in self.session.values() if machine.status == status]
+        return [machine for machine in self._machines.values() if machine.status == status]
 
     def list(self) :
-        return self.session.values()
+        return self._machines.values()
     
     def add(self, machine : Machine) :
-        self.session[machine.id] = machine
+        self._machines[machine.machineid] = machine

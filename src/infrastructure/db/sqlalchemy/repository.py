@@ -1,3 +1,4 @@
+from src.domain.clothes import LaundryLabel
 from src.domain.repository import (
     UserRepository,
     OrderRepository,
@@ -75,8 +76,15 @@ class SqlAlchemyLaundryBagRepository(LaundryBagRepository) :
     def get(self, laundrybagid : str) -> User:
         return self.session.query(LaundryBag).filter_by(laundrybagid = laundrybagid).one()
 
-    def get_by_status(self, status : LaundryBagState) -> LaundryBag :
+    def get_by_status(self, status : LaundryBagState) -> list[LaundryBag] :
         return self.session.query(LaundryBag).filter_by(status = status).all()
+
+    def get_waitingbag_by_label(self, label : LaundryLabel) -> list[LaundryBag] :
+        '''
+        get list of laundrybags that are LaundryBagState.READY and LaundryLabel
+        '''
+        return self.session.query(LaundryBag).filter_by(status = LaundryBagState.COLLECTING) \
+                                                .filter_by(label = label).all()
 
     def list(self) :
         return self.session.query(LaundryBag).all()
