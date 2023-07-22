@@ -1,5 +1,9 @@
 fastapi[all]
 uvicorn
+sqlalchemy
 pydantic
+
+aiomysql
+mysqlclient
 databases[aiosqlite]
 ipython

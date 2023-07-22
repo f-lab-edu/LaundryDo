@@ -44,6 +44,9 @@ class SqlAlchemyOrderRepository(OrderRepository) :
     def get(self, orderid : str) -> Order:
         return self.session.query(Order).filter_by(orderid = orderid).one()
 
+    def get_by_userid(self, userid : str) -> List[Order] :
+        return self.session.query(Order).filter_by(userid = userid).all()
+
     def get_by_status(self, status : OrderState) -> List[Order] :
         return self.session.query(Order).filter_by(status = status).all()
 

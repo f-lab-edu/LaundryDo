@@ -14,8 +14,10 @@ from src.domain import *
 from src.application.services.laundry_service import LaundryService
 
 import databases
-from src.infrastructure.db.sqlalchemy.setup import metadata, engine, session, DB_URL
+from src.infrastructure.db.sqlalchemy.setup import metadata, engine, session
 from src.infrastructure.db.sqlalchemy.orm import start_mappers, orders
+
+import config
 
 from src.infrastructure.db.sqlalchemy.repository import (
     SqlAlchemyClothesRepository,
@@ -27,7 +29,7 @@ from src.infrastructure.db.sqlalchemy.repository import (
 
 app = FastAPI()
 
-database = databases.Database(DB_URL)
+database = databases.Database(config.DB_URL)
 
 start_mappers()
 metadata.create_all(engine)
