@@ -8,6 +8,11 @@ from src.domain import (
     get_clothes_in_process,
     reclaim_clothes_into_order
 )
+
+from src.infrastructure.db.memory.repository import MemoryLaundryBagRepository, MemoryOrderRepository
+from src.infrastructure.db.sqlalchemy.repository import SqlAlchemyLaundryBagRepository, SqlAlchemyOrderRepository
+
+
 from datetime import datetime
 
 today = datetime.today()
@@ -27,25 +32,34 @@ def test_order_sort_by_laundrybags(order_factory, clothes_factory):
         received_at=today,
         clothes_list=[clothes1, clothes2, clothes3, clothes4],
     )
+    order_repo = MemoryOrderRepository(orders = [order])
 
-    laundrylabeldict = distribute_order([order])
+    laundrylabeldict = distribute_order(order_repo)
 
     assert len(laundrylabeldict) == 2
 
 
-def test_multiple_orders_distributed_into_laundrybags(order_factory, clothes_factory):
+def test_multiple_orders_distributed_into_laundrybags(session, order_factory, clothes_factory):
     multiple_orders = []
     label_options = [LaundryLabel.WASH, LaundryLabel.HAND]
-
-    for i in range(20) :
+    
+    order_repo = SqlAlchemyOrderRepository(session)
+    
+    for i in range(10) :
         clothes_list = [clothes_factory(label = label_options[ i%2 ], volume = 1, received_at = today) for _ in range(5)]
         new_order = order_factory(clothes_list = clothes_list )
         multiple_orders.append(new_order)
+        order_repo.add(new_order)
+    # load order, laundrybag repository
+    
+    
+    laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
 
-    laundrybag_dict = distribute_order(multiple_orders)
-    laundrybags = put_in_laundrybag(laundrybag_dict)
 
-    assert len(laundrybags) == 2 and len(multiple_orders) == 20
+    laundrybag_dict = distribute_order(order_repo)
+    put_in_laundrybag(laundrybag_repo, laundrybag_dict)
+
+    assert len(laundrybag_repo.list()) == 2 and len(multiple_orders) == 10
 
 
 def test_multiple_orders_with_same_label_and_over_max_volume_distributed_into_laundrybags(order_factory, clothes_factory) :
@@ -70,7 +84,7 @@ def test_clothes_finished_laundry_reclaim_by_orderid(clothes_factory):
         for clothes in clothes_list:  # assign orderid to clothes
             clothes.orderid = orderid
 
-        laundryBag = LaundryBag(clothes_list, created_at=None)
+        laundryBag = LaundryBag(laundrybagid = 'test-laundrybag', clothes_list = clothes_list, created_at=None)
 
         ## TODO : better way to simulate to update laundry process DONE
         for clothes in laundryBag:

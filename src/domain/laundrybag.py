@@ -14,6 +14,8 @@ class LaundryBagState(Enum) :
     RUN = '세탁중'
     DONE = '세탁완료'
 
+
+
 class LaundryBag(list):
     def __init__(self, laundrybagid : str, clothes_list: List[Clothes], created_at: datetime):
         super().__init__(clothes_list)  
@@ -55,3 +57,6 @@ class LaundryBag(list):
             raise TypeError(
                 f"{type(other)} cannot be compared with {self.__class__} class."
             )
+
+    def __repr__(self) :
+        return f'<{self.laundrybagid}|무게:{self.volume}|라벨:{self.label}>'

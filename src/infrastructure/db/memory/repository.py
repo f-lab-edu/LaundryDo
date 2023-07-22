@@ -20,6 +20,7 @@ from src.domain import (
     laundrybag
 )
 
+from typing import List
 
 class MemoryUserRepository(UserRepository) :
 
@@ -49,6 +50,9 @@ class MemoryOrderRepository(OrderRepository) :
 
     def list(self) :
         return self._orders.values()
+
+    def get_by_status(self, status : OrderState) -> List[Order] : 
+        return [order for order in self._orders.values() if order.status == status]
     
     def add(self, order: Order) :
         self._orders[order.orderid] = order
@@ -65,7 +69,7 @@ class MemoryClothesRepository(ClothesRepository) :
     def get(self, clothesid : str) -> Clothes :
         return self._clothes_dict.get(clothesid)
 
-    def get_by_status(self, status : ClothesState) -> Clothes :
+    def get_by_status(self, status : ClothesState) -> List[Clothes]  :
         return [clothes for clothes in self._clothes_dict.values() if clothes.status == status]
 
     def list(self) :
@@ -80,21 +84,21 @@ class MemoryClothesRepository(ClothesRepository) :
 
 class MemoryLaundryBagRepository(LaundryBagRepository) : 
     
-    def __init__(self, laundrybags : dict = {}) :
+    def __init__(self, laundrybags : List = []) :
         self._laundrybags = {laundrybag.laundrybagid : laundrybag for laundrybag in laundrybags}
 
-    def get(self, laundrybagid : str) -> LaundryBagState :
+    def get(self, laundrybagid : str) -> LaundryBag :
         return self._laundrybags.get(laundrybagid)
 
-    def get_by_status(self, status : LaundryBagState) -> list[LaundryBag] :
+    def get_by_status(self, status : LaundryBagState) -> List[LaundryBag] :
         return [laundrybag for laundrybag in self._laundrybags.values() if laundrybag.status == status]
 
-    def get_waitingbag_by_label(self, label : LaundryLabel) -> list[LaundryBag] :
+    def get_waitingbag_by_label(self, label : LaundryLabel) -> LaundryBag :
         '''
         get list of laundrybags that are LaundryBagState.READY and LaundryLabel
         '''
-        return [laundrybag for laundrybag in self._laundrybags.values() \
-                    if laundrybag.status == LaundryBagState.COLLECTING and laundrybag.label == label]
+        return next((laundrybag for laundrybag in self._laundrybags.values() 
+                    if laundrybag.status == LaundryBagState.COLLECTING and laundrybag.label == label), None)
 
     def list(self) :
         return self._laundrybags.values()
@@ -113,7 +117,7 @@ class MemoryMachineRepository(MachineRepository) :
     def get(self, machineid : str) -> Machine :
         return self._machines.get(machineid)
 
-    def get_by_status(self, status : MachineState) -> Machine :
+    def get_by_status(self, status : MachineState) -> List[Machine] :
         return [machine for machine in self._machines.values() if machine.status == status]
 
     def list(self) :

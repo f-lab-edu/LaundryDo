@@ -19,6 +19,7 @@ from src.domain import (
     LaundryBagState
 )
 
+from typing import List
 
 class SqlAlchemyUserRepository(UserRepository) :
 
@@ -43,6 +44,9 @@ class SqlAlchemyOrderRepository(OrderRepository) :
     def get(self, orderid : str) -> Order:
         return self.session.query(Order).filter_by(orderid = orderid).one()
 
+    def get_by_status(self, status : OrderState) -> List[Order] :
+        return self.session.query(Order).filter_by(status = status).all()
+
     def list(self) :
         return self.session.query(Order).all()
     
@@ -58,7 +62,7 @@ class SqlAlchemyClothesRepository(ClothesRepository) :
     def get(self, clothesid : str) -> Clothes :
         return self.session.query(Clothes).filter_by(clothesid = clothesid).one()
 
-    def get_by_status(self, status : ClothesState) -> Clothes :
+    def get_by_status(self, status : ClothesState) -> List[Clothes] :
         return self.session.query(Clothes).filter_by(status = status).all()
 
     def list(self) :
@@ -79,12 +83,12 @@ class SqlAlchemyLaundryBagRepository(LaundryBagRepository) :
     def get_by_status(self, status : LaundryBagState) -> list[LaundryBag] :
         return self.session.query(LaundryBag).filter_by(status = status).all()
 
-    def get_waitingbag_by_label(self, label : LaundryLabel) -> list[LaundryBag] :
+    def get_waitingbag_by_label(self, label : LaundryLabel) -> LaundryBag :
         '''
         get list of laundrybags that are LaundryBagState.READY and LaundryLabel
         '''
         return self.session.query(LaundryBag).filter_by(status = LaundryBagState.COLLECTING) \
-                                                .filter_by(label = label).all()
+                                                .filter_by(label = label).first()
 
     def list(self) :
         return self.session.query(LaundryBag).all()
@@ -101,7 +105,7 @@ class SqlAlchemyMachineRepository(MachineRepository) :
     def get(self, machineid : str) -> User:
         return self.session.query(Machine).filter_by(machineid = machineid).one()
 
-    def get_by_status(self, status : MachineState) -> Machine :
+    def get_by_status(self, status : MachineState) -> List[Machine] :
         return self.session.query(Machine).filter_by(status = status).all()
 
 
