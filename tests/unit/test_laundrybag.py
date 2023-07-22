@@ -24,8 +24,6 @@ def test_laundrybags_with_same_laundryLabel_combine_into_same_laundrybag(session
         
     order_repo.add(order_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 5)]))
                     
-                    
-    
     laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
     laundrybag_repo.add(laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 20)]))
 

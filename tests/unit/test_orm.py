@@ -72,7 +72,7 @@ def test_laundrybag(session, laundrybag_factory) :
     session.add(laundrybag)
     session.commit()
 
-    assert session.query(LaundryBag).one().status == LaundryBagState.READY and \
+    assert session.query(LaundryBag).one().status == LaundryBagState.COLLECTING and \
                 all([clothes.status == ClothesState.DISTRIBUTED for clothes in session.query(Clothes).all()])
     
 

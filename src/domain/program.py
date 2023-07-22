@@ -63,7 +63,7 @@ def put_in_laundrybag(laundrybag_repository : LaundryBagRepository, laundryBagDi
                     ### add to the repository
                     laundrybag_repository.add(target_bag)
 
-                    target_bag = LaundryBag(laundrybagid = 'tobechanged', clothes_list=[clothes], created_at = datetime.now() ) ## TODO : naming of the laundrybagid
+                    target_bag = LaundryBag(laundrybagid = f'test-laundrybag-{laundrybag_num}', clothes_list=[clothes], created_at = datetime.now() ) ## TODO : naming of the laundrybagid
                 else :
                     raise ValueError('if minvolume is not fulfilled, try other clothes?')
     

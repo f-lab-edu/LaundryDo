@@ -17,7 +17,7 @@ def test_user_cancel_order(user_factory, order_factory):
     new_user.cancel_order(new_order)
 
     assert new_user.orderlist[new_user.orderlist.index(new_order)].status == OrderState.CANCELLED \
-             and all([clothes.status == ClothesState.CANCELLED for clothes in new_order])
+             and all([clothes.status == ClothesState.CANCELLED for clothes in new_order.clothes_list])
 
 
 def test_user_request_order_status(user_factory, order_factory) :

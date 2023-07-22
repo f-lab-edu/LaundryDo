@@ -51,6 +51,9 @@ class MemoryOrderRepository(OrderRepository) :
     def list(self) :
         return self._orders.values()
 
+    def get_by_userid(self, userid : str) -> List[Order] :
+        return [order for order in self._orders.values() if order._userid == userid]
+
     def get_by_status(self, status : OrderState) -> List[Order] : 
         return [order for order in self._orders.values() if order.status == status]
     

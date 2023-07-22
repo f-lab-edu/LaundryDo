@@ -30,6 +30,8 @@ class Order:
         self.received_at = received_at
         self.status = status
 
+        self.userid = None
+
         for clothes in self.clothes_list :
             clothes.orderid = self.orderid
             # clothes.received_at = self.received_at

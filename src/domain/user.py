@@ -24,6 +24,7 @@ class User :
 
     def request_order(self, order: Order):
         order.status = OrderState.PREPARING
+        order.userid = self.userid
         self.orderlist.append(order)
 
     def cancel_order(self, order: Order):
@@ -37,7 +38,7 @@ class User :
         if selected_order and (selected_order.status == OrderState.PREPARING or selected_order.status == OrderState.SENDING) :
             selected_order.status = OrderState.CANCELLED
             # update clothes status
-            for clothes in selected_order :
+            for clothes in selected_order.clothes_list :
                 clothes.status = ClothesState.CANCELLED
 
         else :
