@@ -5,29 +5,39 @@ services:
     container_name: db
     image : 'mysql'
     environment:
-      MYSQL_DATABASE: 'laundrydo'
-      MYSQL_ROOT_PASSWORD: 'test1234' # replace by environment on CI
-    ports :
-      - "3306:3306"
+      - MYSQL_HOST=${DB_HOST}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD} # replace by environment on CI
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - TZ="Asia/Seoul"
+
+    expose :
+      - 3306
     volumes :
-      - "./db:/app/db"
+      - ./mysql/conf.d:/etc/mysql/conf.d
+      - ./mysql/data:/var/lib/mysql
+    env_file: .env
     restart : always
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
-    
+    healthcheck: 
+      test: curl -fsS ${DB_HOST}:${DB_PORT}/{DB_DATABASE} || exit 1
+      # test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      # timeout: 20s
+      # retries: 10
+
+
+  
   fastapi-server:
     container_name: fastapi-server-container
     depends_on : 
-      - db-server
+      db-server :
+        condition : service_healthy
     build :
       context: .
       dockerfile: Dockerfile
     environment:
-      - DB_HOST=db-server
-      - DB_PASSWORD=test1234
-      - API_HOST=app
+      - DB_HOST=${DB_HOST}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - API_HOST="app"
       - PYTHONDONTWRITEBYTECODE=1
     ports : 
       - "80:80"

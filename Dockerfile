@@ -13,4 +13,5 @@ COPY . /app
 
 WORKDIR /app
 
+CMD entrypoint.sh
 CMD [ "uvicorn", "app:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "80", "--reload" ]
