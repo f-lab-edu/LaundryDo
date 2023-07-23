@@ -1,5 +1,27 @@
 import os
+
+from typing import Any
 from sqlalchemy.engine.url import URL
+from pydantic_settings import BaseSettings
+from functools import lru_cache
+
+class Settings(BaseSettings) :
+    DB_HOST : str
+    DB_PORT: Any
+    DB_ROOT_PASSWORD : str
+    DB_DATABASE : str
+    DB_USER : str
+    DB_PASSWORD : str
+
+    class Config :
+        env_file = '.env'
+
+@lru_cache
+def get_setting() :
+    return Settings()
+
+
+
 
 def get_api_url() :
     host = os.environ.get('API_HOST', 'localhost')
@@ -12,5 +34,3 @@ def get_db_url() :
     password = os.environ.get('DB_PASSWORD', 'test1234')
     user, db_name = 'testuser', 'laundrydo'
     return f'mysql://{user}:{password}@{host}:{port}/{db_name}'
-
-DB_URL = get_db_url()
