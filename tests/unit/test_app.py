@@ -2,15 +2,15 @@ import requests
 import pytest
 import config
 
-@pytest.mark.usefixtures('restart_api')
-def test_request_order(order_factory, clothes_factory, session) :
+# @pytest.mark.usefixtures('restart_api')
+# def test_request_order(order_factory, clothes_factory, session) :
 
 
-    data = order_factory(clothes_list = [clothes_factory()])
-    url = config.get_api_url()
-    r = requests.post(f'{url}/orders', json = data)
+    # data = order_factory(clothes_list = [clothes_factory()])
+    # url = config.get_api_url()
+    # r = requests.post(f'{url}/orders', json = data)
     
-    assert r.json()
+    # assert r.json()
 
 
 

@@ -8,7 +8,7 @@ from src.domain import (User,
                         ClothesState, 
                         OrderState)
 
-from sqlalchemy import Table, Column, ForeignKey, Integer, String, DateTime, Interval, Enum
+from sqlalchemy import Table, Column, ForeignKey, Integer, String, DateTime, Interval, Enum, Index, ForeignKeyConstraint
 from sqlalchemy.orm import mapper, relationship
 
 from src.domain.laundrybag import LaundryBagState
@@ -18,9 +18,9 @@ from .setup import metadata
 users = Table(
     'user', 
     metadata,
-    Column('id', Integer, primary_key = True, autoincrement = True),
+    # Column('id', Integer, primary_key = True, autoincrement = True),
     Column('address', String(255)), # TODO : validate?
-    Column('userid', String(255))
+    Column('userid', String(20), primary_key = True)
 )
 
 
@@ -29,7 +29,7 @@ orders = Table(
     metadata,
     Column('id', Integer, primary_key = True, autoincrement = True),
     # Column('clothes_list', ForeignKey('clothes.id')),
-    Column('userid', String(255), ForeignKey('user.id')),
+    Column('userid', String(20), ForeignKey('user.userid')),
     Column('received_at', DateTime, nullable = True),
     Column('status', Enum(OrderState)),
     Column('orderid', String(255)),
@@ -69,6 +69,8 @@ machines = Table(
     Column('runtime', Interval),
     Column('status', Enum(MachineState))
 )
+
+
 
 
 

@@ -18,31 +18,33 @@ class LaundryLabel(str, Enum):
     DRY = "드라이클리닝"
     HAND = "손세탁"
 
-class Clothes :#(BaseModel):
-    def __init__(
-        self,
-        clothesid: str,
-        label: LaundryLabel,
-        volume: float,
-        orderid: str = None,
-        status: ClothesState = ClothesState.PREPARING,
-        received_at: datetime = None,
-    ):
-    #     super().__init__(
-    # clothesid : str
-    # label: LaundryLabel
-    # volume: float
-    # orderid: str = None
-    # status: ClothesState = ClothesState.PREPARING
-    # received_at: Optional[datetime] = None
-                        
-        self.clothesid = clothesid
-        self.label = label
+class Clothes(BaseModel):
+    # def __init__(
+    #     self,
+    #     clothesid: str,
+    #     label: LaundryLabel,
+    #     volume: float,
+    #     orderid: str = None,
+    #     status: ClothesState = ClothesState.PREPARING,
+    #     received_at: datetime = None,
+    # ):
+        # super().__init__(
+    clothesid : str
+    label: LaundryLabel
+    volume: float
+    orderid: str = None
+    status: ClothesState = ClothesState.PREPARING
+    received_at: Optional[datetime] = None
+    
+    class Config : 
+        orm_mode = True
+        # self.clothesid = clothesid
+        # self.label = label
 
-        self.volume = volume
-        self.orderid = orderid
-        self.status = status
-        self.received_at = received_at
+        # self.volume = volume
+        # self.orderid = orderid
+        # self.status = status
+        # self.received_at = received_at
 
         # model_config = {
         #     "json_schema_extra" : {
