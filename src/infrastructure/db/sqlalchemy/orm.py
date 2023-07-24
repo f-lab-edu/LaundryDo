@@ -8,7 +8,7 @@ from src.domain import (User,
                         ClothesState, 
                         OrderState)
 
-from sqlalchemy import Table, Column, ForeignKey, Integer, String, DateTime, Interval, Enum, Index, ForeignKeyConstraint
+from sqlalchemy import Table, Column, ForeignKey, Integer, String, DateTime, Interval, Enum, Index, ForeignKeyConstraint, Float
 from sqlalchemy.orm import mapper, relationship
 
 from src.domain.laundrybag import LaundryBagState
@@ -18,9 +18,9 @@ from .setup import metadata
 users = Table(
     'user', 
     metadata,
-    # Column('id', Integer, primary_key = True, autoincrement = True),
+    Column('id', Integer, primary_key = True, autoincrement = True),
     Column('address', String(255)), # TODO : validate?
-    Column('userid', String(20), primary_key = True)
+    Column('userid', String(20))
 )
 
 
@@ -28,11 +28,10 @@ orders = Table(
     'order',
     metadata,
     Column('id', Integer, primary_key = True, autoincrement = True),
-    # Column('clothes_list', ForeignKey('clothes.id')),
-    Column('userid', String(20), ForeignKey('user.userid')),
+    Column('orderid', String(255)),
     Column('received_at', DateTime, nullable = True),
     Column('status', Enum(OrderState)),
-    Column('orderid', String(255)),
+    Column('userid', String(20), ForeignKey('user.userid')),
 )
 
 clothes = Table(
@@ -40,12 +39,14 @@ clothes = Table(
     metadata,
     Column('id', Integer, primary_key = True, autoincrement = True), 
     Column('clothesid', String(255)),
-    Column('laundrybagid', String(255), ForeignKey('laundrybag.laundrybagid')),
     Column('label', Enum(LaundryLabel)),
+    Column('volume', Float),
     Column('orderid', String(255), ForeignKey('order.orderid')),
+    Column('laundrybagid', String(255), ForeignKey('laundrybag.laundrybagid')),
     Column('status', Enum(ClothesState)),
-    Column('received_at', DateTime)
+    Column('received_at', DateTime),
 )
+
 
 laundrybags = Table(
     'laundrybag',

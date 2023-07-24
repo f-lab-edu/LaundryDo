@@ -46,10 +46,12 @@ def test_multiple_orders_distributed_into_laundrybags(session, order_factory, cl
     order_repo = SqlAlchemyOrderRepository(session)
     
     for i in range(2) :
-        clothes_list = [clothes_factory(label = label_options[ i%2 ], volume = 3, received_at = today) for _ in range(9)]
+        
+        clothes_list = [clothes_factory(label = label_options[ i%2 ], volume = 3.0, received_at = today) for _ in range(9)]
         new_order = order_factory(clothes_list = clothes_list )
         multiple_orders.append(new_order)
         order_repo.add(new_order)
+        session.commit()
     # load order, laundrybag repository
     
     
@@ -58,6 +60,7 @@ def test_multiple_orders_distributed_into_laundrybags(session, order_factory, cl
 
     laundrybag_dict = distribute_order(order_repo)
     put_in_laundrybag(laundrybag_repo, laundrybag_dict)
+    session.commit()
 
     assert len(laundrybag_repo.list()) == 4 and len(multiple_orders) == 2
 

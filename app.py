@@ -4,7 +4,7 @@ from enum import Enum
 from typing import List, Dict, Annotated
 from datetime import datetime
 
-from fastapi import FastAPI, Query, Body
+from fastapi import FastAPI, Query, Body, Depends
 from pydantic import BaseModel
 
 from sqlalchemy.orm import sessionmaker
@@ -29,12 +29,13 @@ from src.infrastructure.db.sqlalchemy.repository import (
 
 app = FastAPI()
 
+# dependency
 database = databases.Database(SQLALCHEMY_DATABASE_URL)
 
 start_mappers()
 metadata.create_all(engine)
 
-laundry_service = LaundryService(session = session(),
+laundry_service = LaundryService(session = database,
                                  order_repository = SqlAlchemyOrderRepository,
                                  laundrybag_repository = SqlAlchemyLaundryBagRepository,
                                  clothes_repository = SqlAlchemyClothesRepository,
@@ -52,8 +53,8 @@ async def shutdown() :
 
 
 
-@app.post('/orders')
-async def request_order(order : Annotated[ Order, 
+@app.post('/users/{userid}/orders')
+async def request_order(userid : str, order : Annotated[ Order, 
             Body(
                 examples = [
                     {
@@ -75,7 +76,22 @@ async def request_order(order : Annotated[ Order,
     laundry_service.run_process(order)
 
 
+@app.put('/users/{userid}/orders/{orderid}')
+async def cancel_order(userid : str, orderid : str) :
+    pass
 
+
+@app.get('/users/{userid}/orders/', response_model = List[Order])
+async def request_order_history(userid : str) :
+    pass
+
+
+@app.get('/users/{userid}/orders/{orderid}')
+async def request_estimate_time(userid : str, orderid : str) :
+    '''
+    request estimate time for order in process. if order is done or cancelled, return 0.
+    '''
+    pass
 
 
 

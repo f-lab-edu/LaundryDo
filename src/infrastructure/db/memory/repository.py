@@ -17,7 +17,6 @@ from src.domain import (
     ClothesState,
     LaundryBagState,
     LaundryLabel,
-    laundrybag
 )
 
 from typing import List

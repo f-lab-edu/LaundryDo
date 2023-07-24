@@ -1,13 +1,13 @@
 from concurrent.futures import wait
 from select import select
 from typing import List, Dict
-from src.domain import Clothes, LaundryBag, LaundryLabel, LaundryBagState, Order, OrderState
+from src.domain import Clothes, LaundryBag, LaundryLabel, LaundryBagState, Order, OrderState, ClothesState
 from src.domain.spec import LAUNDRYBAG_MAXVOLUME, MACHINE_MAXVOLUME
 
 from src.domain.repository import UserRepository, OrderRepository, LaundryBagRepository, MachineRepository
 from datetime import datetime
 
-from src.domain.program import distribute_order #, check_clothes_in_order_is_fully_reclaimed, reclaim_clothes_into_order
+from src.domain.services import distribute_order, put_in_laundrybag#, check_clothes_in_order_is_fully_reclaimed, reclaim_clothes_into_order
 
 
 class LaundryService :

@@ -9,7 +9,7 @@ from requests.exceptions import ConnectionError
 from uuid import uuid4
 import random
 
-from typing import List, Dict
+from typing import List, Dict, Optional 
 
 from src.domain import Clothes, ClothesState, LaundryBag, LaundryLabel, Order, User, OrderState
 import config
@@ -21,7 +21,7 @@ from pathlib import Path
 
 import pytest
 
-time_now = datetime(2023, 7, 12, 20, 48, 13)
+today = datetime.today()
 
 @pytest.fixture
 def clothes_factory() :
@@ -32,7 +32,7 @@ def clothes_factory() :
             label = random.choice([LaundryLabel.WASH, LaundryLabel.DRY, LaundryLabel.HAND])
 
         if volume is None:
-            volume = random.randint(5, 15)
+            volume = float(random.randint(5, 15))
         if status is None:
             status = random.choice(
                 [
@@ -41,6 +41,7 @@ def clothes_factory() :
                     ClothesState.DISTRIBUTED,
                     ClothesState.PROCESSING,
                     ClothesState.DONE,
+                    ClothesState.RECLAIMED
                 ]
             )
         return Clothes(clothesid=clothesid, label=label, volume=volume, status=status, received_at=received_at)
@@ -58,11 +59,11 @@ def user_factory() :
 @pytest.fixture
 def order_factory(clothes_factory) :
     def _order_factory(orderid: str = 'test-order', 
-                       clothes_list: List = [clothes_factory(received_at = time_now)], 
-                       received_at: datetime = None, 
+                       clothes_list: List[Clothes] = [clothes_factory(label=LaundryLabel.WASH, received_at = today)], 
+                       received_at: Optional[datetime] = None, 
                        status : OrderState = OrderState.SENDING
                     ) :
-        return Order(orderid, clothes_list, received_at, status)
+        return Order(orderid = orderid, clothes_list = clothes_list, received_at = received_at, status = status)
 
     yield _order_factory
 
@@ -70,8 +71,8 @@ def order_factory(clothes_factory) :
 def laundrybag_factory(clothes_factory) :
     def _laundrybag_factory(laundrybagid: str = 'test-laundrybag',
                             clothes_list: List[Clothes] = [clothes_factory()], 
-                            created_at: datetime = time_now):
-        return LaundryBag(laundrybagid, clothes_list, created_at)
+                            created_at: datetime = today):
+        return LaundryBag(laundrybagid = laundrybagid, clothes_list = clothes_list, created_at = created_at)
 
     yield _laundrybag_factory
 

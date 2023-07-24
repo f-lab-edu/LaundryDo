@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from typing import Annotated, Optional
 from enum import Enum
@@ -19,33 +19,15 @@ class LaundryLabel(str, Enum):
     HAND = "손세탁"
 
 class Clothes(BaseModel):
-    # def __init__(
-    #     self,
-    #     clothesid: str,
-    #     label: LaundryLabel,
-    #     volume: float,
-    #     orderid: str = None,
-    #     status: ClothesState = ClothesState.PREPARING,
-    #     received_at: datetime = None,
-    # ):
-        # super().__init__(
+    model_config = ConfigDict(from_attributes = True, extra = 'allow')
     clothesid : str
     label: LaundryLabel
     volume: float
-    orderid: str = None
+    orderid: Optional[str] = None
+    laundrybagid : Optional[str] = None
     status: ClothesState = ClothesState.PREPARING
     received_at: Optional[datetime] = None
     
-    class Config : 
-        orm_mode = True
-        # self.clothesid = clothesid
-        # self.label = label
-
-        # self.volume = volume
-        # self.orderid = orderid
-        # self.status = status
-        # self.received_at = received_at
-
         # model_config = {
         #     "json_schema_extra" : {
         #         "examples" : [
