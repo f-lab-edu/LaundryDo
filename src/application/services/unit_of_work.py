@@ -7,8 +7,18 @@ from src.domain.repository import  (
     ClothesRepository,
     LaundryBagRepository,
     MachineRepository
-
 )
+
+from src.infrastructure.db.memory.repository import (
+    MemoryClothesRepository,
+    MemoryLaundryBagRepository,
+    MemoryMachineRepository,
+    MemoryOrderRepository,
+    MemoryUserRepository
+)
+
+
+
 from src.infrastructure.db.sqlalchemy.setup import session
 from src.infrastructure.db.sqlalchemy.repository import (
     SqlAlchemyClothesRepository,
@@ -36,6 +46,31 @@ class AbstractUnitOfWork(abc.ABC):
     def rollback(self):
         raise NotImplementedError
 
+class MemoryUnitOfWork(AbstractUnitOfWork) :
+    users : MemoryUserRepository
+    orders : MemoryOrderRepository
+    clothes : MemoryClothesRepository
+    laundrybags : MemoryLaundryBagRepository
+    machines : MemoryMachineRepository
+
+    def __init__(self, ) :
+        self.users = MemoryUserRepository()
+        self.orders = MemoryOrderRepository()
+        self.clothes = MemoryClothesRepository()
+        self.laundrybags = MemoryLaundryBagRepository()
+        self.machines = MemoryMachineRepository()
+        self.commited = False
+
+    def __exit__(self, *args):
+        self.rollback()
+
+    @abc.abstractmethod
+    def commit(self):
+        self.committed = True
+
+    @abc.abstractmethod
+    def rollback(self):
+        pass
 
 
 class SqlAlchemyUnitOfWork(AbstractUnitOfWork):

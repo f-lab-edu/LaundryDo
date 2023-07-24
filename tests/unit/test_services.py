@@ -20,3 +20,9 @@ class FakeSession:
 
 def test_request_order(order_factory) :
     pass
+
+def test_allocate_laundrybag() :
+    pass
+
+def recliaim_clothes_into_order() :
+    pass
