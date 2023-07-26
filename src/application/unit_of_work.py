@@ -35,6 +35,9 @@ class AbstractUnitOfWork(abc.ABC):
     laundrybags : LaundryBagRepository
     machines : MachineRepository
 
+    def __enter__(self):
+        return self
+
     def __exit__(self, *args):
         self.rollback()
 
@@ -64,11 +67,9 @@ class MemoryUnitOfWork(AbstractUnitOfWork) :
     def __exit__(self, *args):
         self.rollback()
 
-    @abc.abstractmethod
     def commit(self):
         self.committed = True
 
-    @abc.abstractmethod
     def rollback(self):
         pass
 

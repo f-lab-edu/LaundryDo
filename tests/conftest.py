@@ -23,11 +23,12 @@ import pytest
 
 today = datetime.today()
 
+
 @pytest.fixture
 def clothes_factory() :
-    def _clothes_factory(label=None, volume=None, status=None, received_at = None):
-
-        clothesid = str(uuid4())[:4]
+    def _clothes_factory(clothesid = None, label=None, volume=None, status=None, received_at = None):
+        if clothesid is None :
+            clothesid = f'clothes-{str(uuid4())[:2]}'
         if label is None:
             label = random.choice([LaundryLabel.WASH, LaundryLabel.DRY, LaundryLabel.HAND])
 
@@ -50,7 +51,7 @@ def clothes_factory() :
 
 @pytest.fixture
 def user_factory() :
-    def _user_factory(userid: str = 'test-username', address: str = 'test-adress', orderlist : List = []) :
+    def _user_factory(userid: str = f'user-{str(uuid4())[:2]}', address: str = 'test-adress', orderlist : List = []) :
         return User(userid = userid, address= address, orderlist = orderlist)
 
     yield _user_factory
@@ -58,7 +59,7 @@ def user_factory() :
 
 @pytest.fixture
 def order_factory(clothes_factory) :
-    def _order_factory(orderid: str = 'test-order', 
+    def _order_factory(orderid: str = f'order-{str(uuid4())[:2]}', 
                        clothes_list: List[Clothes] = [clothes_factory(label=LaundryLabel.WASH, received_at = today)], 
                        received_at: Optional[datetime] = None, 
                        status : OrderState = OrderState.SENDING
@@ -69,8 +70,8 @@ def order_factory(clothes_factory) :
 
 @pytest.fixture
 def laundrybag_factory(clothes_factory) :
-    def _laundrybag_factory(laundrybagid: str = 'test-laundrybag',
-                            clothes_list: List[Clothes] = [clothes_factory()], 
+    def _laundrybag_factory(laundrybagid: str = f'laundrybag-{str(uuid4())[:2]}',
+                            clothes_list: List[Clothes] = [], 
                             created_at: datetime = today):
         return LaundryBag(laundrybagid = laundrybagid, clothes_list = clothes_list, created_at = created_at)
 
@@ -86,7 +87,7 @@ def in_memory_db() :
 @pytest.fixture
 def session_factory(in_memory_db) :
     start_mappers()
-    yield sessionmaker(bind = in_memory_db)
+    yield sessionmaker(bind = in_memory_db,  autoflush=False, autocommit = False)
     clear_mappers()
 
 @pytest.fixture

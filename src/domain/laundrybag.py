@@ -2,13 +2,14 @@ from .spec import LAUNDRYBAG_MAXVOLUME
 from .clothes import Clothes, ClothesState
 
 from enum import Enum
-from typing import List
+from pydantic import BaseModel, ConfigDict
+from typing import List, Optional
 from datetime import datetime
 
 class MaximumVolumeExceedError(Exception) :
     pass
 
-class LaundryBagState(Enum) :
+class LaundryBagState(str, Enum) :
     COLLECTING = '수거중'
     READY = '세탁준비'
     RUN = '세탁중'
@@ -16,32 +17,33 @@ class LaundryBagState(Enum) :
 
 
 
-class LaundryBag(list):
-    def __init__(self, laundrybagid : str, clothes_list: List[Clothes], created_at: datetime):
-        super().__init__(clothes_list)  
+class LaundryBag:
+    
+    def __init__(self, laundrybagid : str, clothes_list: List[Clothes] = [], created_at: datetime = None):
         ## TODO : if clothes does not have orderid, it cannot be in laundrybag
         self.laundrybagid = laundrybagid
         self.created_at = created_at
         self.status = LaundryBagState.COLLECTING
         self.clothes_list = clothes_list
 
-        # 옷상태를 '세탁분류' 상태로 전환
-        for clothes in self.clothes_list :
+        for clothes in clothes_list :
             clothes.status = ClothesState.DISTRIBUTED
 
     def can_contain(self, volume : float) :
         return self.volume + volume <= LAUNDRYBAG_MAXVOLUME
 
     def append(self, clothes) :
-        if self.can_contain(clothes.volume) :
+        if self.can_contain(clothes.volume) and self.status is LaundryBagState.COLLECTING :
             clothes.status = ClothesState.DISTRIBUTED
             self.clothes_list.append(clothes)
         else :
+            self.status = LaundryBagState.READY
             raise MaximumVolumeExceedError
 
     @property
     def volume(self):
         return sum(clothes.volume for clothes in self.clothes_list)
+        
 
     def update_clothes_status(self, status: ClothesState):
         [setattr(clothes, "status", status) for clothes in self.clothes_list]

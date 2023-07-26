@@ -16,21 +16,27 @@ class OrderState(Enum) :
     SHIPPING = '배송중'
     DONE = '완료'
 
-class Order(BaseModel):
+class Order:
     ## TODO : received time by each status?
     ## TODO : private property
-    model_config = ConfigDict(from_attributes = True, extra = 'allow')
-
-    orderid : str
-    clothes_list : List[Clothes] = []
-    received_at : Optional[datetime] = None
-    status : OrderState = OrderState.SENDING
     
-    def __init__(self, **kwargs) :
-        super().__init__(**kwargs)
-        for clothes in kwargs['clothes_list'] :
-            clothes.orderid = kwargs['orderid']
+    def __init__(self, 
+                 orderid : str,
+                 clothes_list : List[Clothes] = [],
+                 received_at : Optional[datetime] = None,
+                 status : OrderState = OrderState.SENDING) :
+        self.orderid = orderid
+        self.clothes_list = clothes_list
+        self.received_at = received_at
+        self.status = status
+    
+
+        for clothes in self.clothes_list :
+            clothes.orderid = self.orderid
 
     @property
     def volume(self) -> float :
         return sum(clothes.volume for clothes in self.clothes_list)
+
+    def __repr__(self) :
+        return f'Order <{self.orderid}>, {len(self.clothes_list)}, {self.status}'

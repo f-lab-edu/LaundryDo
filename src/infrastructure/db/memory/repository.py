@@ -41,7 +41,7 @@ class MemoryUserRepository(UserRepository) :
 
 class MemoryOrderRepository(OrderRepository) :        
     
-    def __init__(self, orders : list) :
+    def __init__(self, orders : list = {}) :
         self._orders = {order.orderid : order for order in orders}
 
     def get(self, orderid : str) -> Order:
@@ -86,7 +86,7 @@ class MemoryClothesRepository(ClothesRepository) :
 
 class MemoryLaundryBagRepository(LaundryBagRepository) : 
     
-    def __init__(self, laundrybags : List = []) :
+    def __init__(self, laundrybags : dict = {}) :
         self._laundrybags = {laundrybag.laundrybagid : laundrybag for laundrybag in laundrybags}
 
     def get(self, laundrybagid : str) -> LaundryBag :

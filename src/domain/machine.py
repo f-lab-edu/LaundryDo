@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 
 
-class MachineState(Enum):
+class MachineState(str, Enum):
     READY = "준비"
     STOP = "정지"
     RUNNING = "세탁중"

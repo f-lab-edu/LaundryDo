@@ -16,3 +16,5 @@ def test_sort_clothes_by_time(clothes_factory):
 
     assert sorted([clothes_yesterday, clothes_longtimeago, clothes_today]) \
                 == [clothes_longtimeago, clothes_yesterday, clothes_today]
+
+

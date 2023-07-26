@@ -13,4 +13,4 @@ COPY . /app
 
 WORKDIR /app
 
-CMD [ "uvicorn", "app:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "80", "--reload" ]
+CMD [ "uvicorn", "app:app",  "--host", "0.0.0.0", "--port", "80", "--reload" ] # "--proxy-headers",

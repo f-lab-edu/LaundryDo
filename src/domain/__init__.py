@@ -6,4 +6,3 @@ from .clothes import Clothes, ClothesState, LaundryLabel
 from .laundrybag import LaundryBag, LaundryBagState
 from .machine import Machine, MachineState
 
-from .services import distribute_order, put_in_laundrybag, reclaim_clothes_into_order, get_clothes_in_process

@@ -7,39 +7,57 @@ from datetime import datetime
 from fastapi import FastAPI, Query, Body, Depends
 from pydantic import BaseModel
 
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from src import domain 
+import schemas
+from src.application import services
+# (
+#     request_order, 
+#     cancel_order,
+#     distribute_order,
+#     put_clothes_in_laundrybag,
+#     allocate_laundrybag,
+#     reclaim_clothes_into_order,
+#     get_clothes_in_process,
+#     allocate,
+#     ship)
 
-from src.domain import *
-from src.application.services.laundry_service import LaundryService
 
 import databases
 from src.infrastructure.db.sqlalchemy.setup import metadata, engine, session, SQLALCHEMY_DATABASE_URL
-from src.infrastructure.db.sqlalchemy.orm import start_mappers, orders
+from src.infrastructure.db.sqlalchemy.orm import start_mappers
 
 import config
 
-from src.infrastructure.db.sqlalchemy.repository import (
-    SqlAlchemyClothesRepository,
-    SqlAlchemyLaundryBagRepository,
-    SqlAlchemyMachineRepository,
-    SqlAlchemyOrderRepository,
-    SqlAlchemyUserRepository
-)
+# from src.infrastructure.db.sqlalchemy.repository import (
+#     SqlAlchemyClothesRepository,
+#     SqlAlchemyLaundryBagRepository,
+#     SqlAlchemyMachineRepository,
+#     SqlAlchemyOrderRepository,
+#     SqlAlchemyUserRepository
+# )
+from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
 app = FastAPI()
 
 # dependency
-database = databases.Database(SQLALCHEMY_DATABASE_URL)
+MEMORY_SESSION = 'sqlite:///:memory:'
+database = databases.Database(MEMORY_SESSION)
+engine = create_engine(MEMORY_SESSION)
 
 start_mappers()
 metadata.create_all(engine)
+session = sessionmaker(autocommit = False, autoflush = False, bind = engine)
 
-laundry_service = LaundryService(session = database,
-                                 order_repository = SqlAlchemyOrderRepository,
-                                 laundrybag_repository = SqlAlchemyLaundryBagRepository,
-                                 clothes_repository = SqlAlchemyClothesRepository,
-                                 machine_repository = SqlAlchemyMachineRepository)
+
+uow = SqlAlchemyUnitOfWork(session)
+# laundry_service = LaundryService(session = database,
+#                                  order_repository = SqlAlchemyOrderRepository,
+#                                  laundrybag_repository = SqlAlchemyLaundryBagRepository,
+#                                  clothes_repository = SqlAlchemyClothesRepository,
+#                                  machine_repository = SqlAlchemyMachineRepository)
 
 
 
@@ -51,10 +69,14 @@ async def startup() :
 async def shutdown() :
     await database.disconnect()
 
+@app.get('/')
+async def root() :
+    return {'LaundryDo' : 'Welcome'}
+
 
 
 @app.post('/users/{userid}/orders')
-async def request_order(userid : str, order : Annotated[ Order, 
+async def request_order(userid : str, order : Annotated[ domain.Order, 
             Body(
                 examples = [
                     {
@@ -71,9 +93,13 @@ async def request_order(userid : str, order : Annotated[ Order,
                 ]
             )
         ]
-    ) :
+    ) -> domain.Order :
 
-    laundry_service.run_process(order)
+    services.request_order(order, uow)
+
+    print(uow.orders.list())
+
+    return schemas.order
 
 
 @app.put('/users/{userid}/orders/{orderid}')
@@ -81,7 +107,7 @@ async def cancel_order(userid : str, orderid : str) :
     pass
 
 
-@app.get('/users/{userid}/orders/', response_model = List[Order])
+@app.get('/users/{userid}/orders/', )
 async def request_order_history(userid : str) :
     pass
 

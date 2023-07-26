@@ -47,7 +47,6 @@ clothes = Table(
     Column('received_at', DateTime),
 )
 
-
 laundrybags = Table(
     'laundrybag',
     metadata,
@@ -70,7 +69,6 @@ machines = Table(
     Column('runtime', Interval),
     Column('status', Enum(MachineState))
 )
-
 
 
 

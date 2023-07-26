@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 from enum import Enum
 from datetime import datetime
 
-class ClothesState(Enum):
+class ClothesState(str, Enum):
     CANCELLED = "취소"
     PREPARING = "준비중"
     DISTRIBUTED = "세탁전분류"  # 세탁 라벨에 따라 분류된 상태
@@ -18,29 +18,24 @@ class LaundryLabel(str, Enum):
     DRY = "드라이클리닝"
     HAND = "손세탁"
 
-class Clothes(BaseModel):
-    model_config = ConfigDict(from_attributes = True, extra = 'allow')
-    clothesid : str
-    label: LaundryLabel
-    volume: float
-    orderid: Optional[str] = None
-    laundrybagid : Optional[str] = None
-    status: ClothesState = ClothesState.PREPARING
-    received_at: Optional[datetime] = None
+class Clothes:
+    def __init__(self, 
+                clothesid : str, 
+                label : LaundryLabel, 
+                volume : float, 
+                orderid: Optional[str] = None,
+                laundrybagid : Optional[str] = None,
+                status: ClothesState = ClothesState.PREPARING,
+                received_at: Optional[datetime] = None ) :
+        
+        self.clothesid = clothesid
+        self.label = label
+        self.volume = volume
+        self.orderid = orderid
+        self.laundrybagid = laundrybagid
+        self.status = status
+        self.received_at = received_at
     
-        # model_config = {
-        #     "json_schema_extra" : {
-        #         "examples" : [
-        #             {
-        #                 "clothesid" : "흰 티셔츠",
-        #                 "description" : "세탁 대상 옷 예시",
-        #                 "label" : LaundryLabel.DRY,
-        #                 "volume" : 3,
-        #             }
-        #         ]
-        #     }
-        # }
-
 
     def __lt__(self, other):
         if other.__class__ is self.__class__:
