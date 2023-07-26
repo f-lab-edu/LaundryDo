@@ -22,53 +22,9 @@ from uuid import uuid4
 
 today = datetime.today()
 
-<<<<<<< HEAD
-class FakeSession:
-    committed = False
-
-    def commit(self):
-        self.committed = True
 
 
-##############
-# LaundryBag #
-##############
 
-def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(session, order_factory, laundrybag_factory, clothes_factory):
-    #TODO : [Order->LaundryBags] allocate_laundrybags
-    
-    
-    # 새로운 주문(물세탁 빨래 volume 5) 추가.
-    order_repo = SqlAlchemyOrderRepository(session)    
-    order_repo.add(order_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 5)]))
-    session.commit()
-
-    # 기존의 LaundryBag(volume 20) 추가. max_volume 25. 
-    laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
-    laundrybag_repo.add(laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 20)]))
-    session.commit()
-
-    order_list = order_repo.get_by_status(status = OrderState.SENDING)
-    
-    laundrylabeldict = distribute_order(order_list)
-
-    for laundrylabel, clothes_list in laundrylabeldict.items() :
-        waiting_bag = laundrybag_repo.get_waitingbag_by_label(label = laundrylabel)
-        if not waiting_bag :
-            waiting_bag = LaundryBag(laundrybagid = f'bag-{laundrylabel}-0')
-
-        for clothes in clothes_list :
-            waiting_bag = put_clothes_in_laundrybag(waiting_bag, clothes)
-        session.commit()
-    
-
-    laundrybags_in_ready = laundrybag_repo.get_by_status(status = LaundryBagState.READY)
-
-    assert len(laundrybag_repo.list()) == 2
-
-
-=======
->>>>>>> develop
 
 def test_order_sort_by_laundrybags(order_factory, clothes_factory):
     clothes1 = clothes_factory(label=LaundryLabel.WASH, volume=0.01)
