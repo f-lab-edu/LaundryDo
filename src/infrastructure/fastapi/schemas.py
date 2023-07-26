@@ -36,7 +36,7 @@ class Clothes(BaseModel):
 
 
 class Order(BaseModel):
-    ## TODO : [Order] pydantic. received time by each status?
+    # TODO : [Order] pydantic. received time by each status?
     model_config = ConfigDict(from_attributes = True)
 
     orderid : str
