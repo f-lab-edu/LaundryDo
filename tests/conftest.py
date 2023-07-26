@@ -71,7 +71,7 @@ def order_factory(clothes_factory) :
 
 @pytest.fixture
 def laundrybag_factory(clothes_factory) :
-    def _laundrybag_factory(laundrybagid: str = f'laundrybag-{str(uuid4())[:2]}',
+    def _laundrybag_factory(laundrybagid: str = f'laundrybag-{str(uuid4())[:2]}-0',
                             clothes_list: List[Clothes] = [], 
                             created_at: datetime = today):
         return LaundryBag(laundrybagid = laundrybagid, clothes_list = clothes_list, created_at = created_at)

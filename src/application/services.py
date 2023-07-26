@@ -8,7 +8,7 @@ from src.application.unit_of_work import AbstractUnitOfWork
 
 from typing import List, Dict
 from datetime import datetime
-
+from uuid import uuid4
 
 class OrderNotFoundError(Exception) :
     pass
@@ -56,7 +56,7 @@ def put_clothes_in_laundrybag(laundrybag : LaundryBag, clothes : Clothes) -> Lau
         # 더 이상 clothes를 담지 못한다면, 세탁기로 이동하기 위한 상태로 변경
         laundrybag.status = LaundryBagState.READY
         laundrybag = LaundryBag(
-                        laundrybagid = f'bag-{clothes.label}-{int(laundrybag.laundrybagid.split("-")[-1]) + 1}',
+                        laundrybagid = f'bag-{clothes.label}-{str(uuid4())[:2]}-{int(laundrybag.laundrybagid.split("-")[-1]) + 1}',
                         clothes_list = [clothes],
                                 )
     return laundrybag
@@ -64,15 +64,14 @@ def put_clothes_in_laundrybag(laundrybag : LaundryBag, clothes : Clothes) -> Lau
     
 def allocate_laundrybag(uow : AbstractUnitOfWork) :
     with uow :
-        laundrylabeldict = distribute_order(uow.orders)
+        laundrylabeldict = distribute_order(uow.orders.get_by_status(status = OrderState.SENDING))
 
         for laundrylabel, clothes_list in laundrylabeldict.items() :
             waiting_bag = uow.laundrybags.get_waitingbag_by_label(label = laundrylabel)
-            if not waiting_bag :
-                waiting_bag = LaundryBag(laundrybagid = f'bag-{laundrylabel}-0')
-
+            
             for clothes in clothes_list :
                 waiting_bag = put_clothes_in_laundrybag(waiting_bag, clothes)
+                uow.laundrybags.add(waiting_bag)
         uow.commit()
 
 
