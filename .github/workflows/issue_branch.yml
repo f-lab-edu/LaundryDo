@@ -19,5 +19,5 @@ jobs :
               env : 
                     GITHUB_TOKEN: ${{ secrets.TOKEN}}
             - name: Echo Branch name
-              run : echo ${{ steps.Create_Issue_Branch.outputs.branchName }}
+              run : echo ${{ steps.create_issue_branch_job.outputs.branchName }}
     
