@@ -7,4 +7,5 @@ pydantic_settings
 aiomysql
 mysqlclient
 databases[aiosqlite]
+requests
 ipython
