@@ -1,4 +1,5 @@
 ## LaundryDo
+[![Python package](https://github.com/f-lab-edu/LaundryDo/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/f-lab-edu/LaundryDo/actions/workflows/test.yml)
 설명 : 빨래 대행 서비스  
 
 ### 어플리케이션 프로세스
