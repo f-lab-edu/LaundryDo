@@ -19,7 +19,7 @@ users = Table(
     'user', 
     metadata,
     Column('id', Integer, primary_key = True, autoincrement = True),
-    Column('address', String(255)), # TODO : validate?
+    Column('address', String(255)),
     Column('userid', String(20))
 )
 

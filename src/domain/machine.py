@@ -28,8 +28,8 @@ class Machine:
 
         self.status = MachineState.READY
 
-        ## TODO : sort by least recent used machine.
-        ## TODO : max volume may be different.
+        # TODO: [Machine] sort by least recent used machine.
+        # TODO : [Machine] max volume may be different.
 
     @property
     def volume(self):
@@ -65,7 +65,8 @@ class Machine:
         return laundryBag.volume <= MACHINE_MAXVOLUME
 
     def put(self, laundrybag: LaundryBag):
-        ## TODO : if machine is broken for some time, then move laundrybags to other machine
+        # TODO : [Machine] Broken Machine -> Move LaundryBags to other Machine
+        # 세탁기기가 고장날 경우 처리방법
         if self.can_contain(laundrybag) and self.status not in [MachineState.RUNNING, MachineState.BROKEN]:
             laundrybag.status = LaundryBagState.RUN
             self.contained = laundrybag

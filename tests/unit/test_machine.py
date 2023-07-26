@@ -62,7 +62,8 @@ def test_machine_stop_and_resume_returns_remaining_time(laundrybag_factory, clot
 
 
 def test_running_machine_stops_if_requiredTime_passed():
-    # TODO : continuous monitoring on machine state is required, maybe event listening...?
+    # TODO : [Machine] continuous monitoring on machine state is required, maybe event listening...?
+    # 시간 처리 방법
     pass
 
 

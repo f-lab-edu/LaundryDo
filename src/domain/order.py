@@ -17,8 +17,7 @@ class OrderState(Enum) :
     DONE = '완료'
 
 class Order:
-    ## TODO : received time by each status?
-    ## TODO : private property
+    # TODO : [Order] received time by each status?
     
     def __init__(self, 
                  userid : str,

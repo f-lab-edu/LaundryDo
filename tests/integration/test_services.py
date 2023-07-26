@@ -31,8 +31,10 @@ class FakeSession:
 # LaundryBag #
 ##############
 
-########TODO
 def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(session, order_factory, laundrybag_factory, clothes_factory):
+    #TODO : [Order->LaundryBags] allocate_laundrybags
+    
+    
     # 새로운 주문(물세탁 빨래 volume 5) 추가.
     order_repo = SqlAlchemyOrderRepository(session)    
     order_repo.add(order_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 5)]))
@@ -118,7 +120,6 @@ def test_multiple_orders_distributed_into_laundrybags(session, order_factory, cl
     order_repo = SqlAlchemyOrderRepository(session)
     
     for i in range(2) :
-        ## TODO :
         clothes_list = [clothes_factory(label = label_options[ i%2 ], volume = 3.0, received_at = today) for _ in range(9)]
         new_order = order_factory(orderid = f'order-{i}', clothes_list = clothes_list )
         multiple_orders.append(new_order)

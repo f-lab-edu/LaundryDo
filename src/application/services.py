@@ -61,35 +61,6 @@ def put_clothes_in_laundrybag(laundrybag : LaundryBag, clothes : Clothes) -> Lau
                                 )
     return laundrybag
 
-
-
-# def put_in_laundrybag(waiting_bag, clothes_list : List[Clothes]) :
-
-#     # TODO : 수정 필요. 현재 새로운 laundrybag 이름 생성시, 전체 laundrybag 갯수에서 +1'
-
-#     laundrybag_num = 0
-
-#     # sort by date
-#     clothes_list.sort()
-
-#     # 대기 중인 Laundrybag은 항상 한 개 라고 가정.
-
-#     total_bags = []
-
-#     for clothes in clothes_list :
-#         if waiting_bag is None :
-#             laundrybag_num += 1
-#             waiting_bag = LaundryBag(laundrybagid = f'test-laundrybag-{laundrybag_num}', clothes_list=[clothes], created_at = datetime.now() ) ## TODO : naming of the laundrybagid
-#         elif waiting_bag.can_contain(clothes.volume) :
-#             waiting_bag.append(clothes)
-#         else :
-#             # if waiting_bag.volume >= LAUNDRY_MINVOLUME :
-#             waiting_bag.status = LaundryBagState.READY
-#             total_bags.append(waiting_bag)
-#             waiting_bag = None
-#         #     raise ValueError('if minvolume is not fulfilled, try other clothes?')
-
-#     return total_bags
     
 def allocate_laundrybag(uow : AbstractUnitOfWork) :
     with uow :
@@ -107,8 +78,6 @@ def allocate_laundrybag(uow : AbstractUnitOfWork) :
 
 def reclaim_clothes_into_order(finished_laundrybags : List[LaundryBag]) -> List[Order]:
     
-    # finished_laundrybags = uow.laundrybags.get_by_status(status = LaundryBagState.DONE)
-
     reclaimed_dict = {}
 
     for laundryBag in finished_laundrybags:
@@ -118,13 +87,6 @@ def reclaim_clothes_into_order(finished_laundrybags : List[LaundryBag]) -> List[
                 reclaimed_dict[clothes.orderid] = [clothes]
             else:
                 reclaimed_dict[clothes.orderid].append(clothes)
-
-    # reclaimed_list = []
-    # for orderid, reclaimed in reclaimed_dict.items():
-    #     reclaimed_list.append(
-    #         Order(orderid=orderid, clothes_list=reclaimed, status=OrderState.RECLAIMING)
-    #     )
-
 
     return reclaimed_dict
 
@@ -153,7 +115,8 @@ def allocate(uow : AbstractUnitOfWork, laundrybag : LaundryBag) :
             uow.commit()
         except StopIteration :
             print('No available Machine right now. Putting laundrybag in waiting list')    
-            ## TODO : how to monitor laudnrybag that was not able to be allocated at once.
+            # TODO : [LaundryBag -> Machine]
+            # how to monitor laundrybag that was not able to be allocated at once.
 
 def ship(uow : AbstractUnitOfWork, order: Order) : 
     if get_clothes_in_process(order) is None and order.status == OrderState.SHIP_READY :

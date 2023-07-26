@@ -20,7 +20,7 @@ class LaundryBagState(str, Enum) :
 class LaundryBag:
     
     def __init__(self, laundrybagid : str, clothes_list: List[Clothes] = [], created_at: datetime = None):
-        ## TODO : if clothes does not have orderid, it cannot be in laundrybag
+        ## TODO : [LaundryBag] if clothes does not have orderid, it cannot be in laundrybag
         self.laundrybagid = laundrybagid
         self.created_at = created_at
         self.status = LaundryBagState.COLLECTING
