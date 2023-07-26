@@ -59,12 +59,13 @@ def user_factory() :
 
 @pytest.fixture
 def order_factory(clothes_factory) :
-    def _order_factory(orderid: str = f'order-{str(uuid4())[:2]}', 
+    def _order_factory(userid : str = f'user-{str(uuid4())[:2]}',
+                       orderid: str = f'order-{str(uuid4())[:2]}', 
                        clothes_list: List[Clothes] = [clothes_factory(label=LaundryLabel.WASH, received_at = today)], 
                        received_at: Optional[datetime] = None, 
                        status : OrderState = OrderState.SENDING
                     ) :
-        return Order(orderid = orderid, clothes_list = clothes_list, received_at = received_at, status = status)
+        return Order(userid = userid, orderid = orderid, clothes_list = clothes_list, received_at = received_at, status = status)
 
     yield _order_factory
 

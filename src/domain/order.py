@@ -21,10 +21,12 @@ class Order:
     ## TODO : private property
     
     def __init__(self, 
+                 userid : str,
                  orderid : str,
                  clothes_list : List[Clothes] = [],
                  received_at : Optional[datetime] = None,
                  status : OrderState = OrderState.SENDING) :
+        self.userid = userid
         self.orderid = orderid
         self.clothes_list = clothes_list
         self.received_at = received_at

@@ -154,7 +154,7 @@ def test_multiple_orders_distributed_into_laundrybags(session, order_factory, cl
 def test_clothes_finished_laundry_reclaim_by_orderid(session_factory, clothes_factory):
     orderid_list = ["EUNSUNG_o3_230715", "SAM_o18_230714", "LUKE_01_230716"]
 
-    uow = MemoryUnitOfWork()
+    uow = SqlAlchemyUnitOfWork(session_factory)
 
     with uow :
         for i in range(len(orderid_list)):
@@ -176,12 +176,15 @@ def test_clothes_finished_laundry_reclaim_by_orderid(session_factory, clothes_fa
         assert len(uow.laundrybags.list()) == 3
         
         finished_laundrybags = uow.laundrybags.get_by_status(status = LaundryBagState.DONE)
-        reclaimed_order_list = reclaim_clothes_into_order(finished_laundrybags)
-        for order in reclaimed_order_list :
-            uow.orders.add(order)
+        reclaimed_order_dict = reclaim_clothes_into_order(finished_laundrybags)
+        
+        for orderid, clothes_list in reclaimed_order_dict.items() :
+            for clothes in clothes_list :
+                uow.clothes.add(clothes)
         uow.commit()
             
     
 
-    assert set([order.orderid for order in uow.orders.list()]) == set(orderid_list) and \
-                len(reclaimed_order_list) == len(orderid_list)
+    assert all([clothes.status == ClothesState.RECLAIMED for clothes in uow.clothes.list()]) and \
+            len(reclaimed_order_dict) == len(orderid_list)
+            #set([order.orderid for order in uow.orders.list()]) == set(orderid_list) and \

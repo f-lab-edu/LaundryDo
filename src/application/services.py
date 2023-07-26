@@ -14,18 +14,20 @@ class OrderNotFoundError(Exception) :
     pass
 
 
-def request_order(order : Order, uow : AbstractUnitOfWork) :
+def request_order(uow : AbstractUnitOfWork, orderid, clothes_list, received_at, status) :
     with uow :
-        uow.orders.add(order)
+        uow.orders.add(Order(orderid, [Clothes(**dict(clothes)) for clothes in clothes_list], received_at, status))
         uow.commit()
 
-def cancel_order(orderid : str, uow : AbstractUnitOfWork) :
+
+def cancel_order(uow : AbstractUnitOfWork, userid : str, orderid : str) :
     with uow : 
-        [order] = uow.orders.get(orderid)
+        [order] = uow.orders.filter(userid = userid).get(orderid)
         if order.status in [OrderState.SENDING, OrderState.PREPARING] :
             # cancel the order
             raise OrderNotFoundError
         uow.commit()
+    return order
 
 
 # order -> laundrybags process
@@ -117,14 +119,14 @@ def reclaim_clothes_into_order(finished_laundrybags : List[LaundryBag]) -> List[
             else:
                 reclaimed_dict[clothes.orderid].append(clothes)
 
-    reclaimed_list = []
-    for orderid, reclaimed in reclaimed_dict.items():
-        reclaimed_list.append(
-            Order(orderid=orderid, clothes_list=reclaimed, status=OrderState.RECLAIMING)
-        )
+    # reclaimed_list = []
+    # for orderid, reclaimed in reclaimed_dict.items():
+    #     reclaimed_list.append(
+    #         Order(orderid=orderid, clothes_list=reclaimed, status=OrderState.RECLAIMING)
+    #     )
 
 
-    return reclaimed_list
+    return reclaimed_dict
 
 
 def get_clothes_in_process(order: Order) -> List[Clothes]:
