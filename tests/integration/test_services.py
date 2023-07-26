@@ -6,6 +6,7 @@ from src.application import (
     put_clothes_in_laundrybag,
     reclaim_clothes_into_order,
     get_clothes_in_process,
+    allocate_laundrybag, 
     allocate,
     ship
 )
@@ -17,50 +18,9 @@ from src.infrastructure.db.sqlalchemy.repository import SqlAlchemyOrderRepositor
 
 import pytest
 from datetime import datetime
+from uuid import uuid4
 
 today = datetime.today()
-
-class FakeSession:
-    committed = False
-
-    def commit(self):
-        self.committed = True
-
-
-##############
-# LaundryBag #
-##############
-
-########TODO
-def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(session, order_factory, laundrybag_factory, clothes_factory):
-    # 새로운 주문(물세탁 빨래 volume 5) 추가.
-    order_repo = SqlAlchemyOrderRepository(session)    
-    order_repo.add(order_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 5)]))
-    session.commit()
-
-    # 기존의 LaundryBag(volume 20) 추가. max_volume 25. 
-    laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
-    laundrybag_repo.add(laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 20)]))
-    session.commit()
-
-    order_list = order_repo.get_by_status(status = OrderState.SENDING)
-    
-    laundrylabeldict = distribute_order(order_list)
-
-    for laundrylabel, clothes_list in laundrylabeldict.items() :
-        waiting_bag = laundrybag_repo.get_waitingbag_by_label(label = laundrylabel)
-        if not waiting_bag :
-            waiting_bag = LaundryBag(laundrybagid = f'bag-{laundrylabel}-0')
-
-        for clothes in clothes_list :
-            waiting_bag = put_clothes_in_laundrybag(waiting_bag, clothes)
-        session.commit()
-    
-
-    laundrybags_in_ready = laundrybag_repo.get_by_status(status = LaundryBagState.READY)
-
-    assert len(laundrybag_repo.list()) == 2
-
 
 
 def test_order_sort_by_laundrybags(order_factory, clothes_factory):
@@ -81,14 +41,67 @@ def test_order_sort_by_laundrybags(order_factory, clothes_factory):
     assert len(laundrylabeldict) == 2
 
 
+
+########TODO
+def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(session, session_factory, order_factory, laundrybag_factory, clothes_factory):
+    # 새로운 주문(물세탁 빨래 volume 5) 추가.
+
+    # uow = SqlAlchemyUnitOfWork(session_factory)
+
+    # with uow :
+    #     uow.orders.add(order_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 6)]))
+    #     uow.laundrybags.add(laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 20)]))
+    #     uow.commit()
+
+    # with uow :
+    #     allocate_laundrybag(uow)
+    #     uow.commit()
+
+    # assert len(uow.laundrybags.list()) == 2
+
+
+#################
+    order_repo = SqlAlchemyOrderRepository(session)    
+    order_repo.add(order_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 6)]))
+    session.commit()
+
+    # 기존의 LaundryBag(volume 20) 추가. max_volume 25. 
+    laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
+    laundrybag_repo.add(laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 20)]))
+    session.commit()
+
+    order_list = order_repo.get_by_status(status = OrderState.SENDING)
+    
+    laundrylabeldict = distribute_order(order_list)
+
+    for laundrylabel, clothes_list in laundrylabeldict.items() :
+        waiting_bag = laundrybag_repo.get_waitingbag_by_label(label = laundrylabel)
+
+        for clothes in clothes_list :
+            waiting_bag = put_clothes_in_laundrybag(waiting_bag, clothes)
+        session.commit()
+    
+
+    laundrybags_in_ready = laundrybag_repo.get_by_status(status = LaundryBagState.READY)
+
+    assert len(laundrybag_repo.list()) == 2
+
+
+
+
+
 def test_load_waiting_laundrybag(session, laundrybag_factory, clothes_factory) :
+    
+    
     laundrylabel = LaundryLabel.WASH
     # setup
+
+    laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
     clothes = clothes_factory(volume = 20, label = laundrylabel)
     laundrybag = laundrybag_factory(clothes_list = [clothes])
 
-    laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
     laundrybag_repo.add(laundrybag)
+    session.commit()
     
 
     # new clothes
@@ -96,9 +109,6 @@ def test_load_waiting_laundrybag(session, laundrybag_factory, clothes_factory) :
 
     # load existing laundrybag
     waiting_bag = laundrybag_repo.get_waitingbag_by_label(laundrylabel)
-    
-    if not waiting_bag :
-        waiting_bag = LaundryBag(laundrybagid = f'bag-{laundrylabel}-0')
 
     new_bag = put_clothes_in_laundrybag(waiting_bag, new_clothes)
     laundrybag_repo.add(new_bag)
@@ -135,8 +145,9 @@ def test_multiple_orders_distributed_into_laundrybags(session, order_factory, cl
 
     for laundrylabel, clothes_list in laundrylabeldict.items() :
         waiting_bag = laundrybag_repo.get_waitingbag_by_label(label = laundrylabel)
-        if not waiting_bag :
-            waiting_bag = LaundryBag(laundrybagid = f'bag-{laundrylabel}-0')
+        
+        # if not waiting_bag :
+        #     waiting_bag = LaundryBag(laundrybagid = f'bag-{laundrylabel}-{str(uuid4())[:2]}-0')
 
         for clothes in clothes_list :
             waiting_bag = put_clothes_in_laundrybag(waiting_bag, clothes)

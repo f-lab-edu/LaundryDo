@@ -19,6 +19,8 @@ from src.domain import (
     LaundryBagState
 )
 
+from uuid import uuid4
+from datetime import datetime
 from typing import List
 
 class SqlAlchemyUserRepository(UserRepository) :
@@ -93,8 +95,15 @@ class SqlAlchemyLaundryBagRepository(LaundryBagRepository) :
         '''
         get list of laundrybags that are LaundryBagState.READY and LaundryLabel
         '''
-        return self.session.query(LaundryBag).filter_by(status = LaundryBagState.COLLECTING) \
-                                                .filter_by(label = label).first()
+        waiting_list = self.session.query(LaundryBag).filter_by(status = LaundryBagState.COLLECTING).all()
+
+        waiting_bag_by_label = [bag for bag in waiting_list if bag.label == label]
+        if not waiting_bag_by_label :
+            waiting_bag_by_label = LaundryBag(laundrybagid=f'bag-{label}-{str(uuid4())[:2]}-0', created_at = datetime.now())
+        else :
+            waiting_bag_by_label = waiting_bag_by_label[0]
+
+        return waiting_bag_by_label                  
 
     def list(self) :
         return self.session.query(LaundryBag).all()

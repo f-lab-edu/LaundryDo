@@ -8,7 +8,7 @@ from src.application.unit_of_work import AbstractUnitOfWork
 
 from typing import List, Dict
 from datetime import datetime
-
+from uuid import uuid4
 
 class OrderNotFoundError(Exception) :
     pass
@@ -56,52 +56,24 @@ def put_clothes_in_laundrybag(laundrybag : LaundryBag, clothes : Clothes) -> Lau
         # 더 이상 clothes를 담지 못한다면, 세탁기로 이동하기 위한 상태로 변경
         laundrybag.status = LaundryBagState.READY
         laundrybag = LaundryBag(
-                        laundrybagid = f'bag-{clothes.label}-{int(laundrybag.laundrybagid.split("-")[-1]) + 1}',
+                        laundrybagid = f'bag-{clothes.label}-{str(uuid4())[:2]}-{int(laundrybag.laundrybagid.split("-")[-1]) + 1}',
                         clothes_list = [clothes],
                                 )
     return laundrybag
 
 
 
-# def put_in_laundrybag(waiting_bag, clothes_list : List[Clothes]) :
-
-#     # TODO : 수정 필요. 현재 새로운 laundrybag 이름 생성시, 전체 laundrybag 갯수에서 +1'
-
-#     laundrybag_num = 0
-
-#     # sort by date
-#     clothes_list.sort()
-
-#     # 대기 중인 Laundrybag은 항상 한 개 라고 가정.
-
-#     total_bags = []
-
-#     for clothes in clothes_list :
-#         if waiting_bag is None :
-#             laundrybag_num += 1
-#             waiting_bag = LaundryBag(laundrybagid = f'test-laundrybag-{laundrybag_num}', clothes_list=[clothes], created_at = datetime.now() ) ## TODO : naming of the laundrybagid
-#         elif waiting_bag.can_contain(clothes.volume) :
-#             waiting_bag.append(clothes)
-#         else :
-#             # if waiting_bag.volume >= LAUNDRY_MINVOLUME :
-#             waiting_bag.status = LaundryBagState.READY
-#             total_bags.append(waiting_bag)
-#             waiting_bag = None
-#         #     raise ValueError('if minvolume is not fulfilled, try other clothes?')
-
-#     return total_bags
     
 def allocate_laundrybag(uow : AbstractUnitOfWork) :
     with uow :
-        laundrylabeldict = distribute_order(uow.orders)
+        laundrylabeldict = distribute_order(uow.orders.get_by_status(status = OrderState.SENDING))
 
         for laundrylabel, clothes_list in laundrylabeldict.items() :
             waiting_bag = uow.laundrybags.get_waitingbag_by_label(label = laundrylabel)
-            if not waiting_bag :
-                waiting_bag = LaundryBag(laundrybagid = f'bag-{laundrylabel}-0')
-
+            
             for clothes in clothes_list :
                 waiting_bag = put_clothes_in_laundrybag(waiting_bag, clothes)
+                uow.laundrybags.add(waiting_bag)
         uow.commit()
 
 
