@@ -8,7 +8,7 @@ from src.domain import (
     Machine
 )
 
-from src.infrastructure.db.memory.repository import (
+from src.infrastructure.repository import (
     MemoryUserRepository,
     MemoryOrderRepository,
     MemoryClothesRepository,
@@ -16,7 +16,7 @@ from src.infrastructure.db.memory.repository import (
     MemoryMachineRepository
 )
 
-from src.infrastructure.db.sqlalchemy.repository import (
+from src.infrastructure.repository import (
     SqlAlchemyUserRepository,
     SqlAlchemyOrderRepository,
     SqlAlchemyClothesRepository,

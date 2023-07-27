@@ -13,8 +13,8 @@ from src.application import (
 
 from src.application.unit_of_work import SqlAlchemyUnitOfWork, MemoryUnitOfWork
 
-from src.infrastructure.db.memory.repository import MemoryOrderRepository, MemoryLaundryBagRepository
-from src.infrastructure.db.sqlalchemy.repository import SqlAlchemyOrderRepository, SqlAlchemyLaundryBagRepository
+from src.infrastructure.repository import MemoryOrderRepository, MemoryLaundryBagRepository
+from src.infrastructure.repository import SqlAlchemyOrderRepository, SqlAlchemyLaundryBagRepository
 
 import pytest
 from datetime import datetime
