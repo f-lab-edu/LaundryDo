@@ -1,4 +1,4 @@
-from src.domain import (
+from src.dbmodel import (
     LaundryLabel, 
     LaundryBagState,
     ClothesState, 
@@ -11,14 +11,14 @@ from datetime import datetime
 
 today = datetime.today()
 
-def test_clothes_in_an_order_has_all_same_order_id(order_factory, clothes_factory):
+def test_clothes_in_an_order_has_all_same_order_id(dbmodel_order_factory, dbmodel_clothes_factory):
 
-    new_order = order_factory(clothes_list = [clothes_factory() for _ in range(10)])
+    new_order = dbmodel_order_factory(clothes_list = [dbmodel_clothes_factory() for _ in range(10)])
     assert len(set(order.orderid for order in new_order.clothes_list)) == 1
 
 
 
-def test_multiple_orders_with_same_label_and_over_max_volume_distributed_into_laundrybags(order_factory, clothes_factory) :
+def test_multiple_orders_with_same_label_and_over_max_volume_distributed_into_laundrybags(dbmodel_order_factory, dbmodel_clothes_factory) :
     pass
 
 

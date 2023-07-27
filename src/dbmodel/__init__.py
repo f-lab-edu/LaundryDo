@@ -6,3 +6,5 @@ from .clothes import Clothes, ClothesState, LaundryLabel
 from .laundrybag import LaundryBag, LaundryBagState
 from .machine import Machine, MachineState
 
+from sqlalchemy.orm import declarative_base
+

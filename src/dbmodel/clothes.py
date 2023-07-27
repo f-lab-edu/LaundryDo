@@ -6,7 +6,7 @@ import sqlalchemy
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 
-Base = declarative_base()
+from .base import Base
 
 
 class ClothesState(str, Enum):
@@ -33,8 +33,8 @@ class Clothes(Base) :
     label = Column('label', sqlalchemy.Enum(LaundryLabel))
     volume = Column('volume', Float)
     orderid = Column('orderid', String(255), ForeignKey('order.orderid'))
-    laundrybagid = Column('laundrybagid', String(255), ForeignKey('laundrybag.laundrybagid'))
-    status = Column('status', sqlalchemy.Enum(ClothesState))
+    laundrybagid = Column('laundrybagid', String(255), ForeignKey('laundrybag.laundrybagid'), nullable = True)
+    status = Column('status', sqlalchemy.Enum(ClothesState), default = ClothesState.PREPARING)
     received_at = Column('received_at', DateTime)
 
     

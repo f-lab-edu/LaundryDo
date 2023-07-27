@@ -1,9 +1,15 @@
 from .clothes import Clothes
+from .base import Base
 
-from pydantic import BaseModel, ConfigDict, validator
 from enum import Enum
 from typing import List, Optional
 from datetime import datetime
+
+
+import sqlalchemy
+from sqlalchemy import orm
+from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 
 
 class OrderState(Enum) :
@@ -16,8 +22,15 @@ class OrderState(Enum) :
     SHIPPING = '배송중'
     DONE = '완료'
 
-class Order:
+class Order(Base):
     # TODO : [Order] received time by each status?
+    __tablename__ = 'order'
+
+    id = Column('id', Integer, primary_key = True, autoincrement = True)
+    orderid = Column('orderid', String(255))
+    received_at = Column('received_at', DateTime, nullable = True)
+    status = Column('status', sqlalchemy.Enum(OrderState))
+    userid = Column('userid', String(20), ForeignKey('user.userid'))
     
     def __init__(self, 
                  userid : str,

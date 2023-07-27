@@ -6,6 +6,8 @@ from src import dbmodel
 from src.infrastructure.db.sqlalchemy.orm import start_mappers
 from src.infrastructure.db.sqlalchemy.setup import metadata
 
+from src.dbmodel.base import Base
+
 import requests
 from requests.exceptions import ConnectionError
 from uuid import uuid4
@@ -53,7 +55,7 @@ def clothes_factory() :
 
 @pytest.fixture
 def dbmodel_clothes_factory() :
-    def dbmodel_clothes_factory(clothesid = None, label=None, volume=None, status=None, received_at = None):
+    def _dbmodel_clothes_factory(clothesid = None, label=None, volume=None, status=None, received_at = None):
         if clothesid is None :
             clothesid = f'clothes-{str(uuid4())[:2]}'
         if label is None:
@@ -61,19 +63,51 @@ def dbmodel_clothes_factory() :
 
         if volume is None:
             volume = float(random.randint(5, 15))
-        if status is None:
-            status = random.choice(
-                [
-                    ClothesState.PREPARING,
-                    ClothesState.CANCELLED,
-                    ClothesState.DISTRIBUTED,
-                    ClothesState.PROCESSING,
-                    ClothesState.DONE,
-                    ClothesState.RECLAIMED
-                ]
-            )
+        # if status is None:
+        #     status = random.choice(
+        #         [
+        #             ClothesState.PREPARING,
+        #             ClothesState.CANCELLED,
+        #             ClothesState.DISTRIBUTED,
+        #             ClothesState.PROCESSING,
+        #             ClothesState.DONE,
+        #             ClothesState.RECLAIMED
+        #         ]
+        #     )
         return dbmodel.Clothes(clothesid=clothesid, label=label, volume=volume, status=status, received_at=received_at)
-    yield dbmodel_clothes_factory
+    yield _dbmodel_clothes_factory
+
+@pytest.fixture
+def dbmodel_laundrybag_factory(dbmodel_clothes_factory) :
+    def _dbmodel_laundrybag_factory(laundrybagid: str = f'laundrybag-{str(uuid4())[:2]}-0',
+                            clothes_list: List[Clothes] = [], 
+                            created_at: datetime = today):
+        return dbmodel.LaundryBag(laundrybagid = laundrybagid, clothes_list = clothes_list, created_at = created_at)
+
+    yield _dbmodel_laundrybag_factory
+
+
+
+@pytest.fixture
+def dbmodel_order_factory(clothes_factory) :
+    def _dbmodel_order_factory(userid : str = f'user-{str(uuid4())[:2]}',
+                       orderid: str = f'order-{str(uuid4())[:2]}', 
+                       clothes_list: List[Clothes] = [clothes_factory(label=LaundryLabel.WASH, received_at = today)], 
+                       received_at: Optional[datetime] = None, 
+                       status : OrderState = OrderState.SENDING
+                    ) :
+        return dbmodel.Order(userid = userid, orderid = orderid, clothes_list = clothes_list, received_at = received_at, status = status)
+
+    yield _dbmodel_order_factory
+
+
+@pytest.fixture
+def dbmodel_user_factory() :
+    def _dbmodel_user_factory(userid: str = f'user-{str(uuid4())[:2]}', address: str = 'test-adress', orderlist : List = []) :
+        return dbmodel.User(userid = userid, address= address, orderlist = orderlist)
+
+    yield _dbmodel_user_factory
+
 
 
 
@@ -122,6 +156,20 @@ def session_factory(in_memory_db) :
 @pytest.fixture
 def session(session_factory) :
     return session_factory()
+
+@pytest.fixture
+def base_in_memory_db() :
+    engine = create_engine('sqlite:///:memory:')
+    Base.metadata.create_all(engine)
+    return engine
+
+@pytest.fixture
+def base_session_factory(base_in_memory_db) :
+    yield sessionmaker(bind = base_in_memory_db,  autoflush=False, autocommit = False)
+
+@pytest.fixture
+def base_session(base_session_factory) :
+    return base_session_factory()
 
 # def wait_for_webapp_to_come_up() :
 #     deadline = time.time() + 10

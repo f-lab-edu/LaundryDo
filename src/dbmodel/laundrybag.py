@@ -1,10 +1,17 @@
 from .spec import LAUNDRYBAG_MAXVOLUME
-from .clothes import Clothes, ClothesState
+from .clothes import Clothes, ClothesState, LaundryLabel
 
 from enum import Enum
-from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from datetime import datetime
+
+import sqlalchemy
+from sqlalchemy import orm
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
+
+from .base import Base
+
 
 class MaximumVolumeExceedError(Exception) :
     pass
@@ -17,29 +24,30 @@ class LaundryBagState(str, Enum) :
 
 
 
-class LaundryBag:
+class LaundryBag(Base):
     
     __tablename__ = 'laundrybag'
-    
-    metadata,
-    Column('id', Integer, primary_key = True, autoincrement = True), 
-    Column('laundrybagid', String(255)),
-    Column('status', Enum(LaundryBagState)),
+
+    id = Column('id', Integer, primary_key = True, autoincrement = True)
+    laundrybagid = Column('laundrybagid', String(255))
+    status = Column('status', sqlalchemy.Enum(LaundryBagState), default = LaundryBagState.COLLECTING)
     # Column('clothesid', ForeignKey('clothes.id')),
-    Column('machineid', ForeignKey('machine.id'), nullable = True),
-    Column('created_at', DateTime),
-    Column('label', Enum(LaundryLabel)),
+    machineid = Column('machineid', ForeignKey('machine.id'), nullable = True)
+    created_at = Column('created_at', DateTime)
+    label = Column('label', sqlalchemy.Enum(LaundryLabel))
+    clothes_list = relationship('Clothes', backref = 'laundrybag')
 
-
-    def __init__(self, laundrybagid : str, clothes_list: List[Clothes] = [], created_at: datetime = None):
+   
+    def __init__(self, laundrybagid, created_at, status = LaundryBagState.COLLECTING, clothes_list = []) : 
         ## TODO : [LaundryBag] if clothes does not have orderid, it cannot be in laundrybag
         self.laundrybagid = laundrybagid
         self.created_at = created_at
-        self.status = LaundryBagState.COLLECTING
+        self.status = status
         self.clothes_list = clothes_list
 
-        for clothes in clothes_list :
+        for clothes in self.clothes_list :
             clothes.status = ClothesState.DISTRIBUTED
+        
 
     def can_contain(self, volume : float) :
         return self.volume + volume <= LAUNDRYBAG_MAXVOLUME
@@ -73,4 +81,4 @@ class LaundryBag:
             )
 
     def __repr__(self) :
-        return f'<{self.laundrybagid}|무게:{self.volume}|라벨:{self.label}>'
+        return f'<laundrybag id={self.laundrybagid}, 무게:{self.volume}|라벨:{self.label}>'
