@@ -13,14 +13,14 @@ services:
 
     expose :
       - 3306
-    volumes :
-      - ./mysql/conf.d:/etc/mysql/conf.d
-      - ./mysql/data:/var/lib/mysql
+    # volumes :
+    #   - ./mysql/conf.d:/etc/mysql/conf.d
+    #   - ./mysql/data:/var/lib/mysql
       
     env_file: .env
     restart : always
-    healthcheck: 
-      test: curl -fsS mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE} || exit 1                                # ${DB_HOST}:${DB_PORT}/{DB_DATABASE} || exit 1
+    # healthcheck: 
+    #   test: curl -fsS mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE} || exit 1                                # ${DB_HOST}:${DB_PORT}/{DB_DATABASE} || exit 1
       # test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       # timeout: 20s
       # retries: 10
@@ -31,8 +31,11 @@ services:
   fastapi-server:
     container_name: fastapi-server-container
     depends_on : 
-      db-server:
-        condition : service_healthy
+      command : 
+        - |
+            sleep 8s
+      # db-server:
+      #   condition : service_healthy
     build :
       context: .
       dockerfile: Dockerfile
