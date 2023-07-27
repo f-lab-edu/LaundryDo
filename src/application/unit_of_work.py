@@ -9,7 +9,7 @@ from src.domain.repository import  (
     MachineRepository
 )
 
-from src.infrastructure.db.memory.repository import (
+from src.infrastructure.repository import (
     MemoryClothesRepository,
     MemoryLaundryBagRepository,
     MemoryMachineRepository,
@@ -20,7 +20,7 @@ from src.infrastructure.db.memory.repository import (
 
 
 from src.infrastructure.db.sqlalchemy.setup import session
-from src.infrastructure.db.sqlalchemy.repository import (
+from src.infrastructure.repository import (
     SqlAlchemyClothesRepository,
     SqlAlchemyLaundryBagRepository,
     SqlAlchemyMachineRepository,
