@@ -1,6 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
+from src import dbmodel 
+
 from src.infrastructure.db.sqlalchemy.orm import start_mappers
 from src.infrastructure.db.sqlalchemy.setup import metadata
 
@@ -47,6 +49,32 @@ def clothes_factory() :
             )
         return Clothes(clothesid=clothesid, label=label, volume=volume, status=status, received_at=received_at)
     yield _clothes_factory
+
+
+@pytest.fixture
+def dbmodel_clothes_factory() :
+    def dbmodel_clothes_factory(clothesid = None, label=None, volume=None, status=None, received_at = None):
+        if clothesid is None :
+            clothesid = f'clothes-{str(uuid4())[:2]}'
+        if label is None:
+            label = random.choice([LaundryLabel.WASH, LaundryLabel.DRY, LaundryLabel.HAND])
+
+        if volume is None:
+            volume = float(random.randint(5, 15))
+        if status is None:
+            status = random.choice(
+                [
+                    ClothesState.PREPARING,
+                    ClothesState.CANCELLED,
+                    ClothesState.DISTRIBUTED,
+                    ClothesState.PROCESSING,
+                    ClothesState.DONE,
+                    ClothesState.RECLAIMED
+                ]
+            )
+        return dbmodel.Clothes(clothesid=clothesid, label=label, volume=volume, status=status, received_at=received_at)
+    yield dbmodel_clothes_factory
+
 
 
 @pytest.fixture
