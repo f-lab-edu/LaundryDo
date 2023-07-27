@@ -102,3 +102,14 @@ class Machine:
             self.lastupdateTime = exec_time
         else:
             raise ValueError(f"cannot stop when {self.status}")
+        
+
+    def is_done(self, exec_time) :
+        return self.remainingTime(exec_time) <= 0
+
+    def finish(self) :
+        if self.contained and self.is_done() :
+            for clothes in self.contained.clothes_list :
+                clothes.status = ClothesState.DONE
+            return True
+        return False

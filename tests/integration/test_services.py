@@ -1,4 +1,4 @@
-from src.domain import LaundryLabel, LaundryBagState, LaundryBag, ClothesState, OrderState
+from src.dbmodel import LaundryLabel, LaundryBagState, LaundryBag, ClothesState, OrderState
 from src.application import (
     request_order,
     cancel_order,

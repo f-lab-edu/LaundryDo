@@ -15,7 +15,7 @@ import random
 
 from typing import List, Dict, Optional 
 
-from src.domain import Clothes, ClothesState, LaundryBag, LaundryLabel, Order, User, OrderState
+from src.dbmodel import Clothes, ClothesState, LaundryBag, LaundryLabel, Order, User, OrderState
 import config
 
 import time
@@ -78,7 +78,7 @@ def dbmodel_clothes_factory() :
     yield _dbmodel_clothes_factory
 
 @pytest.fixture
-def dbmodel_laundrybag_factory(dbmodel_clothes_factory) :
+def dbmodel_laundrybag_factory() :
     def _dbmodel_laundrybag_factory(laundrybagid: str = f'laundrybag-{str(uuid4())[:2]}-0',
                             clothes_list: List[Clothes] = [], 
                             created_at: datetime = today):

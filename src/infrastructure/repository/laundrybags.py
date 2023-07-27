@@ -1,5 +1,5 @@
 from src.domain.repository import LaundryBagRepository
-from src.domain import LaundryBag, LaundryBagState, LaundryLabel
+from src.dbmodel import LaundryBag, LaundryBagState, LaundryLabel
 from typing import List
 
 from uuid import uuid4

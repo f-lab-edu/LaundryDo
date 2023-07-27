@@ -12,7 +12,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 
 
-class OrderState(Enum) :
+class OrderState(str, Enum) :
     CANCELLED = '취소'
     SENDING = '이동중'
     PREPARING = '준비중'
@@ -31,13 +31,14 @@ class Order(Base):
     received_at = Column('received_at', DateTime, nullable = True)
     status = Column('status', sqlalchemy.Enum(OrderState))
     userid = Column('userid', String(20), ForeignKey('user.userid'))
+    clothes_list = relationship('Clothes', backref = 'order')
     
     def __init__(self, 
                  userid : str,
                  orderid : str,
                  clothes_list : List[Clothes] = [],
                  received_at : Optional[datetime] = None,
-                 status : OrderState = OrderState.SENDING) :
+                 status : OrderState = OrderState.SENDING ) :
         self.userid = userid
         self.orderid = orderid
         self.clothes_list = clothes_list
@@ -53,4 +54,4 @@ class Order(Base):
         return sum(clothes.volume for clothes in self.clothes_list)
 
     def __repr__(self) :
-        return f'Order <{self.orderid}>, {len(self.clothes_list)}, {self.status}'
+        return f'Order id=<{self.orderid}>, #clothes={len(self.clothes_list)}, status={self.status}'

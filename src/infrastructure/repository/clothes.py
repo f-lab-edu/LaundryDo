@@ -1,6 +1,6 @@
 
 from src.domain.repository import ClothesRepository
-from src.domain import Clothes, ClothesState
+from src.dbmodel import Clothes, ClothesState
 from typing import List
 
 class MemoryClothesRepository(ClothesRepository) :

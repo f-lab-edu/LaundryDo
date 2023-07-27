@@ -1,5 +1,5 @@
 from src.domain.repository import UserRepository
-from src.domain import User
+from src.dbmodel import User
 
 
 class MemoryUserRepository(UserRepository) :
