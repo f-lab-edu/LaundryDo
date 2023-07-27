@@ -31,7 +31,7 @@ from src.infrastructure.db.sqlalchemy.orm import start_mappers
 
 import config
 
-# from src.infrastructure.db.sqlalchemy.repository import (
+# from src.infrastructure.repository import (
 #     SqlAlchemyClothesRepository,
 #     SqlAlchemyLaundryBagRepository,
 #     SqlAlchemyMachineRepository,
