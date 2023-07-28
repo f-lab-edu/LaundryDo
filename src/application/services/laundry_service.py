@@ -7,7 +7,7 @@ from src.domain.spec import LAUNDRYBAG_MAXVOLUME, MACHINE_MAXVOLUME
 from src.domain.repository import UserRepository, OrderRepository, LaundryBagRepository, MachineRepository
 from datetime import datetime
 
-from src.domain.services import distribute_order, put_in_laundrybag#, check_clothes_in_order_is_fully_reclaimed, reclaim_clothes_into_order
+from src.application.services import distribute_order, put_in_laundrybag, allocate_laundrybag#, check_clothes_in_order_is_fully_reclaimed, reclaim_clothes_into_order
 
 
 class LaundryService :
@@ -36,7 +36,7 @@ class LaundryService :
 
         # get available machine
         for laundrybag in laundryBagList :
-            allocate(machines, laundrybag)
+            allocate_laundrybag(machines, laundrybag)
 
         # load laundrybag repo again
         laundrybags_to_be_reclaimed = self.laundrybag_repository.all()

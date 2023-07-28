@@ -1,8 +1,13 @@
-from pydantic import BaseModel, Field, ConfigDict
-
 from typing import Annotated, Optional
 from enum import Enum
 from datetime import datetime
+
+import sqlalchemy
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
+
+from .base import Base
+
 
 class ClothesState(str, Enum):
     CANCELLED = "취소"
@@ -18,7 +23,20 @@ class LaundryLabel(str, Enum):
     DRY = "드라이클리닝"
     HAND = "손세탁"
 
-class Clothes:
+
+class Clothes(Base) :
+
+    __tablename__ = 'clothes'
+
+    id = Column('id', Integer, primary_key = True, autoincrement = True)
+    clothesid = Column('clothesid', String(255))
+    label = Column('label', sqlalchemy.Enum(LaundryLabel))
+    volume = Column('volume', Float)
+    orderid = Column('orderid', String(255), ForeignKey('order.orderid'))
+    laundrybagid = Column('laundrybagid', String(255), ForeignKey('laundrybag.laundrybagid'), nullable = True)
+    status = Column('status', sqlalchemy.Enum(ClothesState), default = ClothesState.PREPARING)
+    received_at = Column('received_at', DateTime)
+
     def __init__(self, 
                 clothesid : str, 
                 label : LaundryLabel, 
@@ -36,12 +54,12 @@ class Clothes:
         self.status = status
         self.received_at = received_at
     
-
     def __lt__(self, other):
         if other.__class__ is self.__class__:
             return self.received_at < other.received_at
         else:
             raise TypeError(f"{type(other)} cannot be compared with Clothes class.")
-
+    
+    
     def __repr__(self) :
-        return f'[id = {self.clothesid}, orderid = {self.orderid}, status = {self.status}]'
+        return f'[clothes id = {self.clothesid}, orderid = {self.orderid}, status = {self.status}]'

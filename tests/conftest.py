@@ -1,8 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
+from src import domain 
+
 from src.infrastructure.db.sqlalchemy.orm import start_mappers
 from src.infrastructure.db.sqlalchemy.setup import metadata
+
+from src.domain.base import Base
 
 import requests
 from requests.exceptions import ConnectionError
@@ -24,6 +28,64 @@ import pytest
 today = datetime.today()
 
 
+@pytest.fixture
+def clothes_factory() :
+    def _clothes_factory(clothesid = None, label=None, volume=None, status=None, received_at = None):
+        if clothesid is None :
+            clothesid = f'clothes-{str(uuid4())[:2]}'
+        if label is None:
+            label = random.choice([LaundryLabel.WASH, LaundryLabel.DRY, LaundryLabel.HAND])
+
+        if volume is None:
+            volume = float(random.randint(5, 15))
+        # if status is None:
+        #     status = random.choice(
+        #         [
+        #             ClothesState.PREPARING,
+        #             ClothesState.CANCELLED,
+        #             ClothesState.DISTRIBUTED,
+        #             ClothesState.PROCESSING,
+        #             ClothesState.DONE,
+        #             ClothesState.RECLAIMED
+        #         ]
+        #     )
+        return domain.Clothes(clothesid=clothesid, label=label, volume=volume, status=status, received_at=received_at)
+    yield _clothes_factory
+
+@pytest.fixture
+def laundrybag_factory() :
+    def _laundrybag_factory(laundrybagid: str = f'laundrybag-{str(uuid4())[:2]}-0',
+                            clothes_list: List[Clothes] = [], 
+                            created_at: datetime = today):
+        return domain.LaundryBag(laundrybagid = laundrybagid, clothes_list = clothes_list, created_at = created_at)
+
+    yield _laundrybag_factory
+
+
+
+@pytest.fixture
+def order_factory(clothes_factory) :
+    def _order_factory(userid : str = f'user-{str(uuid4())[:2]}',
+                       orderid: str = f'order-{str(uuid4())[:2]}', 
+                       clothes_list: List[Clothes] = [clothes_factory(label=LaundryLabel.WASH, received_at = today)], 
+                       received_at: Optional[datetime] = None, 
+                       status : OrderState = OrderState.SENDING
+                    ) :
+        return domain.Order(userid = userid, orderid = orderid, clothes_list = clothes_list, received_at = received_at, status = status)
+
+    yield _order_factory
+
+
+@pytest.fixture
+def user_factory() :
+    def _user_factory(userid: str = f'user-{str(uuid4())[:2]}', address: str = 'test-adress', orderlist : List = []) :
+        return domain.User(userid = userid, address= address, orderlist = orderlist)
+
+    yield _user_factory
+
+
+
+###### domain model ########
 @pytest.fixture
 def clothes_factory() :
     def _clothes_factory(clothesid = None, label=None, volume=None, status=None, received_at = None):
@@ -79,17 +141,16 @@ def laundrybag_factory(clothes_factory) :
     yield _laundrybag_factory
 
 
+
 @pytest.fixture
 def in_memory_db() :
     engine = create_engine('sqlite:///:memory:')
-    metadata.create_all(engine)
+    Base.metadata.create_all(engine)
     return engine
 
 @pytest.fixture
 def session_factory(in_memory_db) :
-    start_mappers()
     yield sessionmaker(bind = in_memory_db,  autoflush=False, autocommit = False)
-    clear_mappers()
 
 @pytest.fixture
 def session(session_factory) :

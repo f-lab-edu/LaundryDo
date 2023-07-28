@@ -59,6 +59,7 @@ def put_clothes_in_laundrybag(laundrybag : LaundryBag, clothes : Clothes) -> Lau
         laundrybag = LaundryBag(
                         laundrybagid = f'bag-{clothes.label}-{str(uuid4())[:2]}-{int(laundrybag.laundrybagid.split("-")[-1]) + 1}',
                         clothes_list = [clothes],
+                        created_at = datetime.now()
                                 )
     return laundrybag
 

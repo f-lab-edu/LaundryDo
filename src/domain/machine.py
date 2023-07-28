@@ -1,6 +1,13 @@
 from .spec import LAUNDRYBAG_MAXVOLUME, MACHINE_MAXVOLUME, LaundryTimeTable, time_required_for_volume
 from .clothes import ClothesState
 from .laundrybag import LaundryBag, LaundryBagState
+from .base import Base
+
+import sqlalchemy
+from sqlalchemy import orm
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 
 
 from enum import Enum
@@ -17,7 +24,20 @@ class MachineState(str, Enum):
     BROKEN = "고장"
 
 
-class Machine:
+class Machine(Base):
+
+    __tablename__ = 'machine'
+
+    id =  Column('id', Integer, primary_key = True, autoincrement = True)
+    machineid = Column('machineid', String(255))
+    contained = relationship('LaundryBag', backref = 'machine', uselist = False)
+    # Column('laundrybagid', ForeignKey('laundrybag.id')),
+    start_time = Column('start_time', DateTime, nullable = True)
+    lastupdateTime = Column('lastupdate_time', DateTime)
+    status = Column('status', sqlalchemy.Enum(MachineState), default = MachineState.READY)
+
+
+
     def __init__(self, machineid: str):
         self.machineid = machineid
         self.contained = None  # LaundryBag
@@ -28,8 +48,8 @@ class Machine:
 
         self.status = MachineState.READY
 
-        # TODO: [Machine] sort by least recent used machine.
-        # TODO : [Machine] max volume may be different.
+        # TODO [Machine] sort by least recent used machine.
+        # TODO [Machine] max volume may be different.
 
     @property
     def volume(self):

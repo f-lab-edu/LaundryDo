@@ -1,9 +1,23 @@
 from .clothes import ClothesState
 from .order import Order, OrderState
+from .base import Base
 
 from typing import List
 
-class User :
+import sqlalchemy
+from sqlalchemy import orm
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Column, Integer, String
+
+class User(Base) :
+
+    __tablename__ = 'user'
+    
+    id = Column('id', Integer, primary_key = True, autoincrement = True)
+    address = Column('address', String(255))
+    userid = Column('userid', String(20))
+    orderlist = relationship('Order', backref = 'user')
+
     def __init__(self, userid: str, address: str, orderlist : List[Order] = []) :
         self.userid = userid
         self.address = address

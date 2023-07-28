@@ -6,12 +6,13 @@ from src.domain import (
     ClothesState,
     LaundryBag,
     LaundryBagState,
-    Machine
+    Machine,
+    MachineState
 )
 
 from datetime import datetime
 
-from src.domain.machine import MachineState
+
 
 def test_user_create_orders(session, user_factory, order_factory) :
     user1 = user_factory()
@@ -58,11 +59,10 @@ def test_create_order(session, order_factory) :
 def test_order_creation_also_create_clothes_rows(session, order_factory, clothes_factory) :
     order1 = order_factory(clothes_list = [clothes_factory() for _ in range(1)], status = OrderState.RECLAIMING)
 
-
     session.add(order1)
     session.commit()
 
-
+    assert len(session.query(Order).all()) == 1
     assert len(session.query(Clothes).all()) == 1
 
 

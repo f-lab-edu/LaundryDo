@@ -24,6 +24,14 @@ from src.infrastructure.repository import (
     SqlAlchemyMachineRepository
 )
 
+import pytest
+
+class FakeSession :
+    def __init__(self) :
+        self.committed = False
+    def commit(self) :
+        self.committed = True
+
 
 def test_register_new_user(user_factory, session) :
     user1 = user_factory()
@@ -54,3 +62,30 @@ def test_clothes_status_change(session, clothes_factory) :
     session.commit() # session은 commit하면서 mapping된 class를 추적함.
 
     assert len(clothes_repo.list()) == 1
+
+
+# TODO Memory Repo cannot recognize relationship
+@pytest.mark.skip
+def test_memoryrepo_recognize_relationship(session, laundrybag_factory, clothes_factory) :
+    num_clothes = 5
+
+    laundrybag = laundrybag_factory(clothes_list = [clothes_factory() for _ in range(num_clothes)])
+
+    sa_laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
+    sa_clothes_repo = SqlAlchemyClothesRepository(session)
+    sa_laundrybag_repo.add(laundrybag)
+    session.commit()
+
+    assert len(sa_clothes_repo.list()) == num_clothes
+
+    memory_laundrybag_repo = MemoryLaundryBagRepository()
+    memory_clothes_repo = MemoryClothesRepository()
+    memory_laundrybag_repo.add(laundrybag)
+
+    assert len(memory_clothes_repo.list()) == num_clothes
+
+    
+
+
+
+    
