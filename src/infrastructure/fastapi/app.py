@@ -13,42 +13,25 @@ from sqlalchemy.orm import sessionmaker
 from src import domain 
 from src.infrastructure.fastapi import schemas
 from src.application import services
-# (
-#     request_order, 
-#     cancel_order,
-#     distribute_order,
-#     put_clothes_in_laundrybag,
-#     allocate_laundrybag,
-#     reclaim_clothes_into_order,
-#     get_clothes_in_process,
-#     allocate,
-#     ship)
-
 
 import databases
-from src.infrastructure.db.sqlalchemy.setup import metadata, engine, session, SQLALCHEMY_DATABASE_URL
-from src.infrastructure.db.sqlalchemy.orm import start_mappers
+from src.infrastructure.db.sqlalchemy.setup import engine, session, SQLALCHEMY_DATABASE_URL
+from src.domain.base import Base
 
 import config
 
-# from src.infrastructure.repository import (
-#     SqlAlchemyClothesRepository,
-#     SqlAlchemyLaundryBagRepository,
-#     SqlAlchemyMachineRepository,
-#     SqlAlchemyOrderRepository,
-#     SqlAlchemyUserRepository
-# )
+
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
 app = FastAPI()
 
+Base.metadata.create_all()
 # dependency
 MEMORY_SESSION = 'sqlite:///:memory:'
 database = databases.Database(MEMORY_SESSION)
 engine = create_engine(MEMORY_SESSION)
 
-start_mappers()
-metadata.create_all(engine)
+
 session = sessionmaker(autocommit = False, autoflush = False, bind = engine)
 
 
