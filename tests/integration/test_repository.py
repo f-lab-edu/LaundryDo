@@ -21,16 +21,12 @@ from src.infrastructure.repository import (
     SqlAlchemyOrderRepository,
     SqlAlchemyClothesRepository,
     SqlAlchemyLaundryBagRepository,
-    SqlAlchemyMachineRepository
+    SqlAlchemyMachineRepository,
+    FakeSession
 )
 
 import pytest
 
-class FakeSession :
-    def __init__(self) :
-        self.committed = False
-    def commit(self) :
-        self.committed = True
 
 
 def test_register_new_user(user_factory, session) :
@@ -65,27 +61,27 @@ def test_clothes_status_change(session, clothes_factory) :
 
 
 # TODO Memory Repo cannot recognize relationship
-@pytest.mark.skip
-def test_memoryrepo_recognize_relationship(session, laundrybag_factory, clothes_factory) :
+def test_memoryrepo_recognize_order_clothes_relationship(order_factory, clothes_factory) :
     num_clothes = 5
 
-    laundrybag = laundrybag_factory(clothes_list = [clothes_factory() for _ in range(num_clothes)])
+    session = FakeSession()
 
-    sa_laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
-    sa_clothes_repo = SqlAlchemyClothesRepository(session)
-    sa_laundrybag_repo.add(laundrybag)
-    session.commit()
+    memory_clothes_repo = MemoryClothesRepository(session)
+    memory_order_repo = MemoryOrderRepository(session)
 
-    assert len(sa_clothes_repo.list()) == num_clothes
+    order = order_factory(clothes_list = [clothes_factory() for _ in range(num_clothes)])
 
-    memory_laundrybag_repo = MemoryLaundryBagRepository()
-    memory_clothes_repo = MemoryClothesRepository()
-    memory_laundrybag_repo.add(laundrybag)
 
-    assert len(memory_clothes_repo.list()) == num_clothes
+    memory_order_repo.add(order)
 
     
+    session.commit()
 
+    assert len(memory_order_repo.list()) == 1
+    assert len(memory_clothes_repo.list()) == num_clothes
+
+    # order changes clothes state.
+    assert len(memory_clothes_repo.get_by_status(status = ClothesState.PREPARING)) == num_clothes
 
 
     

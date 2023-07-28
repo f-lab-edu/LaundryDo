@@ -1,27 +1,28 @@
 from src.domain.repository import OrderRepository
 from src.domain import Order, OrderState
+from .session import FakeSession
 from typing import List
 
 
 class MemoryOrderRepository(OrderRepository) :        
     
-    def __init__(self, orders : list = {}) :
-        self._orders = {order.orderid : order for order in orders}
+    def __init__(self, session : FakeSession) :
+        self.session = session
 
     def get(self, orderid : str) -> Order:
-        return self._orders.get(orderid)
+        return self.session.query(Order).get(orderid)
 
     def list(self) :
-        return self._orders.values()
+        return self.session.query(Order).values()
 
     def get_by_userid(self, userid : str) -> List[Order] :
-        return [order for order in self._orders.values() if order._userid == userid]
+        return self.session.query(Order).filter_by(userid = userid)
 
     def get_by_status(self, status : OrderState) -> List[Order] : 
-        return [order for order in self._orders.values() if order.status == status]
+        return self.session.query(Order).filter_by(status = status)
     
     def add(self, order: Order) :
-        self._orders[order.orderid] = order
+        self.session.buffers[Order][order.orderid] = order
 
 
 
