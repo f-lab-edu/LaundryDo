@@ -1,9 +1,9 @@
-from src.dbmodel.spec import LAUNDRYBAG_MAXVOLUME, LAUNDRY_MINVOLUME
-from src.dbmodel.clothes import Clothes, ClothesState, LaundryLabel
-from src.dbmodel.order import Order, OrderState
-from src.dbmodel.laundrybag import LaundryBag, LaundryBagState
-from src.dbmodel.machine import Machine, MachineState
-from src.dbmodel.repository import OrderRepository, LaundryBagRepository, MachineRepository
+from src.domain.spec import LAUNDRYBAG_MAXVOLUME, LAUNDRY_MINVOLUME
+from src.domain.clothes import Clothes, ClothesState, LaundryLabel
+from src.domain.order import Order, OrderState
+from src.domain.laundrybag import LaundryBag, LaundryBagState
+from src.domain.machine import Machine, MachineState
+from src.domain.repository import OrderRepository, LaundryBagRepository, MachineRepository
 from src.application.unit_of_work import AbstractUnitOfWork
 
 from typing import List, Dict
@@ -59,6 +59,7 @@ def put_clothes_in_laundrybag(laundrybag : LaundryBag, clothes : Clothes) -> Lau
         laundrybag = LaundryBag(
                         laundrybagid = f'bag-{clothes.label}-{str(uuid4())[:2]}-{int(laundrybag.laundrybagid.split("-")[-1]) + 1}',
                         clothes_list = [clothes],
+                        created_at = datetime.now()
                                 )
     return laundrybag
 

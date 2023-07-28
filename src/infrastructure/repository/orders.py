@@ -1,5 +1,5 @@
 from src.domain.repository import OrderRepository
-from src.dbmodel import Order, OrderState
+from src.domain import Order, OrderState
 from typing import List
 
 

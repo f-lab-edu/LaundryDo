@@ -1,4 +1,4 @@
-from src.dbmodel import LaundryLabel, LaundryBagState, LaundryBag, ClothesState, OrderState
+from src.domain import LaundryLabel, LaundryBagState, LaundryBag, ClothesState, OrderState
 from src.application import (
     request_order,
     cancel_order,
@@ -46,7 +46,11 @@ def test_order_sort_by_laundrybags(order_factory, clothes_factory):
 
 
 ########TODO
-def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(session, session_factory, order_factory, laundrybag_factory, clothes_factory):
+def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(session, 
+                                                                           session_factory, 
+                                                                           order_factory, 
+                                                                           laundrybag_factory, 
+                                                                           clothes_factory):
     # 새로운 주문(물세탁 빨래 volume 5) 추가.
 
     # uow = SqlAlchemyUnitOfWork(session_factory)
