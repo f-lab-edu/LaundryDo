@@ -81,6 +81,19 @@ def test_memoryrepo_recognize_relationship(session, laundrybag_factory, clothes_
 
     assert len(memory_clothes_repo.list()) == num_clothes
 
+    session = {'clothes' : {'clothesid' : Clothes(clothesid,
+                                                  label,
+                                                  volume,
+                                                  orderid,
+                                                  laundrybagid,
+                                                  status,
+                                                  received_at
+                                                  
+                                                  )},
+               'user' : {'userid' : User(orderlist)}
+               }
+    
+    if 
 
 
 
