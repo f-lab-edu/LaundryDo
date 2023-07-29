@@ -22,6 +22,7 @@ session = {'clothes' : {'clothesid' : Clothes(clothesid,
                }
 ''' 
 
+## should care about the primary key instead of {object}id
 class MapDict(dict) :
     def __init__(self) :
         super().__init__()
@@ -82,9 +83,7 @@ class FakeSession :
                 for laundrybag in buffer_dict.values() :
                     # update clothes
                     self.update_clothes_from_laundrybag(laundrybag)
-                    # update order 
-                    self.update_order_from_laundrybag(laundrybag)
-                
+                    
             # laundrybag -> clothes.laundrybagid, clothes.status, clothes_list
 
 
@@ -111,14 +110,11 @@ class FakeSession :
     def update_clothes_from_laundrybag(self, laundrybag : LaundryBag) :
         self.map_dict[Clothes].update({clothes.clothesid : clothes for clothes in laundrybag.clothes_list})
 
-    def update_order_from_laundrybag(self, laundrybag : LaundryBag) :
-        pass
-
     def update_clothes_from_machine(self, machine : Machine) :
-        pass
+        self.map_dict[Clothes].update({clothes.clothesid : clothes for clothes in machine.contained.clothes_list})
 
     def update_laundrybag_from_machine(self, machine : Machine) :
-        pass
+        self.map_dict[LaundryBag].update({machine.contained.laundrybagid : machine.contained})
 
     def update_order_from_machine(self, machine) :
         pass

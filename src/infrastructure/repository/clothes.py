@@ -16,7 +16,7 @@ class MemoryClothesRepository(ClothesRepository) :
         return self.session.query(Clothes).filter_by(status = status)
 
     def list(self) :
-        return self.session.query(Clothes).values()
+        return list(self.session.query(Clothes).values())
     
     def add(self, clothes : Clothes) :
         self.session.buffers[Clothes][clothes.clothesid] = clothes

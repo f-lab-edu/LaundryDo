@@ -1,20 +1,20 @@
 from src.domain.repository import UserRepository
 from src.domain import User
-
+from .session import FakeSession
 
 class MemoryUserRepository(UserRepository) :
 
-    def __init__(self, users : dict = {}) :
-        self._users = users
+    def __init__(self, session : FakeSession) :
+        self.session = session
 
     def get(self, userid : str) -> User:
-        return self._users.get(userid)
+        return self.session.query(User).get(userid)
 
     def list(self) :
-        return self._users.values()
+        return list(self.session.query(User).values())
     
     def add(self, user: User) :
-        self._users[user.userid] = user
+        self.session.query(User)[user.userid] = user
 
 
 class SqlAlchemyUserRepository(UserRepository) :

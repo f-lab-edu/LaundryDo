@@ -6,6 +6,7 @@ from src.domain import (
     ClothesState,
     LaundryBag,
     LaundryLabel,
+    LaundryBagState,
     Machine
 )
 
@@ -33,13 +34,14 @@ import pytest
 def test_register_new_user(user_factory, session) :
     user1 = user_factory()
 
-    
-    memory_repo = MemoryUserRepository()
+    fakesession = FakeSession()
+    memory_repo = MemoryUserRepository(fakesession)
     sa_repo = SqlAlchemyUserRepository(session)
     
     memory_repo.add(user1)
     sa_repo.add(user1)
-
+    
+    fakesession.commit()
     session.commit()
 
     assert memory_repo.get(user1.userid) == sa_repo.get(user1.userid)
@@ -108,6 +110,35 @@ def test_memoryrepo_recognize_clothes_laundrybag_relationship(clothes_factory, l
     memory_laundrybag_repo.add(laundrybag)
     session.commit()
 
-    assert memory_clothes_repo.get_by_status(status = ClothesState.DISTRIBUTED)
+    assert len(memory_clothes_repo.get_by_status(status = ClothesState.DISTRIBUTED)) == 5
         
+def test_memory_repo_recognize_clothes_machine_relationship(clothes_factory, laundrybag_factory) :
+    session = FakeSession()
+
+    memory_clothes_repo = MemoryClothesRepository(session)
+    memory_laundrybag_repo = MemoryLaundryBagRepository(session)
+    memory_machine_repo = MemoryMachineRepository(session)
+
+    ## somehow laundrybag is full and its state changed to READY.
+    laundrybag = laundrybag_factory(clothes_list = [clothes_factory(volume = 1, label = LaundryLabel.DRY) \
+                                                        for _ in range(3)], 
+                                    status = LaundryBagState.READY
+                                    )
     
+    memory_laundrybag_repo.add(laundrybag)
+    session.commit()
+    assert memory_laundrybag_repo.get_by_status(status = LaundryBagState.READY)
+
+    machine = Machine(machineid = 'sample-machine')
+    machine.put(laundrybag)
+    memory_machine_repo.add(machine)
+    session.commit()
+
+    assert memory_machine_repo.list() == [machine]
+    assert memory_laundrybag_repo.get_by_status(status = LaundryBagState.RUN)
+    assert memory_clothes_repo.get_by_status(status = ClothesState.PROCESSING)
+
+
+def test_memoryrepo_recognize_orderstate_changes_by_the_process(order_factory, ) :
+    '''what standard does order should follow? clothes?'''
+    pass

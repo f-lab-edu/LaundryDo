@@ -26,7 +26,7 @@ class MemoryLaundryBagRepository(LaundryBagRepository) :
         
 
     def list(self) :
-        return self.session.query(LaundryBag).values()
+        return list(self.session.query(LaundryBag).values())
     
     def add(self, laundrybag : LaundryBag) :
         self.session.buffers[LaundryBag][laundrybag.laundrybagid] = laundrybag

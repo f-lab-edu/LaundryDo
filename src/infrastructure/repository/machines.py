@@ -1,24 +1,26 @@
 from src.domain.repository import MachineRepository
+from .session import FakeSession
 from src.domain import Machine, MachineState
 from typing import List
 
+## Machine set is less likely to be changed.
 
 class MemoryMachineRepository(MachineRepository) :
     
-    def __init__(self, machines : dict = {} ) :
-        self._machines = {}
+    def __init__(self, session : FakeSession) :
+        self.session = session
 
     def get(self, machineid : str) -> Machine :
-        return self._machines.get(machineid)
+        return self.session.query(Machine).get(machineid)
 
     def get_by_status(self, status : MachineState) -> List[Machine] :
-        return [machine for machine in self._machines.values() if machine.status == status]
+        return self.session.query(Machine).filter_by(status = status)
 
     def list(self) :
-        return self._machines.values()
+        return list(self.session.query(Machine).values())
     
     def add(self, machine : Machine) :
-        self._machines[machine.machineid] = machine
+        self.session.query(Machine)[machine.machineid] = machine
 
 
 class SqlAlchemyMachineRepository(MachineRepository) :

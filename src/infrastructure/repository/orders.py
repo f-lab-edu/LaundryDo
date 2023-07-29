@@ -13,7 +13,7 @@ class MemoryOrderRepository(OrderRepository) :
         return self.session.query(Order).get(orderid)
 
     def list(self) :
-        return self.session.query(Order).values()
+        return list(self.session.query(Order).values())
 
     def get_by_userid(self, userid : str) -> List[Order] :
         return self.session.query(Order).filter_by(userid = userid)

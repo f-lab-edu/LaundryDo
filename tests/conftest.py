@@ -15,7 +15,7 @@ import random
 
 from typing import List, Dict, Optional 
 
-from src.domain import Clothes, ClothesState, LaundryBag, LaundryLabel, Order, User, OrderState
+from src.domain import Clothes, ClothesState, LaundryBag, LaundryBagState, LaundryLabel, Order, User, OrderState
 import config
 
 import time
@@ -56,8 +56,13 @@ def clothes_factory() :
 def laundrybag_factory() :
     def _laundrybag_factory(laundrybagid: str = f'laundrybag-{str(uuid4())[:2]}-0',
                             clothes_list: List[Clothes] = [], 
-                            created_at: datetime = today):
-        return domain.LaundryBag(laundrybagid = laundrybagid, clothes_list = clothes_list, created_at = created_at)
+                            created_at: datetime = today,
+                            status : LaundryBagState = LaundryBagState.COLLECTING,
+                            ):
+        return domain.LaundryBag(laundrybagid = laundrybagid, 
+                                 clothes_list = clothes_list, 
+                                 created_at = created_at, 
+                                 status = status)
 
     yield _laundrybag_factory
 
@@ -71,7 +76,11 @@ def order_factory(clothes_factory) :
                        received_at: Optional[datetime] = None, 
                        status : OrderState = OrderState.SENDING
                     ) :
-        return domain.Order(userid = userid, orderid = orderid, clothes_list = clothes_list, received_at = received_at, status = status)
+        return domain.Order(userid = userid, 
+                            orderid = orderid, 
+                            clothes_list = clothes_list, 
+                            received_at = received_at, 
+                            status = status)
 
     yield _order_factory
 
