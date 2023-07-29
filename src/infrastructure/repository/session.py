@@ -58,17 +58,17 @@ class FakeSession :
 
     def commit(self) :
         for buffer_key, buffer_dict in self.buffers.items() :
-
+            
+            self.map_dict[buffer_key].update(buffer_dict)
             # clothes -> # clothes만 따로 들어오는 일은 없어야한다. clothes는 항상 order 단위로 input
             if buffer_key is Clothes :
-            
-                self.map_dict[buffer_key].update(buffer_dict)
+                continue
 
             # order -> user.orderlist
             # order -> clothes_list
             elif buffer_key is Order :
                 # update order
-                self.map_dict[buffer_key].update(buffer_dict)
+                
                 for order in buffer_dict.values() :
                     # update clothes
                     self.update_clothes_from_order(order)
@@ -78,31 +78,54 @@ class FakeSession :
             
 
             elif buffer_key is LaundryBag :
-                continue
+
+                for laundrybag in buffer_dict.values() :
+                    # update clothes
+                    self.update_clothes_from_laundrybag(laundrybag)
+                    # update order 
+                    self.update_order_from_laundrybag(laundrybag)
+                
             # laundrybag -> clothes.laundrybagid, clothes.status, clothes_list
 
 
             elif buffer_key is Machine :
-                continue
+                for machine in buffer_dict.values() :
+                    # update clothes
+                    self.update_clothes_from_machine(machine)
+                    # update laundrybag 
+                    self.update_laundrybag_from_machine(machine)
+                    # update order
+                    self.update_order_from_machine(machine)
+                
             # machine -> laundrybag.machineid, clothes.state, laundrybag.status
     
 
         self.rollback()
 
     def update_clothes_from_order(self, order : Order) :
-        # clothes.state
-        # add clothesrepo
-        # received_at
-        tmp_dict = {}
-        for clothes in order.clothes_list :
-            clothes.status = ClothesState.PREPARING
-            clothes.received_at = order.received_at
-            tmp_dict[clothes.clothesid] = clothes
-            
-        self.map_dict[Clothes].update(tmp_dict)
+        self.map_dict[Clothes].update({clothes.clothesid : clothes for clothes in order.clothes_list})
 
     def update_user_from_order(self, order : Order) :
         pass
+
+    def update_clothes_from_laundrybag(self, laundrybag : LaundryBag) :
+        self.map_dict[Clothes].update({clothes.clothesid : clothes for clothes in laundrybag.clothes_list})
+
+    def update_order_from_laundrybag(self, laundrybag : LaundryBag) :
+        pass
+
+    def update_clothes_from_machine(self, machine : Machine) :
+        pass
+
+    def update_laundrybag_from_machine(self, machine : Machine) :
+        pass
+
+    def update_order_from_machine(self, machine) :
+        pass
+
+
+
+
 
     def rollback(self) :
         self.buffers = {

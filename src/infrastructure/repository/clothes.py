@@ -19,7 +19,7 @@ class MemoryClothesRepository(ClothesRepository) :
         return self.session.query(Clothes).values()
     
     def add(self, clothes : Clothes) :
-        self.session.buffer[Clothes][clothes.clothesid] = clothes
+        self.session.buffers[Clothes][clothes.clothesid] = clothes
 
 
 class SqlAlchemyClothesRepository(ClothesRepository) :

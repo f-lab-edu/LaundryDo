@@ -1,4 +1,4 @@
-from .clothes import Clothes
+from .clothes import Clothes, ClothesState
 from .base import Base
 
 from enum import Enum
@@ -23,6 +23,7 @@ class OrderState(str, Enum) :
     DONE = '완료'
 
 class Order(Base):
+    # TODO [Order] order should only be generated from user.
     # TODO : [Order] received time by each status?
     __tablename__ = 'order'
 
@@ -48,6 +49,8 @@ class Order(Base):
 
         for clothes in self.clothes_list :
             clothes.orderid = self.orderid
+            clothes.status = ClothesState.PREPARING
+            clothes.received_at = self.received_at
 
     @property
     def volume(self) -> float :

@@ -5,6 +5,7 @@ from src.domain import (
     Clothes,
     ClothesState,
     LaundryBag,
+    LaundryLabel,
     Machine
 )
 
@@ -38,6 +39,7 @@ def test_register_new_user(user_factory, session) :
     
     memory_repo.add(user1)
     sa_repo.add(user1)
+
     session.commit()
 
     assert memory_repo.get(user1.userid) == sa_repo.get(user1.userid)
@@ -61,7 +63,7 @@ def test_clothes_status_change(session, clothes_factory) :
 
 
 # TODO Memory Repo cannot recognize relationship
-def test_memoryrepo_recognize_order_clothes_relationship(order_factory, clothes_factory) :
+def test_memoryrepo_recognize_clothes_order_relationship(order_factory, clothes_factory) :
     num_clothes = 5
 
     session = FakeSession()
@@ -71,10 +73,8 @@ def test_memoryrepo_recognize_order_clothes_relationship(order_factory, clothes_
 
     order = order_factory(clothes_list = [clothes_factory() for _ in range(num_clothes)])
 
-
     memory_order_repo.add(order)
 
-    
     session.commit()
 
     assert len(memory_order_repo.list()) == 1
@@ -84,4 +84,30 @@ def test_memoryrepo_recognize_order_clothes_relationship(order_factory, clothes_
     assert len(memory_clothes_repo.get_by_status(status = ClothesState.PREPARING)) == num_clothes
 
 
+def test_memoryrepo_recognize_clothes_laundrybag_relationship(clothes_factory, laundrybag_factory) :
+    num_clothes = 5
+
+    session = FakeSession()
+
+    memory_clothes_repo = MemoryClothesRepository(session)
+    memory_laundrybag_repo = MemoryLaundryBagRepository(session)
+    
+    laundrybag = laundrybag_factory(clothes_list = [])
+    
+    clothes_bulk = []
+    for _ in range(num_clothes) :
+        clothes = clothes_factory(volume = 1, label = LaundryLabel.DRY) # all clothes can be contained in one bag
+        clothes_bulk.append(clothes)
+        memory_clothes_repo.add(clothes)
+    session.commit()
+
+    # put in laundrybag
+    for clothes in clothes_bulk :
+        laundrybag.append(clothes)
+
+    memory_laundrybag_repo.add(laundrybag)
+    session.commit()
+
+    assert memory_clothes_repo.get_by_status(status = ClothesState.DISTRIBUTED)
+        
     
