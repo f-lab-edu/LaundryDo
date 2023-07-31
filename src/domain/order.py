@@ -8,6 +8,8 @@ from datetime import datetime
 
 import sqlalchemy
 from sqlalchemy import orm
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 
@@ -73,7 +75,7 @@ class Order(Base):
             clothes.status = ClothesState.PREPARING
             clothes.received_at = self.received_at
 
-    @property
+    @hybrid_property
     def status(self) -> OrderState :
         clothes_state = max(clothes.status for clothes in self.clothes_list) # max returns the earliest ClothesState of clothes_list
         self._status = clothes_order_mapping(clothes_state)

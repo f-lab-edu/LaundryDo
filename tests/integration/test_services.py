@@ -11,6 +11,8 @@ from src.application import (
     ship
 )
 
+from src.infrastructure.repository import FakeSession
+
 from src.application.unit_of_work import SqlAlchemyUnitOfWork, MemoryUnitOfWork
 
 from src.infrastructure.repository import MemoryOrderRepository, MemoryLaundryBagRepository
@@ -27,6 +29,10 @@ today = datetime.today()
 
 
 def test_order_sort_by_laundrybags(order_factory, clothes_factory):
+    
+    session = FakeSession()
+    order_repo = MemoryOrderRepository(session)
+
     clothes1 = clothes_factory(label=LaundryLabel.WASH, volume=0.01)
     clothes2 = clothes_factory(label=LaundryLabel.DRY, volume=0.01)
     clothes3 = clothes_factory(label=LaundryLabel.DRY, volume=0.01)
@@ -35,10 +41,14 @@ def test_order_sort_by_laundrybags(order_factory, clothes_factory):
         received_at=today,
         clothes_list=[clothes1, clothes2, clothes3, clothes4],
     )
-    order_repo = MemoryOrderRepository(orders = [order])
+
+    assert order.status == OrderState.PREPARING
+    order_repo.add(order)
+    session.commit()
     
-    order_list = order_repo.get_by_status(status = OrderState.SENDING)
-    
+    order_list = order_repo.get_by_status(status = OrderState.PREPARING)
+    assert len(order_list) == 1
+
     laundrylabeldict = distribute_order(order_list)
 
     assert len(laundrylabeldict) == 2
@@ -76,21 +86,27 @@ def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(sessi
     laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
     laundrybag_repo.add(laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 20)]))
     session.commit()
+    assert len(order_repo.list()) == 1
 
-    order_list = order_repo.get_by_status(status = OrderState.SENDING)
-    
+    ## TODO [Order] : status를 Property로 바꾼 후, filter_by기능 작동 안함.
+    order_list = order_repo.get_by_status(status = OrderState.PREPARING)
+    assert len(order_list) == 1
+
     laundrylabeldict = distribute_order(order_list)
-
+    assert len(list(laundrylabeldict.values())[0]) == 1 
     for laundrylabel, clothes_list in laundrylabeldict.items() :
         waiting_bag = laundrybag_repo.get_waitingbag_by_label(label = laundrylabel)
 
         for clothes in clothes_list :
-            waiting_bag = put_clothes_in_laundrybag(waiting_bag, clothes)
+            waiting_bag_list = put_clothes_in_laundrybag(waiting_bag, clothes)
+            assert len(waiting_bag_list) == 5
+            for waiting_bag in waiting_bag_list :
+                laundrybag_repo.add(waiting_bag)
         session.commit()
     
 
     laundrybags_in_ready = laundrybag_repo.get_by_status(status = LaundryBagState.READY)
-
+    assert len(laundrybags_in_ready) == 1
     assert len(laundrybag_repo.list()) == 2
 
 
@@ -117,8 +133,10 @@ def test_load_waiting_laundrybag(session, laundrybag_factory, clothes_factory) :
     # load existing laundrybag
     waiting_bag = laundrybag_repo.get_waitingbag_by_label(laundrylabel)
 
-    new_bag = put_clothes_in_laundrybag(waiting_bag, new_clothes)
-    laundrybag_repo.add(new_bag)
+    waiting_bag_list = put_clothes_in_laundrybag(waiting_bag, clothes)
+    for waiting_bag in waiting_bag_list :
+        laundrybag_repo.add(waiting_bag)
+
     session.commit()
 
     assert len(laundrybag_repo.get_by_status(status = LaundryBagState.COLLECTING)) == 1 and \
@@ -156,7 +174,9 @@ def test_multiple_orders_distributed_into_laundrybags(session, order_factory, cl
         #     waiting_bag = LaundryBag(laundrybagid = f'bag-{laundrylabel}-{str(uuid4())[:2]}-0')
 
         for clothes in clothes_list :
-            waiting_bag = put_clothes_in_laundrybag(waiting_bag, clothes)
+            waiting_bag_list = put_clothes_in_laundrybag(waiting_bag, clothes)
+            for waiting_bag in waiting_bag_list :
+                laundrybag_repo.add(waiting_bag)
         session.commit()
     
 
