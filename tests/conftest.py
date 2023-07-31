@@ -15,7 +15,7 @@ import random
 
 from typing import List, Dict, Optional 
 
-from src.domain import Clothes, ClothesState, LaundryBag, LaundryLabel, Order, User, OrderState
+from src.domain import Clothes, ClothesState, LaundryBag, LaundryBagState, LaundryLabel, Order, User, OrderState
 import config
 
 import time
@@ -56,8 +56,13 @@ def clothes_factory() :
 def laundrybag_factory() :
     def _laundrybag_factory(laundrybagid: str = f'laundrybag-{str(uuid4())[:2]}-0',
                             clothes_list: List[Clothes] = [], 
-                            created_at: datetime = today):
-        return domain.LaundryBag(laundrybagid = laundrybagid, clothes_list = clothes_list, created_at = created_at)
+                            created_at: datetime = today,
+                            status : LaundryBagState = LaundryBagState.COLLECTING,
+                            ):
+        return domain.LaundryBag(laundrybagid = laundrybagid, 
+                                 clothes_list = clothes_list, 
+                                 created_at = created_at, 
+                                 status = status)
 
     yield _laundrybag_factory
 
@@ -71,7 +76,11 @@ def order_factory(clothes_factory) :
                        received_at: Optional[datetime] = None, 
                        status : OrderState = OrderState.SENDING
                     ) :
-        return domain.Order(userid = userid, orderid = orderid, clothes_list = clothes_list, received_at = received_at, status = status)
+        return domain.Order(userid = userid, 
+                            orderid = orderid, 
+                            clothes_list = clothes_list, 
+                            received_at = received_at, 
+                            status = status)
 
     yield _order_factory
 
@@ -84,61 +93,6 @@ def user_factory() :
     yield _user_factory
 
 
-
-###### domain model ########
-@pytest.fixture
-def clothes_factory() :
-    def _clothes_factory(clothesid = None, label=None, volume=None, status=None, received_at = None):
-        if clothesid is None :
-            clothesid = f'clothes-{str(uuid4())[:2]}'
-        if label is None:
-            label = random.choice([LaundryLabel.WASH, LaundryLabel.DRY, LaundryLabel.HAND])
-
-        if volume is None:
-            volume = float(random.randint(5, 15))
-        if status is None:
-            status = random.choice(
-                [
-                    ClothesState.PREPARING,
-                    ClothesState.CANCELLED,
-                    ClothesState.DISTRIBUTED,
-                    ClothesState.PROCESSING,
-                    ClothesState.DONE,
-                    ClothesState.RECLAIMED
-                ]
-            )
-        return Clothes(clothesid=clothesid, label=label, volume=volume, status=status, received_at=received_at)
-    yield _clothes_factory
-
-
-@pytest.fixture
-def user_factory() :
-    def _user_factory(userid: str = f'user-{str(uuid4())[:2]}', address: str = 'test-adress', orderlist : List = []) :
-        return User(userid = userid, address= address, orderlist = orderlist)
-
-    yield _user_factory
-
-
-@pytest.fixture
-def order_factory(clothes_factory) :
-    def _order_factory(userid : str = f'user-{str(uuid4())[:2]}',
-                       orderid: str = f'order-{str(uuid4())[:2]}', 
-                       clothes_list: List[Clothes] = [clothes_factory(label=LaundryLabel.WASH, received_at = today)], 
-                       received_at: Optional[datetime] = None, 
-                       status : OrderState = OrderState.SENDING
-                    ) :
-        return Order(userid = userid, orderid = orderid, clothes_list = clothes_list, received_at = received_at, status = status)
-
-    yield _order_factory
-
-@pytest.fixture
-def laundrybag_factory(clothes_factory) :
-    def _laundrybag_factory(laundrybagid: str = f'laundrybag-{str(uuid4())[:2]}-0',
-                            clothes_list: List[Clothes] = [], 
-                            created_at: datetime = today):
-        return LaundryBag(laundrybagid = laundrybagid, clothes_list = clothes_list, created_at = created_at)
-
-    yield _laundrybag_factory
 
 
 

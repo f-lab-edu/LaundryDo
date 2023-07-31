@@ -1,6 +1,7 @@
 from src.domain.repository import LaundryBagRepository
 from src.domain import LaundryBag, LaundryBagState, LaundryLabel
 from typing import List
+from .session import FakeSession
 
 from uuid import uuid4
 from datetime import datetime
@@ -8,27 +9,28 @@ from datetime import datetime
 
 class MemoryLaundryBagRepository(LaundryBagRepository) : 
     
-    def __init__(self, laundrybags : dict = {}) :
-        self._laundrybags = {laundrybag.laundrybagid : laundrybag for laundrybag in laundrybags}
+    def __init__(self, session : FakeSession) :
+        self.session = session
 
     def get(self, laundrybagid : str) -> LaundryBag :
-        return self._laundrybags.get(laundrybagid)
+        return self.session.query(LaundryBag).get(laundrybagid)
 
     def get_by_status(self, status : LaundryBagState) -> List[LaundryBag] :
-        return [laundrybag for laundrybag in self._laundrybags.values() if laundrybag.status == status]
+        return self.session.query(LaundryBag).filter_by(status = status)
 
     def get_waitingbag_by_label(self, label : LaundryLabel) -> LaundryBag :
-        '''
-        get list of laundrybags that are LaundryBagState.READY and LaundryLabel
-        '''
-        return next((laundrybag for laundrybag in self._laundrybags.values() 
-                    if laundrybag.status == LaundryBagState.COLLECTING and laundrybag.label == label), None)
+        waitingbag_by_label_list = self.session.query(LaundryBag).filter_by(status = LaundryBagState.COLLECTING).filter_by(label = label)
+        if waitingbag_by_label_list :
+            return waitingbag_by_label_list[0]
+        return
+        
 
     def list(self) :
-        return self._laundrybags.values()
+        return list(self.session.query(LaundryBag).values())
     
     def add(self, laundrybag : LaundryBag) :
-        self._laundrybags[laundrybag.laundrybagid] = laundrybag
+        self.session.buffers[LaundryBag][laundrybag.laundrybagid] = laundrybag
+
 
 
 class SqlAlchemyLaundryBagRepository(LaundryBagRepository) : 
@@ -44,7 +46,7 @@ class SqlAlchemyLaundryBagRepository(LaundryBagRepository) :
 
     def get_waitingbag_by_label(self, label : LaundryLabel) -> LaundryBag :
         '''
-        get list of laundrybags that are LaundryBagState.READY and LaundryLabel
+        return a laundrybag that is LaundryBagState.COLLECTING and LaundryLabel
         '''
         waiting_list = self.session.query(LaundryBag).filter_by(status = LaundryBagState.COLLECTING).all()
 

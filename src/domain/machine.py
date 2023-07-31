@@ -90,6 +90,8 @@ class Machine(Base):
         if self.can_contain(laundrybag) and self.status not in [MachineState.RUNNING, MachineState.BROKEN]:
             laundrybag.status = LaundryBagState.RUN
             self.contained = laundrybag
+            for clothes in laundrybag.clothes_list :
+                clothes.status = ClothesState.PROCESSING
             
         else:
             raise ValueError("cannot contain the bag, too large.")

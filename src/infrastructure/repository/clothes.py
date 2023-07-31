@@ -1,24 +1,25 @@
 
 from src.domain.repository import ClothesRepository
+from .session import FakeSession
 from src.domain import Clothes, ClothesState
 from typing import List
 
 class MemoryClothesRepository(ClothesRepository) :
     
-    def __init__(self, clothes_dict : dict = {}) :
-        self._clothes_dict = clothes_dict
+    def __init__(self, session : FakeSession) :
+        self.session = session
 
     def get(self, clothesid : str) -> Clothes :
-        return self._clothes_dict.get(clothesid)
+        return self.session.query(Clothes).get(clothesid)
 
     def get_by_status(self, status : ClothesState) -> List[Clothes]  :
-        return [clothes for clothes in self._clothes_dict.values() if clothes.status == status]
+        return self.session.query(Clothes).filter_by(status = status)
 
     def list(self) :
-        return self._clothes_dict.values()
+        return list(self.session.query(Clothes).values())
     
     def add(self, clothes : Clothes) :
-        self._clothes_dict[clothes.clothesid] = clothes
+        self.session.buffers[Clothes][clothes.clothesid] = clothes
 
 
 class SqlAlchemyClothesRepository(ClothesRepository) :
@@ -37,5 +38,7 @@ class SqlAlchemyClothesRepository(ClothesRepository) :
     
     def add(self, clothes : Clothes) :
         self.session.add(clothes)
+
+
 
 

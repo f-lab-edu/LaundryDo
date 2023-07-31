@@ -5,6 +5,8 @@ from src.domain import (
     Clothes,
     ClothesState,
     LaundryBag,
+    LaundryLabel,
+    LaundryBagState,
     Machine
 )
 
@@ -21,27 +23,25 @@ from src.infrastructure.repository import (
     SqlAlchemyOrderRepository,
     SqlAlchemyClothesRepository,
     SqlAlchemyLaundryBagRepository,
-    SqlAlchemyMachineRepository
+    SqlAlchemyMachineRepository,
+    FakeSession
 )
 
 import pytest
 
-class FakeSession :
-    def __init__(self) :
-        self.committed = False
-    def commit(self) :
-        self.committed = True
 
 
 def test_register_new_user(user_factory, session) :
     user1 = user_factory()
 
-    
-    memory_repo = MemoryUserRepository()
+    fakesession = FakeSession()
+    memory_repo = MemoryUserRepository(fakesession)
     sa_repo = SqlAlchemyUserRepository(session)
     
     memory_repo.add(user1)
     sa_repo.add(user1)
+    
+    fakesession.commit()
     session.commit()
 
     assert memory_repo.get(user1.userid) == sa_repo.get(user1.userid)
@@ -65,27 +65,103 @@ def test_clothes_status_change(session, clothes_factory) :
 
 
 # TODO Memory Repo cannot recognize relationship
-@pytest.mark.skip
-def test_memoryrepo_recognize_relationship(session, laundrybag_factory, clothes_factory) :
+def test_memoryrepo_recognize_clothes_order_relationship(order_factory, clothes_factory) :
     num_clothes = 5
 
-    laundrybag = laundrybag_factory(clothes_list = [clothes_factory() for _ in range(num_clothes)])
+    session = FakeSession()
 
-    sa_laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
-    sa_clothes_repo = SqlAlchemyClothesRepository(session)
-    sa_laundrybag_repo.add(laundrybag)
+    memory_clothes_repo = MemoryClothesRepository(session)
+    memory_order_repo = MemoryOrderRepository(session)
+
+    order = order_factory(clothes_list = [clothes_factory() for _ in range(num_clothes)])
+
+    memory_order_repo.add(order)
+
     session.commit()
 
-    assert len(sa_clothes_repo.list()) == num_clothes
-
-    memory_laundrybag_repo = MemoryLaundryBagRepository()
-    memory_clothes_repo = MemoryClothesRepository()
-    memory_laundrybag_repo.add(laundrybag)
-
+    assert len(memory_order_repo.list()) == 1
     assert len(memory_clothes_repo.list()) == num_clothes
 
+    # order changes clothes state.
+    assert len(memory_clothes_repo.get_by_status(status = ClothesState.PREPARING)) == num_clothes
+
+
+def test_memoryrepo_recognize_clothes_laundrybag_relationship(clothes_factory, laundrybag_factory) :
+    num_clothes = 5
+
+    session = FakeSession()
+
+    memory_clothes_repo = MemoryClothesRepository(session)
+    memory_laundrybag_repo = MemoryLaundryBagRepository(session)
     
-
-
-
+    laundrybag = laundrybag_factory(clothes_list = [])
     
+    clothes_bulk = []
+    for _ in range(num_clothes) :
+        clothes = clothes_factory(volume = 1, label = LaundryLabel.DRY) # all clothes can be contained in one bag
+        clothes_bulk.append(clothes)
+        memory_clothes_repo.add(clothes)
+    session.commit()
+
+    # put in laundrybag
+    for clothes in clothes_bulk :
+        laundrybag.append(clothes)
+
+    memory_laundrybag_repo.add(laundrybag)
+    session.commit()
+
+    assert len(memory_clothes_repo.get_by_status(status = ClothesState.DISTRIBUTED)) == 5
+        
+def test_memory_repo_recognize_clothes_machine_relationship(clothes_factory, laundrybag_factory) :
+    session = FakeSession()
+
+    memory_clothes_repo = MemoryClothesRepository(session)
+    memory_laundrybag_repo = MemoryLaundryBagRepository(session)
+    memory_machine_repo = MemoryMachineRepository(session)
+
+    ## somehow laundrybag is full and its state changed to READY.
+    laundrybag = laundrybag_factory(clothes_list = [clothes_factory(volume = 1, label = LaundryLabel.DRY) \
+                                                        for _ in range(3)], 
+                                    status = LaundryBagState.READY
+                                    )
+    
+    memory_laundrybag_repo.add(laundrybag)
+    session.commit()
+    assert memory_laundrybag_repo.get_by_status(status = LaundryBagState.READY)
+
+    machine = Machine(machineid = 'sample-machine')
+    machine.put(laundrybag)
+    memory_machine_repo.add(machine)
+    session.commit()
+
+    assert memory_machine_repo.list() == [machine]
+    assert memory_laundrybag_repo.get_by_status(status = LaundryBagState.RUN)
+    assert memory_clothes_repo.get_by_status(status = ClothesState.PROCESSING)
+
+
+def test_memoryrepo_recognize_orderstate_change_by_the_clothes(order_factory, laundrybag_factory, clothes_factory) :
+    session = FakeSession()
+    memory_order_repo = MemoryOrderRepository(session)
+    memory_laundrybag_repo = MemoryLaundryBagRepository(session)
+    memory_machine_repo = MemoryMachineRepository(session)
+
+    clothes_states = [ClothesState.PREPARING, ClothesState.DISTRIBUTED, ClothesState.DISTRIBUTED, ClothesState.DISTRIBUTED]
+    clothes_list = [clothes_factory(status = clothes_states[i], volume = 1) for i in range(len(clothes_states))]
+
+    order = order_factory(clothes_list = clothes_list)
+    memory_order_repo.add(order)
+    session.commit()
+
+    # put in laundry bag
+    laundrybag = laundrybag_factory(clothes_list = clothes_list)
+    memory_laundrybag_repo.add(laundrybag)
+    assert memory_order_repo.get_by_status(status = OrderState.PREPARING) == [order]
+
+    # put the laundrybag in machine
+    machine = Machine(machineid = 'sample-machine')
+    machine.put(laundrybag)
+    memory_machine_repo.add(machine)
+    session.commit()
+
+    assert memory_order_repo.get_by_status(status = OrderState.WASHING) == [order]
+

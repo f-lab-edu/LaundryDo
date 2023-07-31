@@ -68,7 +68,7 @@ class LaundryBag(Base):
     def update_clothes_status(self, status: ClothesState):
         [setattr(clothes, "status", status) for clothes in self.clothes_list]
 
-    @property ## TODO : label is not recognized by sqlalchemy
+    @property 
     def label(self):
         return next((clothes.label for clothes in self.clothes_list), None)
 

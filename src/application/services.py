@@ -51,17 +51,21 @@ def distribute_order(order_list : List[Order]) -> Dict[LaundryLabel, List[Clothe
 
 
 def put_clothes_in_laundrybag(laundrybag : LaundryBag, clothes : Clothes) -> LaundryBag:
+    laundrybaglist = []
     if laundrybag.can_contain(clothes.volume) :
         laundrybag.append(clothes)
     else :
         # 더 이상 clothes를 담지 못한다면, 세탁기로 이동하기 위한 상태로 변경
         laundrybag.status = LaundryBagState.READY
+        laundrybaglist.append(laundrybag)
         laundrybag = LaundryBag(
                         laundrybagid = f'bag-{clothes.label}-{str(uuid4())[:2]}-{int(laundrybag.laundrybagid.split("-")[-1]) + 1}',
                         clothes_list = [clothes],
                         created_at = datetime.now()
-                                )
-    return laundrybag
+                        )
+    laundrybaglist.append(laundrybag)
+
+    return laundrybaglist
 
     
 def allocate_laundrybag(uow : AbstractUnitOfWork) :
