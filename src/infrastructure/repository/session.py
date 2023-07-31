@@ -1,27 +1,6 @@
 from src.domain import Clothes, User, Order, LaundryBag, Machine, ClothesState
 
 
-'''
-session = {'clothes' : {'clothesid' : Clothes(clothesid,
-                                                  label,
-                                                  volume,
-                                                  orderid,
-                                                  laundrybagid,
-                                                  status,
-                                                  received_at
-                                                  
-                                                  )},
-               'user' : {'userid' : User(address, userid, orderlist)},
-
-               'order' : {'orderid' : Order(orderid, received_at, status, userid, clothes_list)},
-
-               'laundrybag' : {'laundrybagid' : LaundryBag(laundrybagid, status, machineid, create_at, label, clothes_list)},
-
-               'machine' : {'machineid' : Machine(machineid, contained, start_time, lastupdateTime, status)}
-
-               }
-''' 
-
 ## should care about the primary key instead of {object}id
 class MapDict(dict) :
     def __init__(self) :
