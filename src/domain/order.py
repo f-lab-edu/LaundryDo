@@ -11,6 +11,14 @@ from sqlalchemy import orm
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 
+class ClothesState(str, Enum):
+    CANCELLED = "취소"
+    PREPARING = "준비중"
+    DISTRIBUTED = "세탁전분류"  # 세탁 라벨에 따라 분류된 상태
+    PROCESSING = "세탁중"
+    STOPPED = "일시정지"  # 세탁기 고장이나 외부 요인으로 세탁 일시 중지
+    DONE = "세탁완료"
+    RECLAIMED = "세탁후분류"
 
 class OrderState(str, Enum) :
     CANCELLED = '취소'
@@ -21,6 +29,19 @@ class OrderState(str, Enum) :
     SHIP_READY = '배송준비완료'
     SHIPPING = '배송중'
     DONE = '완료'
+
+def clothes_order_mapping(clothes_status) : 
+    if clothes_status == ClothesState.CANCELLED :
+        order = OrderState.CANCELLED
+    elif clothes_status in [ClothesState.PREPARING, ClothesState.DISTRIBUTED] :
+        order = OrderState.PREPARING
+    elif clothes_status in [ClothesState.PROCESSING, ClothesState.STOPPED] :
+        order = OrderState.WASHING
+    elif clothes_status == ClothesState.DONE :
+        order = OrderState.RECLAIMING
+    elif clothes_status == ClothesState.RECLAIMED :
+        order = OrderState.SHIP_READY
+
 
 class Order(Base):
     # TODO [Order] order should only be generated from user.
@@ -44,13 +65,24 @@ class Order(Base):
         self.orderid = orderid
         self.clothes_list = clothes_list
         self.received_at = received_at
-        self.status = status
+        self._status = status
     
 
         for clothes in self.clothes_list :
             clothes.orderid = self.orderid
             clothes.status = ClothesState.PREPARING
             clothes.received_at = self.received_at
+
+    @property
+    def status(self) -> OrderState :
+        clothes_state = max(clothes.status for clothes in self.clothes_list) # max returns the earliest ClothesState of clothes_list
+        self._status = clothes_order_mapping(clothes_state)
+        return self._status
+
+    @status.setter
+    def status(self, status : OrderState) :
+        self._status = status
+
 
     @property
     def volume(self) -> float :

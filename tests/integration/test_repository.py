@@ -139,6 +139,16 @@ def test_memory_repo_recognize_clothes_machine_relationship(clothes_factory, lau
     assert memory_clothes_repo.get_by_status(status = ClothesState.PROCESSING)
 
 
-def test_memoryrepo_recognize_orderstate_changes_by_the_process(order_factory, ) :
+def test_memoryrepo_recognize_orderstate_changes_by_the_process(order_factory, clothes_factory) :
     '''what standard does order should follow? clothes?'''
-    pass
+    session = FakeSession()
+    memory_order_repo = MemoryOrderRepository(session)
+
+    clothes_states = [ClothesState.PREPARING, ClothesState.DISTRIBUTED, ClothesState.DISTRIBUTED, ClothesState.DISTRIBUTED]
+    clothes_list = [clothes_factory(status = clothes_states[i]) for i in range(len(clothes_states))]
+
+    order = order_factory(clothes_list = clothes_list)
+    memory_order_repo.add(order)
+    session.commit()
+
+    memory_order_repo.get_by_status(status = OrderState.PREPARING) == [order]
