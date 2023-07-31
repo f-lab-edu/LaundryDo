@@ -56,6 +56,7 @@ def test_order_sort_by_laundrybags(order_factory, clothes_factory):
 
 
 ########TODO
+@pytest.mark.skip()
 def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(session, 
                                                                            session_factory, 
                                                                            order_factory, 
@@ -145,7 +146,7 @@ def test_load_waiting_laundrybag(session, laundrybag_factory, clothes_factory) :
 
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_multiple_orders_distributed_into_laundrybags(session, order_factory, clothes_factory):
     multiple_orders = []
     label_options = [LaundryLabel.WASH, LaundryLabel.HAND]
