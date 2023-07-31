@@ -14,6 +14,14 @@ from enum import Enum
 from typing import List
 from datetime import datetime, timedelta
 
+class MaximumVolumeExceedError(Exception) :
+    pass
+
+class AlreadyRunningError(Exception) :
+    pass
+
+class BrokenError(Exception) :
+    pass
 
 
 class MachineState(str, Enum):
@@ -87,14 +95,20 @@ class Machine(Base):
     def put(self, laundrybag: LaundryBag):
         # TODO : [Machine] Broken Machine -> Move LaundryBags to other Machine
         # 세탁기기가 고장날 경우 처리방법
-        if self.can_contain(laundrybag) and self.status not in [MachineState.RUNNING, MachineState.BROKEN]:
+        if self.status == MachineState.BROKEN :
+            raise BrokenError(f'{self.__repr__} is broken.')
+        elif not self.can_contain(laundrybag):
+            raise MaximumVolumeExceedError("cannot contain the bag, too large.")
+        elif self.status == MachineState.RUNNING :
+            raise AlreadyRunningError(f'{self.__repr__} is already running.')
+        
+        else :
             laundrybag.status = LaundryBagState.RUN
             self.contained = laundrybag
             for clothes in laundrybag.clothes_list :
                 clothes.status = ClothesState.PROCESSING
             
-        else:
-            raise ValueError("cannot contain the bag, too large.")
+
 
     def start(self, exec_time: datetime):
         if self.status == MachineState.RUNNING:
@@ -114,7 +128,7 @@ class Machine(Base):
             self.lastupdateTime = exec_time
             self.status = MachineState.RUNNING
         else:
-            raise ValueError(f"cannot resume when {self.status}")
+            raise AlreadyRunningError(f'{self.__repr__} is already running.')
 
     def stop(self, exec_time: datetime):
         if self.status == MachineState.RUNNING:
@@ -124,3 +138,7 @@ class Machine(Base):
             self.lastupdateTime = exec_time
         else:
             raise ValueError(f"cannot stop when {self.status}")
+        
+
+    def __repr__(self) :
+        return f'id={self.machineid}, contained={self.contained.laundrybagid if self.contained else None}, status={self.status}'

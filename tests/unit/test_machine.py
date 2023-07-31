@@ -1,14 +1,24 @@
 import pytest
 from src.domain import Machine, LaundryLabel, MachineState
+from src.domain.machine import MaximumVolumeExceedError, BrokenError, AlreadyRunningError
 from datetime import datetime, timedelta
 
-def test_fail_to_machine_put_laundryBag_exceed_max_volume(laundrybag_factory, clothes_factory):
+def test_machine_fail_to_put_laundrybag_exceeding_max_volume(laundrybag_factory, clothes_factory):
     machine1 = Machine(machineid="TROMM1")
     laundryBag = laundrybag_factory(clothes_list=[clothes_factory(volume = 10) for _ in range(5)])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(MaximumVolumeExceedError):
         machine1.put(laundryBag)
 
+def test_machine_fail_to_resume_when_already_running(laundrybag_factory) :
+    machine1 = Machine(machineid="TROMM1")
+    laundryBag = laundrybag_factory()
+
+    machine1.put(laundryBag)
+    machine1.start(exec_time = datetime.now())
+
+    with pytest.raises(AlreadyRunningError) :
+        machine1.resume(exec_time = datetime.now() + timedelta(minutes = 10))
 
 
 
@@ -61,11 +71,6 @@ def test_machine_stop_and_resume_returns_remaining_time(laundrybag_factory, clot
         machine1.remainingTime(exec_time=datetime(2023, 7, 14, 17, 20)) == timedelta(minutes=90 - 10)
 
 
-def test_running_machine_stops_if_requiredTime_passed():
-    # TODO : [Machine] continuous monitoring on machine state is required, maybe event listening...?
-    # 시간 처리 방법
-    pass
-
 
 def test_fail_to_allocate_laundrybag_into_machine_if_broken_or_running(laundrybag_factory, clothes_factory):
     machine1 = Machine(machineid="TROMM1")
@@ -73,8 +78,14 @@ def test_fail_to_allocate_laundrybag_into_machine_if_broken_or_running(laundryba
 
     machine1.status = MachineState.BROKEN
 
-    with pytest.raises(ValueError):
+    with pytest.raises(BrokenError):
         machine1.put(laundryBag)
+
+
+def test_running_machine_stops_if_requiredTime_passed():
+    # TODO : [Machine] continuous monitoring on machine state is required, maybe event listening...?
+    # 시간 처리 방법
+    pass
 
 
 def test_machine_is_empty_when_laundry_is_done() :

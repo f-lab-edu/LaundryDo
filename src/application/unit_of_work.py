@@ -6,7 +6,7 @@ from src.domain.repository import  (
     OrderRepository,
     ClothesRepository,
     LaundryBagRepository,
-    MachineRepository
+    MachineRepository,
 )
 
 from src.infrastructure.repository import (
@@ -14,7 +14,8 @@ from src.infrastructure.repository import (
     MemoryLaundryBagRepository,
     MemoryMachineRepository,
     MemoryOrderRepository,
-    MemoryUserRepository
+    MemoryUserRepository,
+    FakeSession
 )
 
 
@@ -56,22 +57,23 @@ class MemoryUnitOfWork(AbstractUnitOfWork) :
     laundrybags : MemoryLaundryBagRepository
     machines : MemoryMachineRepository
 
-    def __init__(self, ) :
-        self.users = MemoryUserRepository()
-        self.orders = MemoryOrderRepository()
-        self.clothes = MemoryClothesRepository()
-        self.laundrybags = MemoryLaundryBagRepository()
-        self.machines = MemoryMachineRepository()
-        self.commited = False
+    def __init__(self, session : FakeSession) :
+        self.session = session
+        self.users = MemoryUserRepository(self.session)
+        self.orders = MemoryOrderRepository(self.session)
+        self.clothes = MemoryClothesRepository(self.session)
+        self.laundrybags = MemoryLaundryBagRepository(self.session)
+        self.machines = MemoryMachineRepository(self.session)
+        return super().__enter__()
 
     def __exit__(self, *args):
         self.rollback()
 
     def commit(self):
-        self.committed = True
+        self.session.commit()
 
     def rollback(self):
-        pass
+        self.session.rollback()
 
 
 class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
