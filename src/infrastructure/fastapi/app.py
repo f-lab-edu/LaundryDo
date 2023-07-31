@@ -20,6 +20,7 @@ from src.domain.base import Base
 
 import config
 
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
@@ -86,6 +87,14 @@ with uow :
     uow.users.add(user2)
     uow.commit()
 
+def print_hi() :
+    print('hi')
+
+@app.on_event('startup')
+async def init_monitor() :
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(print_hi, 'cron', second='*/5')
+    scheduler.start()
 
 @app.on_event('startup')
 async def startup() :
