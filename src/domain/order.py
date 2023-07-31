@@ -32,16 +32,16 @@ class OrderState(str, Enum) :
 
 def clothes_order_mapping(clothes_status) : 
     if clothes_status == ClothesState.CANCELLED :
-        order = OrderState.CANCELLED
+        orderstate = OrderState.CANCELLED
     elif clothes_status in [ClothesState.PREPARING, ClothesState.DISTRIBUTED] :
-        order = OrderState.PREPARING
+        orderstate = OrderState.PREPARING
     elif clothes_status in [ClothesState.PROCESSING, ClothesState.STOPPED] :
-        order = OrderState.WASHING
+        orderstate = OrderState.WASHING
     elif clothes_status == ClothesState.DONE :
-        order = OrderState.RECLAIMING
+        orderstate = OrderState.RECLAIMING
     elif clothes_status == ClothesState.RECLAIMED :
-        order = OrderState.SHIP_READY
-
+        orderstate = OrderState.SHIP_READY
+    return orderstate
 
 class Order(Base):
     # TODO [Order] order should only be generated from user.

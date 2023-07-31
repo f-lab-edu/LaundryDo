@@ -139,16 +139,29 @@ def test_memory_repo_recognize_clothes_machine_relationship(clothes_factory, lau
     assert memory_clothes_repo.get_by_status(status = ClothesState.PROCESSING)
 
 
-def test_memoryrepo_recognize_orderstate_changes_by_the_process(order_factory, clothes_factory) :
-    '''what standard does order should follow? clothes?'''
+def test_memoryrepo_recognize_orderstate_change_by_the_clothes(order_factory, laundrybag_factory, clothes_factory) :
     session = FakeSession()
     memory_order_repo = MemoryOrderRepository(session)
+    memory_laundrybag_repo = MemoryLaundryBagRepository(session)
+    memory_machine_repo = MemoryMachineRepository(session)
 
     clothes_states = [ClothesState.PREPARING, ClothesState.DISTRIBUTED, ClothesState.DISTRIBUTED, ClothesState.DISTRIBUTED]
-    clothes_list = [clothes_factory(status = clothes_states[i]) for i in range(len(clothes_states))]
+    clothes_list = [clothes_factory(status = clothes_states[i], volume = 1) for i in range(len(clothes_states))]
 
     order = order_factory(clothes_list = clothes_list)
     memory_order_repo.add(order)
     session.commit()
 
-    memory_order_repo.get_by_status(status = OrderState.PREPARING) == [order]
+    # put in laundry bag
+    laundrybag = laundrybag_factory(clothes_list = clothes_list)
+    memory_laundrybag_repo.add(laundrybag)
+    assert memory_order_repo.get_by_status(status = OrderState.PREPARING) == [order]
+
+    # put the laundrybag in machine
+    machine = Machine(machineid = 'sample-machine')
+    machine.put(laundrybag)
+    memory_machine_repo.add(machine)
+    session.commit()
+
+    assert memory_order_repo.get_by_status(status = OrderState.WASHING) == [order]
+
