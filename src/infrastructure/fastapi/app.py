@@ -20,7 +20,6 @@ from src.domain.base import Base
 
 import config
 
-from apscheduler.schedulers.background import BackgroundScheduler
 
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
@@ -87,6 +86,7 @@ with uow :
     uow.users.add(user2)
     uow.commit()
 
+<<<<<<< HEAD
 def print_hi() :
     print('hi')
 
@@ -128,6 +128,8 @@ async def init_monitor() :
 
     scheduler.add_job(print_hi, 'cron', second='*/5')
     scheduler.start()
+=======
+>>>>>>> parent of abaea11 (initiate apscheduler on fastapi)
 
 @app.on_event('startup')
 async def startup() :
