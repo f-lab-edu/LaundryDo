@@ -88,47 +88,34 @@ with uow :
     uow.users.add(user2)
     uow.commit()
 
+    for i in range(10) :
+        machine = domain.Machine(machineid = f'machine_{i}')
+        uow.machines.add(machine)
+    
+
 # def print_hi() :
 #     print('hi')
 
-# @app.on_event('startup')
-# async def init_monitor() :
-#     ## listening on db
+@app.on_event('startup')
+async def init_monitor() :
+    ## listening on db
 
-#     scheduler = BackgroundScheduler()
+    scheduler = BackgroundScheduler()
     
-#     '''PUT LAUNDRYBAG INTO AVAILABLE MACHINE
-#     ready_laundrybag_list = get_laundrybags()
-#     while get_available_machine() := machine :
-#         machine.put( ready_laundrybag_list.pop() )
-        
-#     '''
+    
+    
 
-#     '''CHECK MACHINE DONE
-#     update_machine_status(exec_time)
-#     machines = get_machine_done()
-#     for machine in machines :
-#         # update laundrybag status -> laundrybag DB에 이름 어떻게 할지. 재활용 혹은 재생성
-#         machine.contained.status = DONE
-#         for clothes in machine.contained.clothes_list :
-#             clothes.status = DONE
-#     '''
+    
 
-#     '''RECLAIM
-#     done_laundrybag_list = get_laundrybag_done()
-#     for laundrybag in done_laundrybag_list : 
-#         laundrybag.redistribute_to_order() # change clothes status from DONE to reclaimed
-#     '''
-
-#     '''SHIP
-#     reclaimed_orders = get_order_reclaimed()
-#     for order in reclaimed_orders :
-#         order.ship() # change order status to SHIP_READY
-#     '''
+    
 
 
-#     scheduler.add_job(print_hi, 'cron', second='*/5')
-#     scheduler.start()
+    scheduler.add_job(services.put_laundrybag_into_machine, 'cron', second='*/10', args =[uow] )
+    scheduler.add_job(services.reclaim_clothes_from_machine, 'cron', second='*/10', args =[uow] )
+    scheduler.add_job(services.check_order_is_fully_reclaimed, 'cron', second='*/10', args =[uow] )
+    scheduler.add_job(services.ship, 'cron', second='*/10', args =[uow] )
+    scheduler.start()
+
 
 # def print_hi() :
 #     print('hi')

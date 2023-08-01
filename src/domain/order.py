@@ -33,6 +33,9 @@ class OrderState(str, Enum) :
     DONE = '완료'
 
 def clothes_order_mapping(clothes_status) : 
+    if not clothes_status :
+        return OrderState.CANCELLED
+
     if clothes_status == ClothesState.CANCELLED :
         orderstate = OrderState.CANCELLED
     elif clothes_status in [ClothesState.PREPARING, ClothesState.DISTRIBUTED] :
@@ -77,7 +80,7 @@ class Order(Base):
 
     @hybrid_property
     def status(self) -> OrderState :
-        clothes_state = max(clothes.status for clothes in self.clothes_list) # max returns the earliest ClothesState of clothes_list
+        clothes_state = max(clothes.status for clothes in self.clothes_list) if self.clothes_list else None # max returns the earliest ClothesState of clothes_list
         self._status = clothes_order_mapping(clothes_state)
         return self._status
 
