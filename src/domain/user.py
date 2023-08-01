@@ -13,9 +13,9 @@ class User(Base) :
 
     __tablename__ = 'user'
     
-    id = Column('id', Integer, primary_key = True, autoincrement = True)
+    # id = Column('id', Integer, primary_key = True, autoincrement = True)
+    userid = Column('userid', String(20), primary_key = True)
     address = Column('address', String(255))
-    userid = Column('userid', String(20))
     orderlist = relationship('Order', backref = 'user')
 
     def __init__(self, userid: str, address: str, orderlist : List[Order] = []) :

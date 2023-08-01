@@ -28,8 +28,8 @@ class Clothes(Base) :
 
     __tablename__ = 'clothes'
 
-    id = Column('id', Integer, primary_key = True, autoincrement = True)
-    clothesid = Column('clothesid', String(255))
+    # id = Column('id', Integer, primary_key = True, autoincrement = True)
+    clothesid = Column('clothesid', String(255), primary_key = True)
     label = Column('label', sqlalchemy.Enum(LaundryLabel))
     volume = Column('volume', Float)
     orderid = Column('orderid', String(255), ForeignKey('order.orderid'))

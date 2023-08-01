@@ -88,56 +88,56 @@ with uow :
     uow.users.add(user2)
     uow.commit()
 
-def print_hi() :
-    print('hi')
+# def print_hi() :
+#     print('hi')
 
-@app.on_event('startup')
-async def init_monitor() :
-    ## listening on db
+# @app.on_event('startup')
+# async def init_monitor() :
+#     ## listening on db
 
-    scheduler = BackgroundScheduler()
+#     scheduler = BackgroundScheduler()
     
-    '''PUT LAUNDRYBAG INTO AVAILABLE MACHINE
-    ready_laundrybag_list = get_laundrybags()
-    while get_available_machine() := machine :
-        machine.put( ready_laundrybag_list.pop() )
+#     '''PUT LAUNDRYBAG INTO AVAILABLE MACHINE
+#     ready_laundrybag_list = get_laundrybags()
+#     while get_available_machine() := machine :
+#         machine.put( ready_laundrybag_list.pop() )
         
-    '''
+#     '''
 
-    '''CHECK MACHINE DONE
-    update_machine_status(exec_time)
-    machines = get_machine_done()
-    for machine in machines :
-        # update laundrybag status -> laundrybag DB에 이름 어떻게 할지. 재활용 혹은 재생성
-        machine.contained.status = DONE
-        for clothes in machine.contained.clothes_list :
-            clothes.status = DONE
-    '''
+#     '''CHECK MACHINE DONE
+#     update_machine_status(exec_time)
+#     machines = get_machine_done()
+#     for machine in machines :
+#         # update laundrybag status -> laundrybag DB에 이름 어떻게 할지. 재활용 혹은 재생성
+#         machine.contained.status = DONE
+#         for clothes in machine.contained.clothes_list :
+#             clothes.status = DONE
+#     '''
 
-    '''RECLAIM
-    done_laundrybag_list = get_laundrybag_done()
-    for laundrybag in done_laundrybag_list : 
-        laundrybag.redistribute_to_order() # change clothes status from DONE to reclaimed
-    '''
+#     '''RECLAIM
+#     done_laundrybag_list = get_laundrybag_done()
+#     for laundrybag in done_laundrybag_list : 
+#         laundrybag.redistribute_to_order() # change clothes status from DONE to reclaimed
+#     '''
 
-    '''SHIP
-    reclaimed_orders = get_order_reclaimed()
-    for order in reclaimed_orders :
-        order.ship() # change order status to SHIP_READY
-    '''
+#     '''SHIP
+#     reclaimed_orders = get_order_reclaimed()
+#     for order in reclaimed_orders :
+#         order.ship() # change order status to SHIP_READY
+#     '''
 
 
-    scheduler.add_job(print_hi, 'cron', second='*/5')
-    scheduler.start()
+#     scheduler.add_job(print_hi, 'cron', second='*/5')
+#     scheduler.start()
 
-def print_hi() :
-    print('hi')
+# def print_hi() :
+#     print('hi')
 
-@app.on_event('startup')
-def init_monitor() :
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(print_hi, 'cron', second = '*/5')
-    scheduler.start()
+# @app.on_event('startup')
+# def init_monitor() :
+#     scheduler = BackgroundScheduler()
+#     scheduler.add_job(print_hi, 'cron', second = '*/5')
+#     scheduler.start()
 
 
 # @app.on_event('startup')
@@ -160,19 +160,21 @@ def get_db() :
 async def root() :
     return {'LaundryDo' : 'Welcome'}
 
-@app.get('/users/{userid}')
-async def request_orderlist(userid : str, session : Session = Depends(get_db())) :
+@app.get('/users/{userid}', response_model = schemas.Order)
+async def request_orderlist(userid : str, session : Session = Depends(get_db)) :
     uow = SqlAlchemyUnitOfWork(session)
-    return uow.orders.get_by_userid(userid=userid)
+    with uow :
+        return uow.orders.get_by_userid(userid=userid)
 
 
 @app.get('/users/{userid}/orders/{orderid}')
-async def request_order_info(userid : str, orderid : str, session : Session = Depends(get_db())) -> schemas.Order : ## TODO : orders only be accessible for one user.
+async def request_order_info(userid : str, orderid : str, session : Session = Depends(get_db)) -> schemas.Order : ## TODO : orders only be accessible for one user.
     '''
     request estimate time for order in process. if order is done or cancelled, return 0.
     '''
     uow = SqlAlchemyUnitOfWork(session)
-    return uow.orders.get_by_orderid(orderid = orderid)
+    with uow :
+        return uow.orders.get_by_orderid(orderid = orderid)
 
 
 @app.post('/users/{userid}/orders', response_model = schemas.Order)
@@ -194,21 +196,24 @@ async def request_order(userid : str, order : Annotated[ schemas.Order,
                 ]
             )
         ], 
-        session : Session = Depends(get_db())
+        session : Session = Depends(get_db)
     ) :
     uow = SqlAlchemyUnitOfWork(session)
-    services.request_order(uow,**dict(order))
+    with uow :
+        services.request_order(uow,**dict(order))
+        uow.commit()
 
     return order
 
 
 @app.put('/users/{userid}/orders/{orderid}')
-async def cancel_order(userid : str, orderid : str, session : Session = Depends(get_db())) :#-> schemas.Order :
+async def cancel_order(userid : str, orderid : str, session : Session = Depends(get_db)) :#-> schemas.Order :
     uow = SqlAlchemyUnitOfWork(session)
     
-    order = services.cancel_order(uow, userid, orderid)
-
-    order = schemas.Order.model_validate(order)
+    with uow :
+        order = services.cancel_order(uow, userid, orderid)
+        order = schemas.Order.model_validate(order)
+        order.commit()
 
     return order
 

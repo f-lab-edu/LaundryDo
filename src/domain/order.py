@@ -50,17 +50,17 @@ class Order(Base):
     # TODO : [Order] received time by each status?
     __tablename__ = 'order'
 
-    id = Column('id', Integer, primary_key = True, autoincrement = True)
-    orderid = Column('orderid', String(255))
+    # id = Column('id', Integer, primary_key = True, autoincrement = True)
+    orderid = Column('orderid', String(255), primary_key = True)
     received_at = Column('received_at', DateTime, nullable = True)
     status = Column('status', sqlalchemy.Enum(OrderState))
-    userid = Column('userid', String(20), ForeignKey('user.userid'))
+    userid = Column('userid', String(20), ForeignKey('user.userid'), nullable = True) # userid reference 방법?
     clothes_list = relationship('Clothes', backref = 'order')
     
     def __init__(self, 
-                 userid : str,
                  orderid : str,
                  clothes_list : List[Clothes] = [],
+                 userid : str = None,
                  received_at : Optional[datetime] = None,
                  status : OrderState = OrderState.SENDING ) :
         self.userid = userid

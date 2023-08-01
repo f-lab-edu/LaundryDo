@@ -36,8 +36,8 @@ class Machine(Base):
 
     __tablename__ = 'machine'
 
-    id =  Column('id', Integer, primary_key = True, autoincrement = True)
-    machineid = Column('machineid', String(255))
+    # id =  Column('id', Integer, primary_key = True, autoincrement = True)
+    machineid = Column('machineid', String(255), primary_key = True)
     contained = relationship('LaundryBag', backref = 'machine', uselist = False)
     # Column('laundrybagid', ForeignKey('laundrybag.id')),
     start_time = Column('start_time', DateTime, nullable = True)

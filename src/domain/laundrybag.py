@@ -28,11 +28,11 @@ class LaundryBag(Base):
     
     __tablename__ = 'laundrybag'
 
-    id = Column('id', Integer, primary_key = True, autoincrement = True)
-    laundrybagid = Column('laundrybagid', String(255))
+    # id = Column('id', Integer, primary_key = True, autoincrement = True)
+    laundrybagid = Column('laundrybagid', String(255), primary_key = True)
     status = Column('status', sqlalchemy.Enum(LaundryBagState), default = LaundryBagState.COLLECTING)
     # Column('clothesid', ForeignKey('clothes.id')),
-    machineid = Column('machineid', ForeignKey('machine.id'), nullable = True)
+    machineid = Column('machineid', ForeignKey('machine.machineid'), nullable = True)
     created_at = Column('created_at', DateTime)
     label = Column('label', sqlalchemy.Enum(LaundryLabel))
     clothes_list = relationship('Clothes', backref = 'laundrybag')
