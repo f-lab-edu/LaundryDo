@@ -5,6 +5,7 @@ pydantic
 pydantic_settings
 
 aiomysql
+apscheduler
 mysqlclient
 databases[aiosqlite]
 requests

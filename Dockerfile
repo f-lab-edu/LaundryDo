@@ -13,4 +13,6 @@ COPY . /app
 
 WORKDIR /app
 
+RUN sleep 10
+
 CMD [ "uvicorn", "src.infrastructure.fastapi.app:app",  "--host", "0.0.0.0", "--port", "80", "--reload" ] # "--proxy-headers",
