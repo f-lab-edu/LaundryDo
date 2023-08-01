@@ -87,7 +87,6 @@ with uow :
     uow.users.add(user2)
     uow.commit()
 
-<<<<<<< HEAD
 def print_hi() :
     print('hi')
 
@@ -129,8 +128,6 @@ async def init_monitor() :
 
     scheduler.add_job(print_hi, 'cron', second='*/5')
     scheduler.start()
-=======
->>>>>>> parent of abaea11 (initiate apscheduler on fastapi)
 
 def print_hi() :
     print('hi')
