@@ -8,7 +8,7 @@ from fastapi import FastAPI, Query, Body, Depends
 from pydantic import BaseModel
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session, Session
 
 from src import domain 
 from src.infrastructure.fastapi import schemas
@@ -27,13 +27,14 @@ from src.application.unit_of_work import SqlAlchemyUnitOfWork
 app = FastAPI()
 
 
+
 # dependency
 MEMORY_SESSION = 'sqlite:///:memory:'
-database = databases.Database(MEMORY_SESSION)
-engine = create_engine(MEMORY_SESSION)
+# database = databases.Database(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(SQLALCHEMY_DATABASE_URL, echo = True)
 Base.metadata.create_all(bind = engine)
 
-session = sessionmaker(autocommit = False, autoflush = False, bind = engine)
+session = scoped_session(sessionmaker(autocommit = False, autoflush = False, bind = engine))
 
 
 uow = SqlAlchemyUnitOfWork(session)
@@ -139,28 +140,38 @@ def init_monitor() :
     scheduler.start()
 
 
-@app.on_event('startup')
-async def startup() :
-    await database.connect()
+# @app.on_event('startup')
+# async def startup() :
+#     await database.connect()
 
-@app.on_event('shutdown')
-async def shutdown() :
-    await database.disconnect()
+# @app.on_event('shutdown')
+# async def shutdown() :
+#     await database.disconnect()
+
+def get_db() :
+    try :
+        yield session
+    finally :
+        session.close()
+
+
 
 @app.get('/')
 async def root() :
     return {'LaundryDo' : 'Welcome'}
 
 @app.get('/users/{userid}')
-async def request_orderlist(userid : str) :
+async def request_orderlist(userid : str, session : Session = Depends(get_db())) :
+    uow = SqlAlchemyUnitOfWork(session)
     return uow.orders.get_by_userid(userid=userid)
 
 
 @app.get('/users/{userid}/orders/{orderid}')
-async def request_order_info(userid : str, orderid : str) -> schemas.Order : ## TODO : orders only be accessible for one user.
+async def request_order_info(userid : str, orderid : str, session : Session = Depends(get_db())) -> schemas.Order : ## TODO : orders only be accessible for one user.
     '''
     request estimate time for order in process. if order is done or cancelled, return 0.
     '''
+    uow = SqlAlchemyUnitOfWork(session)
     return uow.orders.get_by_orderid(orderid = orderid)
 
 
@@ -182,16 +193,19 @@ async def request_order(userid : str, order : Annotated[ schemas.Order,
                     }
                 ]
             )
-        ]
+        ], 
+        session : Session = Depends(get_db())
     ) :
-    
+    uow = SqlAlchemyUnitOfWork(session)
     services.request_order(uow,**dict(order))
 
     return order
 
 
 @app.put('/users/{userid}/orders/{orderid}')
-async def cancel_order(userid : str, orderid : str) :#-> schemas.Order :
+async def cancel_order(userid : str, orderid : str, session : Session = Depends(get_db())) :#-> schemas.Order :
+    uow = SqlAlchemyUnitOfWork(session)
+    
     order = services.cancel_order(uow, userid, orderid)
 
     order = schemas.Order.model_validate(order)
