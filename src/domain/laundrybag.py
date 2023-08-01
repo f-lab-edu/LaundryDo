@@ -19,7 +19,7 @@ class MaximumVolumeExceedError(Exception) :
 class LaundryBagState(str, Enum) :
     COLLECTING = '수거중'
     READY = '세탁준비'
-    RUN = '세탁중'
+    RUNNING = '세탁중'
     DONE = '세탁완료'
 
 

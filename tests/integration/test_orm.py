@@ -80,17 +80,16 @@ def test_machine_run_and_finish_laundry(session, laundrybag_factory) :
     machine = Machine(machineid = 'test-machine')
     laundrybag = laundrybag_factory()
 
-    machine.put(laundrybag)
-    machine.start(datetime(2023, 7, 21, 10, 10))
+    machine.start(laundrybag, datetime(2023, 7, 21, 10, 10))
     session.add(machine)
     session.commit()
 
     assert session.query(Machine).first().status == MachineState.RUNNING and \
-            session.query(LaundryBag).first().status == LaundryBagState.RUN
+            session.query(LaundryBag).first().status == LaundryBagState.RUNNING
 
     machine.stop(datetime(2023, 7, 21, 11, 10))
     session.add(machine)
     session.commit()
 
     assert session.query(Machine).first().status == MachineState.STOP and \
-            session.query(LaundryBag).first().status == LaundryBagState.RUN
+            session.query(LaundryBag).first().status == LaundryBagState.RUNNING

@@ -27,6 +27,7 @@ from src.infrastructure.repository import (
     FakeSession
 )
 
+from datetime import datetime
 import pytest
 
 
@@ -130,12 +131,12 @@ def test_memory_repo_recognize_clothes_machine_relationship(clothes_factory, lau
     assert memory_laundrybag_repo.get_by_status(status = LaundryBagState.READY)
 
     machine = Machine(machineid = 'sample-machine')
-    machine.put(laundrybag)
+    machine.start(laundrybag, datetime.now())
     memory_machine_repo.add(machine)
     session.commit()
 
     assert memory_machine_repo.list() == [machine]
-    assert memory_laundrybag_repo.get_by_status(status = LaundryBagState.RUN)
+    assert memory_laundrybag_repo.get_by_status(status = LaundryBagState.RUNNING)
     assert memory_clothes_repo.get_by_status(status = ClothesState.PROCESSING)
 
 
@@ -159,7 +160,7 @@ def test_memoryrepo_recognize_orderstate_change_by_the_clothes(order_factory, la
 
     # put the laundrybag in machine
     machine = Machine(machineid = 'sample-machine')
-    machine.put(laundrybag)
+    machine.start(laundrybag, datetime.now())
     memory_machine_repo.add(machine)
     session.commit()
 

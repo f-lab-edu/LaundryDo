@@ -10,6 +10,7 @@ from typing import List, Dict
 from datetime import datetime
 from uuid import uuid4
 
+from collections import deque
 
 class OrderNotFoundError(Exception) :
     pass
@@ -81,6 +82,21 @@ def allocate_laundrybag(uow : AbstractUnitOfWork) :
         uow.commit()
 
 
+def put_laundrybag_into_machine(uow : AbstractUnitOfWork) :
+    '''PUT LAUNDRYBAG INTO AVAILABLE MACHINE
+        ready_laundrybag_list = get_laundrybags()
+        while get_available_machine() := machine :
+            machine.start( ready_laundrybag_list.pop(), exec_time )
+    '''
+    with uow :
+        READY_laundrybags = uow.laundrybags.get_by_status(status=LaundryBagState.READY)
+        available_machines = deque(uow.machines.get_by_status(status = MachineState.READY))
+
+        while available_machines :
+            machine = available_machines.popleft()
+            machine.pu()
+
+
 def reclaim_clothes_into_order(finished_laundrybags : List[LaundryBag]) -> List[Order]:
     
     reclaimed_dict = {}
@@ -116,7 +132,7 @@ def allocate(uow : AbstractUnitOfWork, laundrybag : LaundryBag) :
         try :
             machine = next(available_machines)
 
-            machine.put(laundrybag)
+            machine.start(laundrybag, datetime.now())
             uow.commit()
         except StopIteration :
             print('No available Machine right now. Putting laundrybag in waiting list')    

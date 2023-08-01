@@ -92,7 +92,40 @@ def print_hi() :
 
 @app.on_event('startup')
 async def init_monitor() :
+    ## listening on db
+
     scheduler = BackgroundScheduler()
+    
+    '''PUT LAUNDRYBAG INTO AVAILABLE MACHINE
+    ready_laundrybag_list = get_laundrybags()
+    while get_available_machine() := machine :
+        machine.put( ready_laundrybag_list.pop() )
+        
+    '''
+
+    '''CHECK MACHINE DONE
+    update_machine_status(exec_time)
+    machines = get_machine_done()
+    for machine in machines :
+        # update laundrybag status -> laundrybag DB에 이름 어떻게 할지. 재활용 혹은 재생성
+        machine.contained.status = DONE
+        for clothes in machine.contained.clothes_list :
+            clothes.status = DONE
+    '''
+
+    '''RECLAIM
+    done_laundrybag_list = get_laundrybag_done()
+    for laundrybag in done_laundrybag_list : 
+        laundrybag.redistribute_to_order() # change clothes status from DONE to reclaimed
+    '''
+
+    '''SHIP
+    reclaimed_orders = get_order_reclaimed()
+    for order in reclaimed_orders :
+        order.ship() # change order status to SHIP_READY
+    '''
+
+
     scheduler.add_job(print_hi, 'cron', second='*/5')
     scheduler.start()
 
