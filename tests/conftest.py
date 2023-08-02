@@ -10,7 +10,6 @@ from src.domain.base import Base
 
 import requests
 from requests.exceptions import ConnectionError
-from uuid import uuid4
 import random
 
 from typing import List, Dict, Optional 
@@ -20,6 +19,7 @@ import config
 
 import time
 from datetime import datetime
+from tests.random_refs import random_clothesid, random_laundrybagid, random_orderid, random_userid
 
 from pathlib import Path
 
@@ -28,11 +28,13 @@ import pytest
 today = datetime.today()
 
 
+
+
 @pytest.fixture
 def clothes_factory() :
     def _clothes_factory(clothesid = None, label=None, volume=None, status=None, received_at = None):
         if clothesid is None :
-            clothesid = f'clothes-{str(uuid4())[:2]}'
+            clothesid = random_clothesid()
         if label is None:
             label = random.choice([LaundryLabel.WASH, LaundryLabel.DRY, LaundryLabel.HAND])
 
@@ -54,11 +56,13 @@ def clothes_factory() :
 
 @pytest.fixture
 def laundrybag_factory() :
-    def _laundrybag_factory(laundrybagid: str = f'laundrybag-{str(uuid4())[:2]}-0',
+    def _laundrybag_factory(laundrybagid: str = None,
                             clothes_list: List[Clothes] = [], 
                             created_at: datetime = today,
                             status : LaundryBagState = LaundryBagState.COLLECTING,
                             ):
+        if laundrybagid is None : 
+            laundrybagid = random_laundrybagid()
         return domain.LaundryBag(laundrybagid = laundrybagid, 
                                  clothes_list = clothes_list, 
                                  created_at = created_at, 
@@ -70,12 +74,18 @@ def laundrybag_factory() :
 
 @pytest.fixture
 def order_factory(clothes_factory) :
-    def _order_factory(userid : str = f'user-{str(uuid4())[:2]}',
-                       orderid: str = f'order-{str(uuid4())[:2]}', 
+    def _order_factory(userid : str = None,
+                       orderid: str = None, 
                        clothes_list: List[Clothes] = [clothes_factory(label=LaundryLabel.WASH, received_at = today)], 
                        received_at: Optional[datetime] = None, 
                        status : OrderState = OrderState.SENDING
                     ) :
+        if userid is None :
+            userid = random_userid()
+        if orderid is None :
+            orderid = random_orderid()
+
+
         return domain.Order(userid = userid, 
                             orderid = orderid, 
                             clothes_list = clothes_list, 
@@ -87,11 +97,12 @@ def order_factory(clothes_factory) :
 
 @pytest.fixture
 def user_factory() :
-    def _user_factory(userid: str = f'user-{str(uuid4())[:2]}', address: str = 'test-adress', orderlist : List = []) :
-        return domain.User(userid = userid, address= address, orderlist = orderlist)
+    def _user_factory(userid: str = None, address: str = 'test-adress', orderlist : List = []) :
+        if userid is None :
+            userid = random_userid()
+        return domain.User(userid = userid, address = address, orderlist = orderlist)
 
     yield _user_factory
-
 
 
 

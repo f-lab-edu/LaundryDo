@@ -60,6 +60,13 @@ class Clothes(Base) :
         else:
             raise TypeError(f"{type(other)} cannot be compared with Clothes class.")
     
+    def __hash__(self) :
+        return hash(self.clothesid)
+    
+    def __eq__(self, other) :
+        if isinstance(other.__class__, self.__class__) :
+            return hash(self.clothesid) == hash(self.other)
+        raise NotImplementedError
     
     def __repr__(self) :
         return f'[clothes id = {self.clothesid}, orderid = {self.orderid}, status = {self.status}]'

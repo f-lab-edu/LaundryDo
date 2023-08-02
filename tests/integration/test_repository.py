@@ -166,3 +166,26 @@ def test_memoryrepo_recognize_orderstate_change_by_the_clothes(order_factory, la
 
     assert memory_order_repo.get_by_status(status = OrderState.WASHING) == [order]
 
+
+def test_sa_repo_get_orders_by_status(order_factory, clothes_factory, session) :
+    sa_order_repo = SqlAlchemyOrderRepository(session)
+    clothesstate = [ClothesState.DONE, ClothesState.DONE, ClothesState.DONE, ClothesState.PREPARING, ClothesState.PREPARING]
+    
+    clothes = [clothes_factory(status = clothesstate[i]) for i in range(len(clothesstate))]
+    
+    orders = [order_factory() for i in range(len(clothesstate))]
+
+    for i, order in enumerate(orders) :
+        order.clothes_list.append(clothes[i])
+
+
+    orderstates = [OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.PREPARING, OrderState.PREPARING]
+    
+    for i, order in enumerate(orders) :
+        sa_order_repo.add(order)
+        # assert order.clothes_list == [clothes[i]]
+        # assert orderstates[i] != order.status
+    session.commit()
+
+
+    assert len(sa_order_repo.get_by_status(status = OrderState.RECLAIMING)) == 3

@@ -90,9 +90,8 @@ def put_laundrybag_into_machine(uow : AbstractUnitOfWork) :
     '''
     with uow :
         READY_laundrybags = deque(sorted(uow.laundrybags.get_by_status(status=LaundryBagState.READY)))
-        print('monitor laundrybags db')
+        print('1. put_laundrybag_into_machine')
         available_machines = deque(sorted(uow.machines.get_by_status(status = MachineState.READY)))
-        print('monitor machines db')
 
         while available_machines and READY_laundrybags :
             print('matching laundrybag to machine...')
@@ -114,7 +113,7 @@ def reclaim_clothes_from_machine(uow : AbstractUnitOfWork) :
     '''
     with uow :
         DONE_machines = uow.machines.get_by_status(status = MachineState.DONE)
-        print('monitor machine that finished washing')
+        print('2. reclaim_clothes_from_machine')
         for machine in DONE_machines :
             for clothes in machine.contained.clothes_list :
                 clothes.status = ClothesState.RECLAIMED
@@ -172,7 +171,7 @@ def check_order_is_fully_reclaimed(uow : AbstractUnitOfWork) :
     '''
     with uow : 
         RECLAIMING_orders = uow.orders.get_by_status(status = OrderState.RECLAIMING)
-        print('monitor order db that is reclaiming')
+        print('3. check_order_is_fully_reclaimed')
         for order in RECLAIMING_orders :
             if not get_clothes_in_process(order) :
                 order.status = OrderState.SHIP_READY
@@ -187,10 +186,10 @@ def ship(uow : AbstractUnitOfWork) :
     '''
     with uow :
         RECLAIMED_orders = uow.orders.get_by_status(status = OrderState.SHIP_READY)
-        print('monitor order db to ready shipping')
+        print('4. ship')
     # if get_clothes_in_process(order) is None and order.status == OrderState.SHIP_READY :
         
     #     with uow :
         for order in RECLAIMED_orders :
             order.status = OrderState.SHIPPING
-            uow.commit()
+        uow.commit()

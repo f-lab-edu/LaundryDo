@@ -18,9 +18,9 @@ def test_user_create_orders(session, user_factory, order_factory) :
     user1 = user_factory()
 
     num_orders = 5
-    for _ in range(num_orders) :
+    for i in range(num_orders) :
         user1.request_order(order_factory())
-
+    
     session.add(user1)
     session.commit()
 

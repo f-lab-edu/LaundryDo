@@ -1,3 +1,5 @@
+from sqlalchemy import select
+
 from src.domain.repository import OrderRepository
 from src.domain import Order, OrderState
 from .session import FakeSession
@@ -42,6 +44,7 @@ class SqlAlchemyOrderRepository(OrderRepository) :
 
     def get_by_status(self, status : OrderState) -> List[Order] :
         return self.session.query(Order).filter_by(status = status).all()
+        
 
     def list(self) :
         return self.session.query(Order).all()

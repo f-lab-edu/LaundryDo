@@ -78,14 +78,14 @@ class Order(Base):
             clothes.status = ClothesState.PREPARING
             clothes.received_at = self.received_at
 
-    @hybrid_property
+    @property
     def status(self) -> OrderState :
-        clothes_state = max(clothes.status for clothes in self.clothes_list) if self.clothes_list else None # max returns the earliest ClothesState of clothes_list
+        clothes_state = max((clothes.status for clothes in self.clothes_list)) if self.clothes_list else None # max returns the earliest ClothesState of clothes_list
         self._status = clothes_order_mapping(clothes_state)
         return self._status
 
     @status.setter
-    def status(self, status : OrderState) :
+    def status(self, status : OrderState = OrderState.SENDING) :
         self._status = status
 
 

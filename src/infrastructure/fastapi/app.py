@@ -34,7 +34,7 @@ MEMORY_SESSION = 'sqlite:///:memory:'
 engine = create_engine(SQLALCHEMY_DATABASE_URL, echo = True)
 Base.metadata.create_all(bind = engine)
 
-session = scoped_session(sessionmaker(autocommit = False, autoflush = False, bind = engine))
+session = sessionmaker(autocommit = False, autoflush = False, bind = engine)
 
 
 uow = SqlAlchemyUnitOfWork(session)
@@ -101,14 +101,6 @@ async def init_monitor() :
     ## listening on db
 
     scheduler = BackgroundScheduler()
-    
-    
-    
-
-    
-
-    
-
 
     scheduler.add_job(services.put_laundrybag_into_machine, 'cron', second='*/10', args =[uow] )
     scheduler.add_job(services.reclaim_clothes_from_machine, 'cron', second='*/10', args =[uow] )
