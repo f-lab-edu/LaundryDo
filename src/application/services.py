@@ -92,6 +92,9 @@ def put_laundrybag_into_machine(uow : AbstractUnitOfWork) :
         READY_laundrybags = deque(sorted(uow.laundrybags.get_by_status(status=LaundryBagState.READY)))
         print('1. put_laundrybag_into_machine')
         available_machines = deque(sorted(uow.machines.get_by_status(status = MachineState.READY)))
+        
+        print(f'available machines : {available_machines}')
+        print(f'laundrybags in ready : {READY_laundrybags}')
 
         while available_machines and READY_laundrybags :
             print('matching laundrybag to machine...')
@@ -99,6 +102,22 @@ def put_laundrybag_into_machine(uow : AbstractUnitOfWork) :
             laundrybag = READY_laundrybags.popleft()
             machine.start(laundrybag)
         uow.commit()
+
+
+def update_machine_state_if_laundry_done(uow : AbstractUnitOfWork, exec_time : datetime) :
+    '''
+    update Machine(RUNNING), if the remainingTime == 0
+    '''
+    with uow : 
+        machines_in_progress = uow.machines.get_by_status(status = MachineState.RUNNING)
+        for machine in machines_in_progress :
+            if machine.remainingTime == 0 :
+                machine.status = MachineState.DONE
+                uow.machines.add(machine)
+                print(f'{machine} finished laundry.')
+
+        uow.commit()
+
 
 
 def reclaim_clothes_from_machine(uow : AbstractUnitOfWork) :
@@ -115,25 +134,34 @@ def reclaim_clothes_from_machine(uow : AbstractUnitOfWork) :
         DONE_machines = uow.machines.get_by_status(status = MachineState.DONE)
         print('2. reclaim_clothes_from_machine')
         for machine in DONE_machines :
+        
             for clothes in machine.contained.clothes_list :
                 clothes.status = ClothesState.RECLAIMED
+                print(f'{clothes} is out of {machine}.')
+                uow.clothes.add(clothes)
+            machine.status = MachineState.READY
+            uow.machines.add(machine)
+        uow.commit()
 
 
 
+def reclaim_clothes_into_order(uow : AbstractUnitOfWork):
 
-def reclaim_clothes_into_order(finished_laundrybags : List[LaundryBag]) -> List[Order]:
-    
-    reclaimed_dict = {}
+    with uow :
 
-    for laundryBag in finished_laundrybags:
-        for clothes in laundryBag.clothes_list:
-            clothes.status = ClothesState.RECLAIMED
-            if clothes.orderid not in reclaimed_dict:
-                reclaimed_dict[clothes.orderid] = [clothes]
-            else:
-                reclaimed_dict[clothes.orderid].append(clothes)
+        finished_laundrybags = uow.laundrybags.get_by_status(status = LaundryBagState.DONE)
 
-    return reclaimed_dict
+        for laundryBag in finished_laundrybags:
+            for clothes in laundryBag.clothes_list:
+                clothes.status = ClothesState.RECLAIMED
+                # if clothes.orderid not in reclaimed_dict:
+                #     reclaimed_dict[clothes.orderid] = [clothes]
+                # else:
+                #     reclaimed_dict[clothes.orderid].append(clothes)
+                uow.clothes.add(clothes)
+            laundryBag.status = LaundryBagState.OBSOLETE
+            uow.laundrybags.add(laundryBag)
+        uow.commit()
 
 
 def get_clothes_in_process(order: Order) -> List[Clothes]:
@@ -148,26 +176,24 @@ def get_clothes_in_process(order: Order) -> List[Clothes]:
     return clothes_in_process
 
 
-def allocate(uow : AbstractUnitOfWork, laundrybag : LaundryBag) :
+# def allocate(uow : AbstractUnitOfWork, laundrybag : LaundryBag) :
 
-    with uow :
-        available_machines = uow.machines.get_by_status(status = MachineState.READY)
+#     with uow :
+#         available_machines = uow.machines.get_by_status(status = MachineState.READY)
         
-        try :
-            machine = next(available_machines)
+#         try :
+#             machine = next(available_machines)
 
-            machine.start(laundrybag, datetime.now())
-            uow.commit()
-        except StopIteration :
-            print('No available Machine right now. Putting laundrybag in waiting list')    
-            # TODO : [LaundryBag -> Machine]
-            # how to monitor laundrybag that was not able to be allocated at once.
+#             machine.start(laundrybag, datetime.now())
+#             uow.commit()
+#         except StopIteration :
+#             print('No available Machine right now. Putting laundrybag in waiting list')    
+#             # TODO : [LaundryBag -> Machine]
+#             # how to monitor laundrybag that was not able to be allocated at once.
 
-def check_order_is_fully_reclaimed(uow : AbstractUnitOfWork) : 
-    '''RECLAIM
-    done_laundrybag_list = get_laundrybag_done()
-    for laundrybag in done_laundrybag_list : 
-        laundrybag.redistribute_to_order() # change clothes status from DONE to reclaimed
+def update_orderstate_fully_reclaimed(uow : AbstractUnitOfWork) : 
+    '''UPDATE ORDER STATE 
+    if 
     '''
     with uow : 
         RECLAIMING_orders = uow.orders.get_by_status(status = OrderState.RECLAIMING)
@@ -175,6 +201,7 @@ def check_order_is_fully_reclaimed(uow : AbstractUnitOfWork) :
         for order in RECLAIMING_orders :
             if not get_clothes_in_process(order) :
                 order.status = OrderState.SHIP_READY
+                uow.orders.add(order)
         uow.commit()
     
 
@@ -192,4 +219,5 @@ def ship(uow : AbstractUnitOfWork) :
     #     with uow :
         for order in RECLAIMED_orders :
             order.status = OrderState.SHIPPING
+            uow.orders.add(order)
         uow.commit()

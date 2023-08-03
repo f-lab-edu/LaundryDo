@@ -1,5 +1,7 @@
+from src.application import services
+from src.application.unit_of_work import SqlAlchemyUnitOfWork
+
 '''
-# test reference : https://github.com/agronholm/apscheduler/blob/master/tests/test_schedulers.py
 apscheduler jobs
 1. put laundrybag(state == READY) into machine(state == READY)
 2. reclaim clothes from machine(state == DONE)
@@ -10,8 +12,19 @@ apscheduler jobs
 ##################################################################
 # 1. put laundrybag(state == READY) into machine(state == READY) #
 ##################################################################
-def test_NO_laundrybag_is_ready_for_laundry() :
-    pass
+
+
+
+
+def test_NO_laundrybag_is_ready_for_laundry(session_factory) :
+    uow = SqlAlchemyUnitOfWork(session_factory)
+
+
+
+
+    services.put_laundrybag_into_machine(uow)
+    
+
 
 def test_laundrybag_ready_for_laundry_put_in_machine() :
     ''' 
@@ -56,6 +69,9 @@ def test_order_state_changes_as_order_is_fully_reclaimed() :
 ##############################################
 # 4. ship order(state == SHIP_READY) == SHIP #
 ##############################################
+
+services.update_orderstate_fully_reclaimed()
+services.ship()
 def test_NO_order_is_ready_to_be_shipped() :
     pass
 

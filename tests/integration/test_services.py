@@ -7,7 +7,6 @@ from src.application import (
     reclaim_clothes_into_order,
     get_clothes_in_process,
     allocate_laundrybag, 
-    allocate,
     ship
 )
 
@@ -212,17 +211,15 @@ def test_clothes_finished_laundry_reclaim_by_orderid(session_factory, clothes_fa
             uow.laundrybags.add(laundryBag)
         uow.commit()
         assert len(uow.laundrybags.list()) == 3
+    
+    reclaim_clothes_into_order(uow)
         
-        finished_laundrybags = uow.laundrybags.get_by_status(status = LaundryBagState.DONE)
-        reclaimed_order_dict = reclaim_clothes_into_order(finished_laundrybags)
-        
-        for orderid, clothes_list in reclaimed_order_dict.items() :
-            for clothes in clothes_list :
-                uow.clothes.add(clothes)
-        uow.commit()
+        # for orderid, clothes_list in reclaimed_order_dict.items() :
+        #     for clothes in clothes_list :
+        #         uow.clothes.add(clothes)
+        # uow.commit()
             
     
-
-    assert all([clothes.status == ClothesState.RECLAIMED for clothes in uow.clothes.list()]) and \
-            len(reclaimed_order_dict) == len(orderid_list)
-            #set([order.orderid for order in uow.orders.list()]) == set(orderid_list) and \
+    with uow :
+        assert all([clothes.status == ClothesState.RECLAIMED for clothes in uow.clothes.list()])
+                #set([order.orderid for order in uow.orders.list()]) == set(orderid_list) and \

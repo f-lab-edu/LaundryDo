@@ -21,6 +21,7 @@ class LaundryBagState(str, Enum) :
     READY = '세탁준비'
     RUNNING = '세탁중'
     DONE = '세탁완료'
+    OBSOLETE = '더이상사용안함' ## TODO how to handle when laundrybag is out of machine and done laundrying.
 
 
 

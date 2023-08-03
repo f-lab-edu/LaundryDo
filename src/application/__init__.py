@@ -6,5 +6,4 @@ from .services import (
     allocate_laundrybag,
     reclaim_clothes_into_order,
     get_clothes_in_process,
-    allocate,
     ship)
