@@ -57,8 +57,8 @@ def test_create_order(session, order_factory) :
             
 
 def test_order_creation_also_create_clothes_rows(session, order_factory, clothes_factory) :
-    order1 = order_factory(clothes_list = [clothes_factory() for _ in range(1)], status = OrderState.RECLAIMING)
-
+    order1 = order_factory(clothes_list = [clothes_factory() for _ in range(1)])#, status = OrderState.RECLAIMING)
+    order1.status = status = OrderState.RECLAIMING
     session.add(order1)
     session.commit()
 

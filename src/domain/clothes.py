@@ -15,8 +15,8 @@ class ClothesState(str, Enum):
     DISTRIBUTED = "세탁전분류"  # 세탁 라벨에 따라 분류된 상태
     PROCESSING = "세탁중"
     STOPPED = "일시정지"  # 세탁기 고장이나 외부 요인으로 세탁 일시 중지
-    DONE = "세탁완료"
     RECLAIMED = "세탁후분류"
+    DONE = "세탁완료"
 
 class LaundryLabel(str, Enum):
     WASH = "물세탁"

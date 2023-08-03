@@ -7,11 +7,10 @@ from datetime import datetime
 
 
 import sqlalchemy
-from sqlalchemy import orm
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy import orm, select, func
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime, func
 
 class ClothesState(str, Enum):
     CANCELLED = "취소"
@@ -33,14 +32,19 @@ class OrderState(str, Enum) :
     DONE = '완료'
 
 def clothes_order_mapping(clothes_status) : 
-    if not clothes_status :
-        return OrderState.CANCELLED
-
+    orderstate = OrderState.CANCELLED
+    if  clothes_status == None :
+        return orderstate
+    
     if clothes_status == ClothesState.CANCELLED :
         orderstate = OrderState.CANCELLED
-    elif clothes_status in [ClothesState.PREPARING, ClothesState.DISTRIBUTED] :
+    elif clothes_status == ClothesState.PREPARING :
+        orderstate = OrderState.PREPARING                    
+    elif clothes_status == ClothesState.DISTRIBUTED :
         orderstate = OrderState.PREPARING
-    elif clothes_status in [ClothesState.PROCESSING, ClothesState.STOPPED] :
+    elif clothes_status == ClothesState.PROCESSING :
+        orderstate = OrderState.WASHING
+    elif clothes_status == ClothesState.STOPPED :
         orderstate = OrderState.WASHING
     elif clothes_status == ClothesState.DONE :
         orderstate = OrderState.RECLAIMING
@@ -64,13 +68,13 @@ class Order(Base):
                  orderid : str,
                  clothes_list : List[Clothes] = [],
                  userid : str = None,
-                 received_at : Optional[datetime] = None,
-                 status : OrderState = OrderState.SENDING ) :
+                 received_at : Optional[datetime] = None,) : 
+                #  status : OrderState = OrderState.SENDING ) :
         self.userid = userid
         self.orderid = orderid
         self.clothes_list = clothes_list
         self.received_at = received_at
-        self._status = status
+        # self._status = status
     
 
         for clothes in self.clothes_list :
@@ -78,10 +82,11 @@ class Order(Base):
             clothes.status = ClothesState.PREPARING
             clothes.received_at = self.received_at
 
-    @property
+    @hybrid_property
     def status(self) -> OrderState :
-
-
+        '''
+        Get the max(earliest) value of Clothes Status. sqlalchemy doesn't know how to handle => define hybrid_property.expression
+        '''
         clothes_state = max((clothes.status for clothes in self.clothes_list)) if self.clothes_list else None # max returns the earliest ClothesState of clothes_list
         self._status = clothes_order_mapping(clothes_state)
         return self._status
@@ -90,6 +95,17 @@ class Order(Base):
     def status(self, status : OrderState = OrderState.SENDING) :
         self._status = status
 
+    @status.expression
+    # @classmethod
+    def status(cls) :
+        return clothes_order_mapping(
+                select([func.max(Clothes.status)]).\
+                where(Clothes.orderid == cls.orderid)
+                
+                )# .label('status')
+                 
+        
+        # return clothes_order_mapping(clothes_state)
 
     @property
     def volume(self) -> float :

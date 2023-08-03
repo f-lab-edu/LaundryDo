@@ -167,8 +167,15 @@ def test_memoryrepo_recognize_orderstate_change_by_the_clothes(order_factory, la
     assert memory_order_repo.get_by_status(status = OrderState.WASHING) == [order]
 
 
-def test_sa_repo_get_orders_by_status(order_factory, clothes_factory, session) :
+def test_sa_repo_get_orderstate_determined_by_earliest_clothesstate(order_factory, clothes_factory, session) :
+    '''
+    put clothes with different states in different orders.
+    test if the status of order is determined by the earliest clothes state.
+    e.g) order w/ clothes_list = [before washing, after washing] => order state will be before washing.
+    '''
+    
     sa_order_repo = SqlAlchemyOrderRepository(session)
+    sa_clothes_repo = SqlAlchemyClothesRepository(session)
     clothesstate = [ClothesState.DONE, ClothesState.DONE, ClothesState.DONE, ClothesState.PREPARING, ClothesState.PREPARING]
     
     clothes = [clothes_factory(status = clothesstate[i]) for i in range(len(clothesstate))]
@@ -177,15 +184,16 @@ def test_sa_repo_get_orders_by_status(order_factory, clothes_factory, session) :
 
     for i, order in enumerate(orders) :
         order.clothes_list.append(clothes[i])
-
-
-    orderstates = [OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.PREPARING, OrderState.PREPARING]
     
+    orderstates = [OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.PREPARING, OrderState.PREPARING]
+    print(orders)
     for i, order in enumerate(orders) :
         sa_order_repo.add(order)
-        # assert order.clothes_list == [clothes[i]]
-        # assert orderstates[i] != order.status
+        # assert order.clothes_list == [clothes[i]
+        assert orderstates[i] == order.status
     session.commit()
 
-    assert len(sa_order_repo.list()) == 4
+    print(sa_order_repo.list())
+
+    assert len(sa_order_repo.list()) == 5
     assert len(sa_order_repo.get_by_status(status = OrderState.RECLAIMING)) == 3
