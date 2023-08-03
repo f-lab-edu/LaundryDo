@@ -93,13 +93,20 @@ with uow :
         uow.machines.add(machine)
     
 
+def get_db() :
+    try :
+        yield session
+    finally :
+        session.close()
+
+
 # def print_hi() :
 #     print('hi')
 
 @app.on_event('startup')
-async def init_monitor() :
+async def init_monitor():#session : Session = Depends(get_db)) :
     ## listening on db
-
+    # uow = SqlAlchemyUnitOfWork(session)
     scheduler = BackgroundScheduler()
 
     scheduler.add_job(services.put_laundrybag_into_machine, 'cron', second='*/10', args =[uow] )
@@ -126,13 +133,6 @@ async def init_monitor() :
 # @app.on_event('shutdown')
 # async def shutdown() :
 #     await database.disconnect()
-
-def get_db() :
-    try :
-        yield session
-    finally :
-        session.close()
-
 
 
 @app.get('/')

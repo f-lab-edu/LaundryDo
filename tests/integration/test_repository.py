@@ -187,5 +187,5 @@ def test_sa_repo_get_orders_by_status(order_factory, clothes_factory, session) :
         # assert orderstates[i] != order.status
     session.commit()
 
-
+    assert len(sa_order_repo.list()) == 4
     assert len(sa_order_repo.get_by_status(status = OrderState.RECLAIMING)) == 3

@@ -80,6 +80,8 @@ class Order(Base):
 
     @property
     def status(self) -> OrderState :
+
+
         clothes_state = max((clothes.status for clothes in self.clothes_list)) if self.clothes_list else None # max returns the earliest ClothesState of clothes_list
         self._status = clothes_order_mapping(clothes_state)
         return self._status
