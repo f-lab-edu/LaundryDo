@@ -55,7 +55,7 @@ def test_order_sort_by_laundrybags(order_factory, clothes_factory):
 
 
 ########TODO
-@pytest.mark.skip()
+# @pytest.mark.skip()
 def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(session, 
                                                                            session_factory, 
                                                                            order_factory, 
@@ -211,15 +211,10 @@ def test_clothes_finished_laundry_reclaim_by_orderid(session_factory, clothes_fa
             uow.laundrybags.add(laundryBag)
         uow.commit()
         assert len(uow.laundrybags.list()) == 3
-    
-    reclaim_clothes_into_order(uow)
         
-        # for orderid, clothes_list in reclaimed_order_dict.items() :
-        #     for clothes in clothes_list :
-        #         uow.clothes.add(clothes)
-        # uow.commit()
+        
+        reclaimed_order_dict = reclaim_clothes_into_order(uow)
+        uow.commit()
+
+    assert all([clothes.status == ClothesState.RECLAIMED for clothes in uow.clothes.list()])
             
-    
-    with uow :
-        assert all([clothes.status == ClothesState.RECLAIMED for clothes in uow.clothes.list()])
-                #set([order.orderid for order in uow.orders.list()]) == set(orderid_list) and \

@@ -5,6 +5,7 @@ from src import domain
 
 from src.infrastructure.db.sqlalchemy.orm import start_mappers
 from src.infrastructure.db.sqlalchemy.setup import metadata
+from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
 from src.domain.base import Base
 
@@ -105,8 +106,6 @@ def user_factory() :
     yield _user_factory
 
 
-
-
 @pytest.fixture
 def in_memory_db() :
     engine = create_engine('sqlite:///:memory:')
@@ -120,6 +119,10 @@ def session_factory(in_memory_db) :
 @pytest.fixture
 def session(session_factory) :
     return session_factory()
+
+@pytest.fixture
+def uow_factory(session_factory) :
+    yield SqlAlchemyUnitOfWork(session_factory)
 
 # def wait_for_webapp_to_come_up() :
 #     deadline = time.time() + 10

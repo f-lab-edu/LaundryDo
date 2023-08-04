@@ -2,11 +2,11 @@ import abc
 from abc import abstractmethod
 
 from src.domain.repository import  (
-    UserRepository,
-    OrderRepository,
-    ClothesRepository,
-    LaundryBagRepository,
-    MachineRepository,
+    AbstractUserRepository,
+    AbstractOrderRepository,
+    AbstractClothesRepository,
+    AbstractLaundryBagRepository,
+    AbstractMachineRepository,
 )
 
 from src.infrastructure.repository import (
@@ -30,11 +30,11 @@ from src.infrastructure.repository import (
 )
 
 class AbstractUnitOfWork(abc.ABC):
-    users : UserRepository
-    orders : OrderRepository
-    clothes : ClothesRepository
-    laundrybags : LaundryBagRepository
-    machines : MachineRepository
+    users : AbstractUserRepository
+    orders : AbstractOrderRepository
+    clothes : AbstractClothesRepository
+    laundrybags : AbstractLaundryBagRepository
+    machines : AbstractMachineRepository
 
     def __enter__(self):
         return self
@@ -77,11 +77,11 @@ class MemoryUnitOfWork(AbstractUnitOfWork) :
 
 
 class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
-    users : UserRepository
-    orders : OrderRepository
-    clothes : ClothesRepository
-    laundrybags : LaundryBagRepository
-    machines : MachineRepository
+    users : SqlAlchemyUserRepository
+    orders : SqlAlchemyOrderRepository
+    clothes : SqlAlchemyClothesRepository
+    laundrybags : SqlAlchemyLaundryBagRepository
+    machines : SqlAlchemyMachineRepository
 
 
     def __init__(self, session_factory = session):

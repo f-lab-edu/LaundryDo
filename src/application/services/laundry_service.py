@@ -4,7 +4,7 @@ from typing import List, Dict
 from src.domain import Clothes, LaundryBag, LaundryLabel, LaundryBagState, Order, OrderState, ClothesState
 from src.domain.spec import LAUNDRYBAG_MAXVOLUME, MACHINE_MAXVOLUME
 
-from src.domain.repository import UserRepository, OrderRepository, LaundryBagRepository, MachineRepository
+from src.domain.repository import AbstractUserRepository, AbstractOrderRepository, AbstractLaundryBagRepository, AbstractMachineRepository
 from datetime import datetime
 
 from src.application.services import distribute_order, put_in_laundrybag, allocate_laundrybag#, check_clothes_in_order_is_fully_reclaimed, reclaim_clothes_into_order

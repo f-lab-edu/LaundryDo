@@ -1,12 +1,12 @@
 from sqlalchemy import select
 
-from src.domain.repository import OrderRepository
+from src.domain.repository import AbstractOrderRepository
 from src.domain import Order, OrderState
 from .session import FakeSession
 from typing import List
 
 
-class MemoryOrderRepository(OrderRepository) :        
+class MemoryOrderRepository(AbstractOrderRepository) :        
     
     def __init__(self, session : FakeSession) :
         self.session = session
@@ -28,7 +28,7 @@ class MemoryOrderRepository(OrderRepository) :
 
 
 
-class SqlAlchemyOrderRepository(OrderRepository) :        
+class SqlAlchemyOrderRepository(AbstractOrderRepository) :        
     
     def __init__(self, session) :
         self.session = session

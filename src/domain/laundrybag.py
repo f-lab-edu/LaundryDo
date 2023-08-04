@@ -1,4 +1,4 @@
-from .spec import LAUNDRYBAG_MAXVOLUME
+from .spec import LAUNDRYBAG_MAXVOLUME, LAUNDRYBAG_MAX_WAITINGTIME
 from .clothes import Clothes, ClothesState, LaundryLabel
 
 from enum import Enum
@@ -59,7 +59,9 @@ class LaundryBag(Base):
             self.clothes_list.append(clothes)
         else :
             self.status = LaundryBagState.READY
+            
             raise MaximumVolumeExceedError
+    
 
     @property
     def volume(self):

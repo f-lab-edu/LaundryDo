@@ -1,10 +1,10 @@
 
-from src.domain.repository import ClothesRepository
+from src.domain.repository import AbstractClothesRepository
 from .session import FakeSession
 from src.domain import Clothes, ClothesState
 from typing import List
 
-class MemoryClothesRepository(ClothesRepository) :
+class MemoryClothesRepository(AbstractClothesRepository) :
     
     def __init__(self, session : FakeSession) :
         self.session = session
@@ -22,7 +22,7 @@ class MemoryClothesRepository(ClothesRepository) :
         self.session.buffers[Clothes][clothes.clothesid] = clothes
 
 
-class SqlAlchemyClothesRepository(ClothesRepository) :
+class SqlAlchemyClothesRepository(AbstractClothesRepository) :
     
     def __init__(self, session) :
         self.session = session

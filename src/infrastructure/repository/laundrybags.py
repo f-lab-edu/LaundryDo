@@ -1,4 +1,4 @@
-from src.domain.repository import LaundryBagRepository
+from src.domain.repository import AbstractLaundryBagRepository
 from src.domain import LaundryBag, LaundryBagState, LaundryLabel
 from typing import List
 from .session import FakeSession
@@ -7,7 +7,7 @@ from uuid import uuid4
 from datetime import datetime
 
 
-class MemoryLaundryBagRepository(LaundryBagRepository) : 
+class MemoryLaundryBagRepository(AbstractLaundryBagRepository) : 
     
     def __init__(self, session : FakeSession) :
         self.session = session
@@ -33,7 +33,7 @@ class MemoryLaundryBagRepository(LaundryBagRepository) :
 
 
 
-class SqlAlchemyLaundryBagRepository(LaundryBagRepository) : 
+class SqlAlchemyLaundryBagRepository(AbstractLaundryBagRepository) : 
     
     def __init__(self, session) :
         self.session = session

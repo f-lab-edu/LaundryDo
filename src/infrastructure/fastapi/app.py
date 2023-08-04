@@ -109,6 +109,7 @@ async def init_monitor():#session : Session = Depends(get_db)) :
     # uow = SqlAlchemyUnitOfWork(session)
     scheduler = BackgroundScheduler()
 
+    scheduler.add_job(services.change_laundrybagstate_if_time_passed, 'cron', second = '*/10', args = [uow] )
     scheduler.add_job(services.put_laundrybag_into_machine, 'cron', second='*/10', args =[uow] )
     scheduler.add_job(services.reclaim_clothes_from_machine, 'cron', second='*/10', args =[uow] )
     scheduler.add_job(services.check_order_is_fully_reclaimed, 'cron', second='*/10', args =[uow] )

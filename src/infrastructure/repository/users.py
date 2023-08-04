@@ -1,8 +1,8 @@
-from src.domain.repository import UserRepository
+from src.domain.repository import AbstractUserRepository
 from src.domain import User
 from .session import FakeSession
 
-class MemoryUserRepository(UserRepository) :
+class MemoryUserRepository(AbstractUserRepository) :
 
     def __init__(self, session : FakeSession) :
         self.session = session
@@ -17,7 +17,7 @@ class MemoryUserRepository(UserRepository) :
         self.session.query(User)[user.userid] = user
 
 
-class SqlAlchemyUserRepository(UserRepository) :
+class SqlAlchemyUserRepository(AbstractUserRepository) :
 
     def __init__(self, session) :
         self.session = session

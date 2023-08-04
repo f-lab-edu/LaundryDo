@@ -56,9 +56,6 @@ class Machine(Base):
 
         # TODO [Machine] sort by least recent used machine.
         # TODO [Machine] max volume may be different.
-
-    def __hash__(self) :
-        return hash(self.machineid)
     
     def __eq__(self, other) :
         return hash(self.machineid) == hash(other.machineid)
@@ -156,6 +153,7 @@ class Machine(Base):
         else:
             raise ValueError(f"cannot stop when {self.status}")
         
+    
 
     def __repr__(self) :
         return f'id={self.machineid}, contained={self.contained.laundrybagid if self.contained else None}, status={self.status}'

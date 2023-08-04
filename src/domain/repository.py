@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from src.domain import User, Order, Clothes, LaundryBag, Machine
 from typing import List
 
-class UserRepository(ABC) :
+class AbstractUserRepository(ABC) :
     @abstractmethod
     def get(self, userid) -> User:
         raise NotImplementedError
@@ -15,7 +15,7 @@ class UserRepository(ABC) :
         raise NotImplementedError
 
 
-class OrderRepository(ABC) :        
+class AbstractOrderRepository(ABC) :        
     @abstractmethod
     def get(self, orderid) -> Order:
         raise NotImplementedError
@@ -27,7 +27,7 @@ class OrderRepository(ABC) :
         raise NotImplementedError
 
 
-class ClothesRepository(ABC) :
+class AbstractClothesRepository(ABC) :
     @abstractmethod
     def get(self, clothesid) -> Clothes:
         raise NotImplementedError
@@ -39,7 +39,7 @@ class ClothesRepository(ABC) :
         raise NotImplementedError
 
 
-class LaundryBagRepository(ABC) : 
+class AbstractLaundryBagRepository(ABC) : 
     @abstractmethod
     def get(self, laundrybagid) -> LaundryBag :
         raise NotImplementedError
@@ -51,7 +51,7 @@ class LaundryBagRepository(ABC) :
         raise NotImplementedError
 
 
-class MachineRepository(ABC) :
+class AbstractMachineRepository(ABC) :
     @abstractmethod
     def get(self, machineid) -> Machine :
         raise NotImplementedError

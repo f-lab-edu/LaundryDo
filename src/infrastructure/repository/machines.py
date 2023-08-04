@@ -1,11 +1,11 @@
-from src.domain.repository import MachineRepository
+from src.domain.repository import AbstractMachineRepository
 from .session import FakeSession
 from src.domain import Machine, MachineState
 from typing import List
 
 ## Machine set is less likely to be changed.
 
-class MemoryMachineRepository(MachineRepository) :
+class MemoryMachineRepository(AbstractMachineRepository) :
     
     def __init__(self, session : FakeSession) :
         self.session = session
@@ -23,7 +23,7 @@ class MemoryMachineRepository(MachineRepository) :
         self.session.query(Machine)[machine.machineid] = machine
 
 
-class SqlAlchemyMachineRepository(MachineRepository) :
+class SqlAlchemyMachineRepository(AbstractMachineRepository) :
     
     def __init__(self, session) :
         self.session = session
