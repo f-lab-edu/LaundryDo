@@ -57,10 +57,12 @@ class LaundryBag(Base):
         if self.can_contain(clothes.volume) and self.status is LaundryBagState.COLLECTING :
             clothes.status = ClothesState.DISTRIBUTED
             self.clothes_list.append(clothes)
+            if self.volume == LAUNDRYBAG_MAXVOLUME :
+                self.status = LaundryBagState.READY
         else :
             self.status = LaundryBagState.READY
             
-            raise MaximumVolumeExceedError
+            # raise MaximumVolumeExceedError
     
 
     @property

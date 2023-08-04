@@ -10,9 +10,9 @@ from typing import List, Dict
 from datetime import datetime
 from uuid import uuid4
 
-from collections import deque
+from collections import deque, defaultdict
 
-class OrderNotFoundError(Exception) :
+class OrderCannotbeCancelledError(Exception) :
     pass
 
 
@@ -24,10 +24,10 @@ def request_order(uow : AbstractUnitOfWork, orderid, clothes_list, received_at, 
 
 def cancel_order(uow : AbstractUnitOfWork, userid : str, orderid : str) :
     with uow : 
-        [order] = uow.orders.filter(userid = userid).get(orderid)
+        order = uow.orders.get_by_id(orderid = orderid)
         if order.status in [OrderState.SENDING, OrderState.PREPARING] :
             # cancel the order
-            raise OrderNotFoundError
+            raise OrderCannotbeCancelledError
         uow.commit()
     return order
 
@@ -79,6 +79,26 @@ def put_clothes_in_laundrybag(laundrybag : LaundryBag, clothes : Clothes) -> Lau
 
     return laundrybaglist
 
+
+with uow :
+    waiting_orders = uow.orders.get_by_status(status = OrderState.PREPARING)
+    laundrybags_in_collect = uow.laundrybags.get_by_status(status = LaundryBagState.COLLECTING)
+    
+    laundrybag_labeldict = defaultdict(list)
+    for laundrybag in laundrybags_in_collect :
+        laundrybag_labeldict[laundrybag.label] = laundrybag
+    
+    
+    for order in waiting_orders :
+        for clothes in order.clothes_list :
+            
+
+            
+
+        order.status = max([clothes.status for clothes in order.clothes_list])
+
+
+
     
 def allocate_laundrybag(uow : AbstractUnitOfWork) :
     with uow :
@@ -90,6 +110,8 @@ def allocate_laundrybag(uow : AbstractUnitOfWork) :
             for clothes in clothes_list :
                 waiting_bag = put_clothes_in_laundrybag(waiting_bag, clothes)
                 uow.laundrybags.add(waiting_bag)
+
+            order
         uow.commit() 
 
 
