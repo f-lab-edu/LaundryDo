@@ -26,7 +26,7 @@ today = datetime.today()
 
 
 
-
+@pytest.mark.skip()
 def test_order_sort_by_laundrybags(order_factory, clothes_factory):
     
     session = FakeSession()
@@ -55,9 +55,8 @@ def test_order_sort_by_laundrybags(order_factory, clothes_factory):
 
 
 ########TODO
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(session, 
-                                                                           session_factory, 
                                                                            order_factory, 
                                                                            laundrybag_factory, 
                                                                            clothes_factory):

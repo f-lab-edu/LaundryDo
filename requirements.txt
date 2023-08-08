@@ -1,6 +1,6 @@
 fastapi[all]
 uvicorn
-sqlalchemy
+sqlalchemy>=2.0
 pydantic
 pydantic_settings
 
@@ -10,3 +10,4 @@ mysqlclient
 databases[aiosqlite]
 requests
 ipython
+httpx

@@ -7,7 +7,11 @@ from src.infrastructure.db.sqlalchemy.orm import start_mappers
 from src.infrastructure.db.sqlalchemy.setup import metadata
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
+from src.infrastructure.fastapi.app import app
 from src.domain.base import Base
+
+from fastapi.testclient import TestClient
+from fastapi import FastAPI
 
 import requests
 from requests.exceptions import ConnectionError
@@ -124,6 +128,12 @@ def session(session_factory) :
 @pytest.fixture
 def uow_factory(session_factory) :
     yield SqlAlchemyUnitOfWork(session_factory)
+
+@pytest.fixture
+def test_app() -> TestClient : 
+    
+    with TestClient(app = app) as client :
+        yield client
 
 # def wait_for_webapp_to_come_up() :
 #     deadline = time.time() + 10

@@ -13,6 +13,9 @@ import config
     # assert r.json()
 
 
+def test_api_connection(test_app) :
+    response = test_app.get('/')
+    assert response.status_code == 200
 
 
 
