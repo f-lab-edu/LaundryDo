@@ -33,7 +33,7 @@ today = datetime.today()
 
 @pytest.fixture
 def clothes_factory() :
-    def _clothes_factory(clothesid = None, label=None, volume=None, status=None, received_at = None):
+    def _clothes_factory(clothesid = None, label=None, volume=None, status = None, received_at = None):
         if clothesid is None :
             clothesid = random_clothesid()
         if label is None:
@@ -41,7 +41,8 @@ def clothes_factory() :
 
         if volume is None:
             volume = float(random.randint(5, 15))
-        # if status is None:
+        if status is None:
+            status = ClothesState.PREPARING # as preparing is a default state.
         #     status = random.choice(
         #         [
         #             ClothesState.PREPARING,
@@ -79,7 +80,7 @@ def order_factory(clothes_factory) :
                        orderid: str = None, 
                        clothes_list: List[Clothes] = [clothes_factory(label=LaundryLabel.WASH, received_at = today)], 
                        received_at: Optional[datetime] = None, 
-                    #    status : OrderState = OrderState.SENDING
+                       status : OrderState = OrderState.SENDING
                     ) :
         if userid is None :
             userid = random_userid()
@@ -90,8 +91,8 @@ def order_factory(clothes_factory) :
         return domain.Order(userid = userid, 
                             orderid = orderid, 
                             clothes_list = clothes_list, 
-                            received_at = received_at, )
-                            # status = status)
+                            received_at = received_at,
+                            status = status)
 
     yield _order_factory
 

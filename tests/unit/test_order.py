@@ -33,5 +33,8 @@ def test_orderstate_change_by_the_clothes(order_factory, clothes_factory) :
     clothes_list = [clothes_factory(status = clothes_states[i]) for i in range(len(clothes_states))]
 
     order = order_factory(clothes_list = clothes_list)
-
+    order.update_status_by_clothes()
+    
     assert order.status == OrderState.PREPARING
+
+

@@ -81,7 +81,7 @@ def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(sessi
     order_repo = SqlAlchemyOrderRepository(session)    
     order_repo.add(order_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 6)]))
     session.commit()
-
+    assert len(order_repo.list()) == 1
     # 기존의 LaundryBag(volume 20) 추가. max_volume 25. 
     laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
     laundrybag_repo.add(laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 20)]))

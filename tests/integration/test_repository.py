@@ -27,6 +27,7 @@ from src.infrastructure.repository import (
     FakeSession
 )
 
+from sqlalchemy import select, func
 from datetime import datetime
 import pytest
 
@@ -65,7 +66,6 @@ def test_clothes_status_change(session, clothes_factory) :
     assert len(clothes_repo.list()) == 1
 
 
-# TODO Memory Repo cannot recognize relationship
 def test_memoryrepo_recognize_clothes_order_relationship(order_factory, clothes_factory) :
     num_clothes = 5
 
@@ -156,6 +156,7 @@ def test_memoryrepo_recognize_orderstate_change_by_the_clothes(order_factory, la
     # put in laundry bag
     laundrybag = laundrybag_factory(clothes_list = clothes_list)
     memory_laundrybag_repo.add(laundrybag)
+    order.update_status_by_clothes()
     assert memory_order_repo.get_by_status(status = OrderState.PREPARING) == [order]
 
     # put the laundrybag in machine
@@ -188,12 +189,58 @@ def test_sa_repo_get_orderstate_determined_by_earliest_clothesstate(order_factor
     orderstates = [OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.PREPARING, OrderState.PREPARING]
     print(orders)
     for i, order in enumerate(orders) :
+        # order.update_status_by_clothes()
         sa_order_repo.add(order)
         # assert order.clothes_list == [clothes[i]
         assert orderstates[i] == order.status
     session.commit()
 
-    print(sa_order_repo.list())
+    # print(sa_order_repo.list())
 
     assert len(sa_order_repo.list()) == 5
+
+    # print(sa_order_repo.get_by_status(status = OrderState.RECLAIMING))
     assert len(sa_order_repo.get_by_status(status = OrderState.RECLAIMING)) == 3
+
+
+
+def clothes_order_mapping(clothes_status) : 
+    orderstate = OrderState.CANCELLED
+    if  clothes_status is None :
+        return orderstate
+    
+    if clothes_status == ClothesState.CANCELLED :
+        orderstate = OrderState.CANCELLED
+    elif clothes_status == ClothesState.PREPARING :
+        orderstate = OrderState.PREPARING                    
+    elif clothes_status == ClothesState.DISTRIBUTED :
+        orderstate = OrderState.PREPARING
+    elif clothes_status == ClothesState.PROCESSING :
+        orderstate = OrderState.WASHING
+    elif clothes_status == ClothesState.STOPPED :
+        orderstate = OrderState.WASHING
+    elif clothes_status == ClothesState.DONE :
+        orderstate = OrderState.RECLAIMING
+    elif clothes_status == ClothesState.RECLAIMED :
+        orderstate = OrderState.SHIP_READY
+    return orderstate
+
+
+def test_order_repo_get_status(session, order_factory, clothes_factory) :
+
+    clothes_states = [ClothesState.PROCESSING, ClothesState.PROCESSING, ClothesState.PROCESSING]
+    clothes_list = [clothes_factory(status = clothes_states[i]) for i in range(3)]
+
+    order = order_factory(clothes_list = clothes_list)
+    
+    session.add(order)
+    session.commit()
+    
+    # print(select(Clothes).select_from(Order).join(Order.clothes_list))
+    # print( func.min(select(Clothes.status)))
+    # print(session.execute(func.min(select(Clothes.status))).one())
+    print(session.query(Order).all())
+    print(session.query(Order).filter_by(status = OrderState.WASHING).all())
+    # print(select(Order))
+    assert 0
+    ## get clothes_list(relationship) of an order

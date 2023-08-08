@@ -10,6 +10,7 @@ from src.domain import (
     MachineState
 )
 
+from sqlalchemy.sql import text
 from datetime import datetime
 
 
@@ -29,12 +30,13 @@ def test_user_create_orders(session, user_factory, order_factory) :
 
 def test_create_user(session) :
     session.execute(
+        text(
         'INSERT INTO user (userid, address) VALUES '
         '("user123", "서울시 중랑구"),'
         '("user456", "서울시 동작구"),'
         '("user789", "서울시 마포구")'
-    )
-
+            )
+        )
     expected = [
         User("user123", "서울시 중랑구"),
         User("user456", "서울시 동작구"),

@@ -1,4 +1,5 @@
 from src.application import services
+from src.application import LaundryBagManager
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.domain import Machine, MachineState, LaundryBagState, LaundryLabel, OrderState, ClothesState
 from src.domain.spec import MACHINE_MAXVOLUME
@@ -95,13 +96,14 @@ def test_laundrybag_ready_for_laundry_put_in_machine(set_up_machines, uow_factor
     with uow_factory :
         uow_factory.orders.add(order)
         uow_factory.commit()
-    
-        assert uow_factory.clothes.get_by_status(status = ClothesState.PREPARING) == clothes_list
 
+        
+        clothes_in_preparing = uow_factory.clothes.get_by_status(status = ClothesState.PREPARING)
+        assert clothes_in_preparing == clothes_list
+    
     services.allocate_laundrybag(uow_factory)
 
     with uow_factory :
-
         assert uow_factory.laundrybags.list() is None
         assert len(uow_factory.laundrybags.get_by_status(status = LaundryBagState.READY)) == 1
 
