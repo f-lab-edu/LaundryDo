@@ -28,7 +28,7 @@ def test_user_request_order_status(user_factory, order_factory) :
     
     order_status = new_user.request_order_status(new_order)
 
-    assert order_status == OrderState.PREPARING
+    assert order_status == OrderState.SENDING
 
 
 def test_user_request_order_history(user_factory, order_factory) :

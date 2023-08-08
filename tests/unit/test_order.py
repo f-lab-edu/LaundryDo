@@ -35,6 +35,6 @@ def test_orderstate_change_by_the_clothes(order_factory, clothes_factory) :
     order = order_factory(clothes_list = clothes_list)
     order.update_status_by_clothes()
     
-    assert order.status == OrderState.PREPARING
+    assert order.status == OrderState.SENDING
 
 

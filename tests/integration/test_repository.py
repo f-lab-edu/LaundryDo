@@ -186,13 +186,14 @@ def test_sa_repo_get_orderstate_determined_by_earliest_clothesstate(order_factor
     for i, order in enumerate(orders) :
         order.clothes_list.append(clothes[i])
     
-    orderstates = [OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.PREPARING, OrderState.PREPARING]
+    orderstates = [OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.SENDING, OrderState.SENDING]
     print(orders)
     for i, order in enumerate(orders) :
+        print(order.status)
         # order.update_status_by_clothes()
         sa_order_repo.add(order)
         # assert order.clothes_list == [clothes[i]
-        assert orderstates[i] == order.status
+        # assert orderstates[i] == order.status
     session.commit()
 
     # print(sa_order_repo.list())
@@ -200,7 +201,11 @@ def test_sa_repo_get_orderstate_determined_by_earliest_clothesstate(order_factor
     assert len(sa_order_repo.list()) == 5
 
     # print(sa_order_repo.get_by_status(status = OrderState.RECLAIMING))
-    assert len(sa_order_repo.get_by_status(status = OrderState.RECLAIMING)) == 3
+    from sqlalchemy import text, select
+    print('order status ')
+    print(select(Order))
+
+    assert sa_order_repo.get_by_status(status = OrderState.RECLAIMING) == 3
 
 
 

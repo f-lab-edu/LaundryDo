@@ -7,3 +7,5 @@ from .services import (
     reclaim_clothes_into_order,
     get_clothes_in_process,
     ship)
+
+from .laundrybag_manager import LaundryBagManager

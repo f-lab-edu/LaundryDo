@@ -1,6 +1,6 @@
 from src.domain.spec import LAUNDRYBAG_MAXVOLUME, LAUNDRY_MINVOLUME, LAUNDRYBAG_MAX_WAITINGTIME
 from src.domain.clothes import Clothes, ClothesState, LaundryLabel
-from src.domain.order import Order, OrderState
+from src.domain.order import Order, OrderState, clothes_order_mapping
 from src.domain.laundrybag import LaundryBag, LaundryBagState
 from src.domain.machine import Machine, MachineState
 from src.domain.repository import AbstractOrderRepository, AbstractLaundryBagRepository, AbstractMachineRepository
@@ -38,6 +38,47 @@ def cancel_order(uow : AbstractUnitOfWork, userid : str, orderid : str) :
 # put in laundrybag if laundrybag can contain the clothes, else make new laundrybag
 
 
+def update_orderstate(uow : AbstractUnitOfWork) :
+    with uow : 
+        orders = uow.orders.list()
+
+        for order in orders :
+            clothesstate = max(clothes.status for clothes in order.clothes_list)
+            orderstate = clothes_order_mapping(clothesstate)
+            order.status = orderstate
+            uow.orders.add(order)
+        uow.commit()
+
+
+'''
+with uow :
+    waiting_orders = uow.orders.get_by_status(status = OrderState.PREPARING)
+    laundrybags_in_collect = uow.laundrybags.get_by_status(status = LaundryBagState.COLLECTING)
+    
+    laundrybag_labeldict = defaultdict(list)
+    for laundrybag in laundrybags_in_collect :
+        laundrybag_labeldict[laundrybag.label] = laundrybag
+    
+    
+    for order in waiting_orders :
+        for clothes in order.clothes_list :
+            
+
+        order.status = max([clothes.status for clothes in order.clothes_list])
+'''
+
+
+
+def change_laundrybagstate_if_time_passed(uow : AbstractUnitOfWork) :
+    with uow :
+        laundrybags_collecting = uow.laundrybags.get_by_status(status = LaundryBagState.COLLECTING)
+        
+        for laundrybag in laundrybags_collecting : 
+            if laundrybag.created_at - datetime.now() >= LAUNDRYBAG_MAX_WAITINGTIME :
+                laundrybag.status = LaundryBagState.READY
+
+
+
 def distribute_order(order_list : List[Order]) -> Dict[LaundryLabel, List[Clothes]]:
     laundrylabeldict = {}
 
@@ -49,15 +90,6 @@ def distribute_order(order_list : List[Order]) -> Dict[LaundryLabel, List[Clothe
                 laundrylabeldict[clothes.label] = [clothes]
 
     return laundrylabeldict
-
-
-def change_laundrybagstate_if_time_passed(uow : AbstractUnitOfWork) :
-    with uow :
-        laundrybags_collecting = uow.laundrybags.get_by_status(status = LaundryBagState.COLLECTING)
-        
-        for laundrybag in laundrybags_collecting : 
-            if laundrybag.created_at - datetime.now() >= LAUNDRYBAG_MAX_WAITINGTIME :
-                laundrybag.status = LaundryBagState.READY
 
 
 def put_clothes_in_laundrybag(laundrybag : LaundryBag, clothes : Clothes) -> LaundryBag:
@@ -80,25 +112,6 @@ def put_clothes_in_laundrybag(laundrybag : LaundryBag, clothes : Clothes) -> Lau
     return laundrybaglist
 
 
-with uow :
-    waiting_orders = uow.orders.get_by_status(status = OrderState.PREPARING)
-    laundrybags_in_collect = uow.laundrybags.get_by_status(status = LaundryBagState.COLLECTING)
-    
-    laundrybag_labeldict = defaultdict(list)
-    for laundrybag in laundrybags_in_collect :
-        laundrybag_labeldict[laundrybag.label] = laundrybag
-    
-    
-    for order in waiting_orders :
-        for clothes in order.clothes_list :
-            
-
-            
-
-        order.status = max([clothes.status for clothes in order.clothes_list])
-
-
-
     
 def allocate_laundrybag(uow : AbstractUnitOfWork) :
     with uow :
@@ -108,10 +121,10 @@ def allocate_laundrybag(uow : AbstractUnitOfWork) :
             waiting_bag = uow.laundrybags.get_waitingbag_by_label(label = laundrylabel)
             
             for clothes in clothes_list :
-                waiting_bag = put_clothes_in_laundrybag(waiting_bag, clothes)
-                uow.laundrybags.add(waiting_bag)
+                waiting_bags = put_clothes_in_laundrybag(waiting_bag, clothes)
+                for bag in waiting_bags :
+                    uow.laundrybags.add(bag)
 
-            order
         uow.commit() 
 
 
@@ -193,7 +206,7 @@ def reclaim_clothes_into_order(uow : AbstractUnitOfWork):
         for laundryBag in finished_laundrybags:
             for clothes in laundryBag.clothes_list:
                 clothes.status = ClothesState.RECLAIMED
-                # if clothes.orderid not in reclaimed_dict:
+                # if clothes.ordㅇerid not in reclaimed_dict:
                 #     reclaimed_dict[clothes.orderid] = [clothes]
                 # else:
                 #     reclaimed_dict[clothes.orderid].append(clothes)

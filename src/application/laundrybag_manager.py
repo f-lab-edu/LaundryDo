@@ -42,9 +42,16 @@ class LaundryBagManager :
     
         for laundrybag in self.laundrybagdict.values() :
             if laundrybag.volume == LAUNDRYBAG_MAXVOLUME or \
-                laundrybag.create_at - datetime.now() >= LAUNDRYBAG_MAX_WAITINGTIME :
+              laundrybag.create_at - datetime.now() >= LAUNDRYBAG_MAX_WAITINGTIME :
+                
                 laundrybag.status = LaundryBagState.READY
-                self.laundrybagdict[laundrybag.label] = self.create_new_laundrybag(laundrybag.label)
+                new_bag = self.create_new_laundrybag(laundrybag.label)
+
+                with self.uow :
+                    self.uow.laundrybags.add(new_bag)
+                    self.uow.commit()
+
+                self.laundrybagdict[laundrybag.label] = new_bag
 
             with self.uow :
                 self.uow.laundrybags.add(laundrybag)
@@ -54,28 +61,34 @@ class LaundryBagManager :
 
 
     def allocate(self, clothes : Clothes) :
-        laundrybag = self.laundrybagdict[clothes.label] if laundrybag else self.create_new_laundrybag()
-        if laundrybag.can_contain(clothes.volume) :
+        laundrybag = self.laundrybagdict[clothes.label]
+
+        if laundrybag and laundrybag.can_contain(clothes.volume) :
             laundrybag.append(clothes)
         else :
             # 만약 clothes 자체가 최대 수용 부피를 초과한다면
-            if clothes.volume >= LAUNDRYBAG_MAXVOLUME :
+            if clothes.volume > LAUNDRYBAG_MAXVOLUME :
                 raise ClothesMaxVolumeExceedError()
             
             laundrybag = self.create_new_laundrybag(label = clothes.label)
+            
             laundrybag.append(clothes)
 
             ###
             self.laundrybagdict[clothes.label] = laundrybag
 
         with self.uow :
+            # if self.laundrybagdict[clothes.label] :
             self.uow.laundrybags.add(self.laundrybagdict[clothes.label])
 
 
     def create_new_laundrybag(self, label : LaundryLabel) :
         prev_laundrybag = self.laundrybagdict[label]
 
-        return LaundryBag(laundrybagid= f'bag-{label}-{str(uuid4())[:2]}-{int(prev_laundrybag.laundrybagid.split("-")[-1]) + 1}',
-                          created_at = datetime.now(),
-                          label = label)
+        laundrybagid = f'bag-{label}-{str(uuid4())[:2]}-{int(prev_laundrybag.laundrybagid.split("-")[-1]) + 1}' if prev_laundrybag \
+                            else f'bag-{label}-{str(uuid4())[:2]}-0'
+
+        return LaundryBag(laundrybagid = laundrybagid,
+                          created_at = datetime.now(),)
+                        #   label = label)
         
