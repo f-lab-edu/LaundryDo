@@ -38,12 +38,9 @@ session = sessionmaker(autocommit = False, autoflush = False, bind = engine)
 
 
 uow = SqlAlchemyUnitOfWork(session)
-# laundry_service = LaundryService(session = database,
-#                                  order_repository = SqlAlchemyOrderRepository,
-#                                  laundrybag_repository = SqlAlchemyLaundryBagRepository,
-#                                  clothes_repository = SqlAlchemyClothesRepository,
-#                                  machine_repository = SqlAlchemyMachineRepository)
 
+## TODO 테스트 샘플 넣는 더 나은 방법? 현재는 docker-compose down 후에 up해야함
+## db에 값이 들어가서 테스트 중복 발생
 ### scenario
 with uow :
 
@@ -97,7 +94,7 @@ def get_db() :
     try :
         yield session
     finally :
-        session.close()
+        print('is db down?')
 
 
 # def print_hi() :
@@ -109,6 +106,8 @@ def init_monitor():#session : Session = Depends(get_db)) :
     # uow = SqlAlchemyUnitOfWork(session)
     scheduler = BackgroundScheduler()
 
+    ## TODO apscheduler job에 대한 session이 중복되어 생기는 문제
+
     scheduler.add_job(services.change_laundrybagstate_if_time_passed, 'cron', second = '*/10', args = [uow] )
     # scheduler.add_job(services.put_laundrybag_into_machine, 'cron', second='*/10', args =[uow] )
     # scheduler.add_job(services.reclaim_clothes_from_machine, 'cron', second='*/10', args =[uow] )
@@ -116,24 +115,9 @@ def init_monitor():#session : Session = Depends(get_db)) :
     # scheduler.add_job(services.ship, 'cron', second='*/10', args =[uow] )
     scheduler.start()
 
-
-# def print_hi() :
-#     print('hi')
-
-# @app.on_event('startup')
-# def init_monitor() :
-#     scheduler = BackgroundScheduler()
-#     scheduler.add_job(print_hi, 'cron', second = '*/5')
-#     scheduler.start()
-
-
-# @app.on_event('startup')
-# async def startup() :
-#     await database.connect()
-
-# @app.on_event('shutdown')
-# async def shutdown() :
-#     await database.disconnect()
+@app.on_event('shutdown')
+def shutdown() :
+    pass
 
 
 @app.get('/')
@@ -178,6 +162,7 @@ async def request_order(userid : str, order : Annotated[ schemas.Order,
         ], 
         session : Session = Depends(get_db)
     ) :
+    print(order.json())
     uow = SqlAlchemyUnitOfWork(session)
     with uow :
         services.request_order(uow,**dict(order))

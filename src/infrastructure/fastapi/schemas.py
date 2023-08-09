@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 
 from src.domain import (
     ClothesState,
@@ -20,7 +20,7 @@ class Clothes(BaseModel):
     orderid: Optional[str] = None
     laundrybagid : Optional[str] = None
     status: ClothesState = ClothesState.PREPARING
-    received_at: Optional[datetime] = None
+    received_at: Optional[date] = None
     # model_config = {
     #     "json_schema_extra" : {
     #         "examples" : [
@@ -34,15 +34,19 @@ class Clothes(BaseModel):
     #     }
     # }
 
+def convert_datetime_to_iso_8601_with_z_suffix(dt: datetime) -> str:
+    return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 class Order(BaseModel):
     # TODO : [Order] pydantic. received time by each status?
-    model_config = ConfigDict(from_attributes = True)
+    model_config = ConfigDict(received_at = convert_datetime_to_iso_8601_with_z_suffix,
+                              from_attributes = True,
+    )
 
     orderid : str
     clothes_list : List[Clothes] = []
-    received_at : Optional[datetime] = None
     status : OrderState = OrderState.SENDING
+    received_at : Optional[date] = None
     
     def __init__(self, **kwargs) :
         super().__init__(**kwargs)
