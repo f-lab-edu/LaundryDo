@@ -42,52 +42,52 @@ uow = SqlAlchemyUnitOfWork(session)
 ## TODO 테스트 샘플 넣는 더 나은 방법? 현재는 docker-compose down 후에 up해야함
 ## db에 값이 들어가서 테스트 중복 발생
 ### scenario
-with uow :
+# with uow :
 
-    user1 = domain.User(userid = 'Bob', address = '서울시 강남구')
-    user2 = domain.User(userid = 'Jason', address = '서울시 노원구')
+#     user1 = domain.User(userid = 'Bob', address = '서울시 강남구')
+#     user2 = domain.User(userid = 'Jason', address = '서울시 노원구')
 
-    order1 = domain.Order(
-                    userid = 'Bob',
-                    orderid = 'Bob_order1',
-                    clothes_list = [domain.Clothes(
-                                        clothesid='흰티셔츠',
-                                        label = domain.LaundryLabel.DRY,
-                                        volume = 3,
-                                    ),
-                                    domain.Clothes(
-                                        clothesid='청바지',
-                                        label = domain.LaundryLabel.HAND,
-                                        volume = 6,
-                                    ),
-                                ],
-                    received_at = datetime.now()
-                        )
-    order2 = domain.Order(
-                    userid = 'Jason',
-                    orderid = 'Jason_order5',
-                    clothes_list = [domain.Clothes(
-                                        clothesid='갈색 면바지',
-                                        label = domain.LaundryLabel.WASH,
-                                        volume = 4,
-                                    ),
-                                    domain.Clothes(
-                                        clothesid='초록색 블라우스',
-                                        label = domain.LaundryLabel.DRY,
-                                        volume = 2,
-                                    ),
-                                ],
-                    received_at = datetime.now())
-    user1.orderlist.append(order1)
-    user2.orderlist.append(order2)
+#     order1 = domain.Order(
+#                     userid = 'Bob',
+#                     orderid = 'Bob_order1',
+#                     clothes_list = [domain.Clothes(
+#                                         clothesid='흰티셔츠',
+#                                         label = domain.LaundryLabel.DRY,
+#                                         volume = 3,
+#                                     ),
+#                                     domain.Clothes(
+#                                         clothesid='청바지',
+#                                         label = domain.LaundryLabel.HAND,
+#                                         volume = 6,
+#                                     ),
+#                                 ],
+#                     received_at = datetime.now()
+#                         )
+#     order2 = domain.Order(
+#                     userid = 'Jason',
+#                     orderid = 'Jason_order5',
+#                     clothes_list = [domain.Clothes(
+#                                         clothesid='갈색 면바지',
+#                                         label = domain.LaundryLabel.WASH,
+#                                         volume = 4,
+#                                     ),
+#                                     domain.Clothes(
+#                                         clothesid='초록색 블라우스',
+#                                         label = domain.LaundryLabel.DRY,
+#                                         volume = 2,
+#                                     ),
+#                                 ],
+#                     received_at = datetime.now())
+#     user1.orderlist.append(order1)
+#     user2.orderlist.append(order2)
 
-    uow.users.add(user1)
-    uow.users.add(user2)
-    uow.commit()
+#     uow.users.add(user1)
+#     uow.users.add(user2)
+#     uow.commit()
 
-    for i in range(10) :
-        machine = domain.Machine(machineid = f'machine_{i}')
-        uow.machines.add(machine)
+#     for i in range(10) :
+#         machine = domain.Machine(machineid = f'machine_{i}')
+#         uow.machines.add(machine)
     
 
 def get_db() :
@@ -97,8 +97,7 @@ def get_db() :
         print('is db down?')
 
 
-# def print_hi() :
-#     print('hi')
+
 
 @app.on_event('startup')
 def init_monitor():#session : Session = Depends(get_db)) :
@@ -119,13 +118,29 @@ def init_monitor():#session : Session = Depends(get_db)) :
 def shutdown() :
     pass
 
+@app.get('/ping')
+def ping() :
+    return 'pong'
 
 @app.get('/')
 async def root() :
     return {'LaundryDo' : 'Welcome'}
 
+@app.post('/sign-in', response_model = schemas.User)
+async def create_user(user_info : schemas.User, session : Session = Depends(get_db)) :
+    uow = SqlAlchemyUnitOfWork(session)
+
+    with uow :
+        uow.users.add(domain.User(**user_info))
+        uow.commit()
+
+    return user_info
+
+    
+
+
 @app.get('/users/{userid}', response_model = schemas.Order)
-async def request_orderlist(userid : str, session : Session = Depends(get_db)) :
+async def request_orderlist(userid : str, session = Annotated[Session, Depends(get_db)] ) :
     uow = SqlAlchemyUnitOfWork(session)
     with uow :
         return uow.orders.get_by_userid(userid=userid)
@@ -142,27 +157,26 @@ async def request_order_info(userid : str, orderid : str, session : Session = De
 
 
 @app.post('/users/{userid}/orders', response_model = schemas.Order)
-async def request_order(userid : str, order : Annotated[ schemas.Order, 
-            Body(
-                examples = [
-                    {   
-                        'userid' : '[userid]',
-                        "orderid" : '[userid]-order-[num]',
-                        "description" : "세탁 요청한 옷들의 리스트가 담긴 주문 정보",
-                        'clothes_list' : [{
-                            "clothesid" : "흰티셔츠",
-                            "label" : "드라이클리닝",
-                            "volume" : 3,
-                                }
-                            ],
-                        "received_at" : datetime(2023, 7, 21, 10, 11),
-                    }
-                ]
-            )
-        ], 
-        session : Session = Depends(get_db)
-    ) :
-    print(order.json())
+async def request_order(userid : str, order : Annotated[schemas.Order, 'schema order'], session : Session = Depends(get_db)) :
+            # Body(
+            #     examples = [
+            #         {   
+            #             # 'userid' : '[userid]',
+            #             "orderid" : '[userid]-order-[num]',
+            #             "description" : "세탁 요청한 옷들의 리스트가 담긴 주문 정보",
+            #             'clothes_list' : [{
+            #                 "clothesid" : "흰티셔츠",
+            #                 "label" : "드라이클리닝",
+            #                 "volume" : 3,
+            #                     }
+            #                 ],
+            #             "received_at" : datetime(2023, 7, 21, 10, 11),
+            #         }
+            #     ]
+            # )
+    #     ], 
+    #     session : Session = Depends(get_db)
+    # ) :
     uow = SqlAlchemyUnitOfWork(session)
     with uow :
         services.request_order(uow,**dict(order))
