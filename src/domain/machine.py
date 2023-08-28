@@ -50,7 +50,9 @@ class Machine(Base):
 
         self.start_time = None
         self.lastupdateTime = None
-        self.runtime = timedelta(minutes=0)
+        self._runtime = timedelta(minutes=0)
+        self._requiredTime = timedelta(minutes = 0)
+        self._label = None
 
         self.status = MachineState.READY
 
@@ -58,15 +60,22 @@ class Machine(Base):
         # TODO [Machine] max volume may be different.
     
     def __gt__(self, other) :
+
+        # sort 함수는 laundrybag을 allocate하기 전에만 사용한다. [STOP, DONE, BROKEN] 상태의 machine은 제외
+
         if not isinstance(other, self.__class__) :
             raise NotImplementedError()
+        
+        if self.status in [MachineState.STOP, MachineState.DONE, MachineState.BROKEN] or other.status in [MachineState.STOP, MachineState.DONE, MachineState.BROKEN] :
+            raise NotImplementedError()
+
         if self.status is MachineState.RUNNING and other.status is MachineState.RUNNING :
-            return self.remainingTime() > other.remainingTime()
-        elif self.status is MachineState.RUNNING :
+            return self.remainingTime > other.remainingTime
+        elif self.status is MachineState.RUNNING and other.status is not MachineState.RUNNING :
             return True
-        elif other.status is MachineState.RUNNING :
+        elif other.status is MachineState.RUNNING and self.status is not MachineState.RUNNING:
             return False
-        if self.lastupdateTime and other.lastupdateTime :
+        elif self.status == MachineState.READY and other.status == MachineState.READY :
             return self.lastupdateTime > other.lastupdateTime
 
     @property
@@ -85,19 +94,31 @@ class Machine(Base):
     def requiredTime(self):
         if self.label is None:
             return None
-        return time_required_for_volume(
+        self._requiredTime = time_required_for_volume(
             LaundryTimeTable[self.label], self.volume
         )
+        return self._requiredTime
 
-    def get_runtime(self):
-
-        if self.lastupdateTime and self.status == MachineState.RUNNING:
-            return self.runtime + (datetime.now() - self.lastupdateTime)
-        else:
-            return self.runtime
+    @requiredTime.setter
+    def requiredTime(self, time : timedelta) :
+        self._requiredTime = time
     
-    def remainingTime(self, exec_time: datetime):
-        return timedelta(minutes=self.requiredTime) - self.get_runtime(exec_time)
+    @property
+    def remainingTime(self):
+        return timedelta(minutes=self.requiredTime) - self.runtime
+
+    @property
+    def runtime(self):
+        if self.lastupdateTime and self.status == MachineState.RUNNING:
+            return self._runtime + (datetime.now() - self.lastupdateTime)
+        else:
+            return self._runtime
+    
+    @runtime.setter
+    def runtime(self, time : timedelta) :
+        self._runtime = time
+
+
 
     def can_contain(self, laundryBag: LaundryBag):
         return laundryBag.volume <= MACHINE_MAXVOLUME
@@ -146,7 +167,7 @@ class Machine(Base):
             self.status = MachineState.STOP
             exec_time = datetime.now()
 
-            self.runtime += exec_time - self.lastupdateTime
+            self._runtime += exec_time - self.lastupdateTime
             self.lastupdateTime = exec_time
         else:
             raise ValueError(f"cannot stop when {self.status}")

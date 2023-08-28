@@ -35,13 +35,18 @@ def test_machine_sorted_by_lastupdate_time(laundrybag_factory, clothes_factory) 
     less_recently_used_machine.lastupdateTime = exectime - timedelta(minutes = 30)
     recently_used_machine.lastupdateTime = exectime
 
+    bag1 = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.DRY)])
+    bag2 = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.DRY)])
 
+    currently_running_machine_less_remaining_time.start(bag1)
+    currently_running_machine_more_remaining_time.start(bag2)
+    
+    
+    
 
-    moretime_laundrybag = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 0.1) for _ in range(10)])
-    lesstime_laundrybag = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.DRY, volume = 0.1) for _ in range(3)])
+    assert currently_running_machine_less_remaining_time.status == MachineState.RUNNING and \
+            currently_running_machine_more_remaining_time.status == MachineState.RUNNING
 
-    currently_running_machine_less_remaining_time.start_time = exectime - timedelta(minutes = 30)
-    currently_running_machine_more_remaining_time.start_time = exectime
 
     assert sorted([recently_used_machine, 
                    currently_running_machine_more_remaining_time, 
