@@ -41,7 +41,7 @@ class Machine(Base):
     contained = relationship('LaundryBag', backref = 'machine', uselist = False)
     # Column('laundrybagid', ForeignKey('laundrybag.id')),
     start_time = Column('start_time', DateTime, nullable = True)
-    lastupdateTime = Column('lastupdate_time', DateTime)
+    lastupdateTime = Column('lastupdate_time', DateTime, onupdate = datetime.now())
     status = Column('status', sqlalchemy.Enum(MachineState), default = MachineState.READY)
 
     def __init__(self, machineid: str):
@@ -57,14 +57,11 @@ class Machine(Base):
         # TODO [Machine] sort by least recent used machine.
         # TODO [Machine] max volume may be different.
     
-    def __eq__(self, other) :
-        return hash(self.machineid) == hash(other.machineid)
-
     def __gt__(self, other) :
         if not isinstance(other, self.__class__) :
             raise NotImplementedError()
         if self.status is MachineState.RUNNING and other.status is MachineState.RUNNING :
-            return self.remainingTime(datetime.now()) > other.remainingTime(datetime.now())
+            return self.remainingTime() > other.remainingTime()
         elif self.status is MachineState.RUNNING :
             return True
         elif other.status is MachineState.RUNNING :
@@ -92,10 +89,10 @@ class Machine(Base):
             LaundryTimeTable[self.label], self.volume
         )
 
-    def get_runtime(self, exec_time: datetime):
+    def get_runtime(self):
 
         if self.lastupdateTime and self.status == MachineState.RUNNING:
-            return self.runtime + (exec_time - self.lastupdateTime)
+            return self.runtime + (datetime.now() - self.lastupdateTime)
         else:
             return self.runtime
     
@@ -105,7 +102,7 @@ class Machine(Base):
     def can_contain(self, laundryBag: LaundryBag):
         return laundryBag.volume <= MACHINE_MAXVOLUME
 
-    def start(self, laundrybag: LaundryBag, exec_time):
+    def start(self, laundrybag: LaundryBag):
         # TODO : [Machine] Broken Machine -> Move LaundryBags to other Machine
         # 세탁기기가 고장날 경우 처리방법
         if self.status == MachineState.BROKEN :
@@ -115,7 +112,7 @@ class Machine(Base):
         elif self.status == MachineState.RUNNING :
             raise AlreadyRunningError(f'{self.__repr__} is already running.')
         else :
-            self.start_time = exec_time
+            self.start_time = datetime.now()
             self.lastupdateTime = self.start_time
             self.status = MachineState.RUNNING
 
@@ -137,17 +134,18 @@ class Machine(Base):
     #     self.lastupdateTime = self.start_time
     #     self.status = MachineState.RUNNING
 
-    def resume(self, exec_time: datetime):
+    def resume(self):
         if self.status == MachineState.STOP:
-            self.lastupdateTime = exec_time
+            self.lastupdateTime = datetime.now()
             self.status = MachineState.RUNNING
         else:
             raise AlreadyRunningError(f"cannot resume when {self.status}")
 
-    def stop(self, exec_time: datetime):
+    def stop(self):
         if self.status == MachineState.RUNNING:
             self.status = MachineState.STOP
-            # now = datetime.now()
+            exec_time = datetime.now()
+
             self.runtime += exec_time - self.lastupdateTime
             self.lastupdateTime = exec_time
         else:
