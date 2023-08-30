@@ -121,12 +121,12 @@ class Order(Base):
         return self._status
         
     # @status.inplace.setter
-    @status.inplace.setter
+    @status.setter
     def status(self, status : OrderState) :
         self._status = status
 
 
-    @status.inplace.expression
+    @status.expression
     def status(cls) -> OrderState :
         return clothes_order_mapping(func.max(select(Clothes.status).\
                 where(Clothes.orderid == cls.orderid)))
