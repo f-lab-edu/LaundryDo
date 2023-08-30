@@ -1,5 +1,5 @@
 from sqlalchemy import Table, MetaData, Column, String, Float, Date, ForeignKey
-from sqlalchemy.orm import mapper, relationship
+from sqlalchemy.orm import mapper, relationship, Session
 
 metadata = MetaData()
 
@@ -19,11 +19,19 @@ SQLALCHEMY_DATABASE_URL = 'mysql://{}:{}@{}:{}/{}'.format(
 )
 
 
+
 # DB_URL = 'sqlite:///./test.db'
 engine = create_engine(SQLALCHEMY_DATABASE_URL) #  connect_args = {'check_same_thread' : False} only for sqlite
 
 session = sessionmaker(autocommit = False, autoflush = False, bind = engine)
 
+
+def get_db() :
+    db = session()
+    try :
+        yield db
+    finally :
+        db.close()
 
 # def session_factory(engine = engine) :
 #     start_mappers()

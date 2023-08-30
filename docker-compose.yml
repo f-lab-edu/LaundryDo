@@ -8,12 +8,12 @@ services:
       - MYSQL_HOST=${DB_HOST}
       - MYSQL_DATABASE=${DB_DATABASE}
       - MYSQL_USER=${DB_USER}
-      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD} # replace by environment on CI
+      # - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD} # replace by environment on CI
+      - MYSQL_ALLOW_EMPTY_PASSWORD=''
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - TZ="Asia/Seoul"
     env_file :
       - .env
-
     expose :
       - 3306
     # volumes :
