@@ -45,8 +45,8 @@ class Order(BaseModel):
 
     orderid : str
     clothes_list : List[Clothes] = []
-    status : OrderState = OrderState.SENDING
     received_at : Optional[date] = None
+    status : OrderState = OrderState.SENDING
     
     def __init__(self, **kwargs) :
         super().__init__(**kwargs)
@@ -58,7 +58,7 @@ class User(BaseModel) :
     model_config = ConfigDict(from_attributes = True)
     userid : str
     address : str
-    orderlist : List[Order]
+    orderlist : Optional[List[Order]]
 
     
 

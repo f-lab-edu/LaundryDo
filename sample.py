@@ -59,6 +59,6 @@ if __name__ == '__main__' :
     session.add(owner1)
     session.commit()
 
-    print(session.execute(func.count(session.query(Owner).join(Owner.pet_list))))
+    print(session.query(Owner).join(Owner.pet_list))
 
     

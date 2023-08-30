@@ -84,19 +84,19 @@ class Order(Base):
 
     # id = Column('id', Integer, primary_key = True, autoincrement = True)
     orderid = Column('orderid', String(255), primary_key = True)
-    received_at = Column('received_at', DateTime, nullable = True)
+    userid = Column('userid', String(20), ForeignKey('user.userid'), nullable = True) # userid reference 방법?
     # status = Column('status', sqlalchemy.Enum(OrderState))
     clothes_list = relationship('Clothes', backref = 'order')
+    received_at = Column('received_at', DateTime, nullable = True)
     # status = column_property(clothes_order_mapping(
     #                             select(func.max(clothes_list))
     #                             )
     #                         )
-    userid = Column('userid', String(20), ForeignKey('user.userid'), nullable = True) # userid reference 방법?
     
     def __init__(self, 
                  orderid : str,
-                 clothes_list : List[Clothes] = [],
                  userid : str = None,
+                 clothes_list : List[Clothes] = [],
                  received_at : Optional[datetime] = None, 
                  status : OrderState = OrderState.SENDING ) :
         self.userid = userid

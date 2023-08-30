@@ -31,75 +31,59 @@ app = FastAPI()
 app.include_router(user_router.router)
 app.include_router(order_router.router)
 
-# dependency
-MEMORY_SESSION = 'sqlite:///:memory:'
-# database = databases.Database(SQLALCHEMY_DATABASE_URL)
-engine = create_engine(MEMORY_SESSION, echo = True)
-Base.metadata.create_all(bind = engine)
-
-session = sessionmaker(autocommit = False, autoflush = False, bind = engine)
-
 
 uow = SqlAlchemyUnitOfWork(session)
 
 ## TODO 테스트 샘플 넣는 더 나은 방법? 현재는 docker-compose down 후에 up해야함
 ## db에 값이 들어가서 테스트 중복 발생
 ### scenario
-with uow :
+# with uow :
 
-    user1 = domain.User(userid = 'Bob', address = '서울시 강남구')
-    user2 = domain.User(userid = 'Jason', address = '서울시 노원구')
+#     user1 = domain.User(userid = 'Bob', address = '서울시 강남구')
+#     user2 = domain.User(userid = 'Jason', address = '서울시 노원구')
 
-    order1 = domain.Order(
-                    userid = 'Bob',
-                    orderid = 'Bob_order1',
-                    clothes_list = [domain.Clothes(
-                                        clothesid='흰티셔츠',
-                                        label = domain.LaundryLabel.DRY,
-                                        volume = 3,
-                                    ),
-                                    domain.Clothes(
-                                        clothesid='청바지',
-                                        label = domain.LaundryLabel.HAND,
-                                        volume = 6,
-                                    ),
-                                ],
-                    received_at = datetime.now()
-                        )
-    order2 = domain.Order(
-                    userid = 'Jason',
-                    orderid = 'Jason_order5',
-                    clothes_list = [domain.Clothes(
-                                        clothesid='갈색 면바지',
-                                        label = domain.LaundryLabel.WASH,
-                                        volume = 4,
-                                    ),
-                                    domain.Clothes(
-                                        clothesid='초록색 블라우스',
-                                        label = domain.LaundryLabel.DRY,
-                                        volume = 2,
-                                    ),
-                                ],
-                    received_at = datetime.now())
-    user1.orderlist.append(order1)
-    user2.orderlist.append(order2)
+#     order1 = domain.Order(
+#                     userid = 'Bob',
+#                     orderid = 'Bob_order1',
+#                     clothes_list = [domain.Clothes(
+#                                         clothesid='흰티셔츠',
+#                                         label = domain.LaundryLabel.DRY,
+#                                         volume = 3,
+#                                     ),
+#                                     domain.Clothes(
+#                                         clothesid='청바지',
+#                                         label = domain.LaundryLabel.HAND,
+#                                         volume = 6,
+#                                     ),
+#                                 ],
+#                     received_at = datetime.now()
+#                         )
+#     order2 = domain.Order(
+#                     userid = 'Jason',
+#                     orderid = 'Jason_order5',
+#                     clothes_list = [domain.Clothes(
+#                                         clothesid='갈색 면바지',
+#                                         label = domain.LaundryLabel.WASH,
+#                                         volume = 4,
+#                                     ),
+#                                     domain.Clothes(
+#                                         clothesid='초록색 블라우스',
+#                                         label = domain.LaundryLabel.DRY,
+#                                         volume = 2,
+#                                     ),
+#                                 ],
+#                     received_at = datetime.now())
+#     user1.orderlist.append(order1)
+#     user2.orderlist.append(order2)
 
-    uow.users.add(user1)
-    uow.users.add(user2)
-    uow.commit()
+#     uow.users.add(user1)
+#     uow.users.add(user2)
+#     uow.commit()
 
-    for i in range(10) :
-        machine = domain.Machine(machineid = f'machine_{i}')
-        uow.machines.add(machine)
+#     for i in range(10) :
+#         machine = domain.Machine(machineid = f'machine_{i}')
+#         uow.machines.add(machine)
     
-
-def get_db() :
-    try :
-        yield session
-    finally :
-        print('is db down?')
-
-
 @app.on_event('startup')
 def init_monitor():#session : Session = Depends(get_db)) :
     ## listening on db
@@ -119,22 +103,13 @@ def init_monitor():#session : Session = Depends(get_db)) :
 def shutdown() :
     pass
 
+@app.get('/ping')
+def ping() :
+    return 'pong'
+
 @app.get('/')
 async def root() :
     return {'LaundryDo' : 'Welcome'}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # class Order(BaseModel) :
@@ -194,10 +169,4 @@ async def root() :
 # async def register_order(order : Order) :
 #     query = orders.select()
 #     return await database.fetch_all(query)
-
-
-
-# @app.get('/users/')
-# def request_userid(userid : Annotated[str | None, Query(max_length = 50 )]) :
-#     return orders[userid]
 
