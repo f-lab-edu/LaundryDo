@@ -17,7 +17,7 @@ router = APIRouter(
 
 
 
-@router.get('/users/{userid}/orders/{orderid}')
+@router.get('/{userid}/{orderid}')
 async def request_order_info(userid : str, orderid : str, session : Session = Depends(get_db)) -> schemas.Order : ## TODO : orders only be accessible for one user.
     '''
     request estimate time for order in process. if order is done or cancelled, return 0.
