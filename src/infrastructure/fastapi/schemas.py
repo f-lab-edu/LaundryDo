@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 
 from src.domain import (
     ClothesState,
@@ -20,7 +20,7 @@ class Clothes(BaseModel):
     orderid: Optional[str] = None
     laundrybagid : Optional[str] = None
     status: ClothesState = ClothesState.PREPARING
-    received_at: Optional[date] = None
+    received_at: Optional[datetime] = None
     # model_config = {
     #     "json_schema_extra" : {
     #         "examples" : [
@@ -34,24 +34,20 @@ class Clothes(BaseModel):
     #     }
     # }
 
-def convert_datetime_to_iso_8601_with_z_suffix(dt: datetime) -> str:
-    return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 class Order(BaseModel):
-    # TODO : [Order] pydantic. received time by each status?
-    model_config = ConfigDict(received_at = convert_datetime_to_iso_8601_with_z_suffix,
-                              from_attributes = True,
-    )
-
+    model_config = ConfigDict(from_attributes = True)
     orderid : str
+    userid : str
     clothes_list : List[Clothes] = []
-    received_at : Optional[date] = None
+    received_at : Optional[datetime] = None
     status : OrderState = OrderState.SENDING
+
+class OrderCreate(BaseModel) :
+    model_config = ConfigDict(from_attributes = True)
+    clothes_list : List[Clothes] = []
+
     
-    def __init__(self, **kwargs) :
-        super().__init__(**kwargs)
-        for clothes in kwargs['clothes_list'] :
-            clothes['orderid'] = kwargs['orderid']
 
 
 class User(BaseModel) :
@@ -60,6 +56,9 @@ class User(BaseModel) :
     address : str
     orderlist : Optional[List[Order]]
 
+
+# class UserCreate(User) :
+#     password : str
     
 
 class LaundryBag(BaseModel):

@@ -1,22 +1,23 @@
 from fastapi import APIRouter, Body, Depends
 from starlette import status
 
+from datetime import datetime
 from typing import List, Dict, Annotated
 
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.infrastructure.db.sqlalchemy.setup import get_db
 from src.infrastructure.fastapi import schemas
-
+from src.application import services
 from sqlalchemy.orm import Session
 
 
 router = APIRouter(
-    prefix = '/order/'
+    prefix = '/order'
 )
 
 
 
-@app.get('/users/{userid}/orders/{orderid}')
+@router.get('/users/{userid}/orders/{orderid}')
 async def request_order_info(userid : str, orderid : str, session : Session = Depends(get_db)) -> schemas.Order : ## TODO : orders only be accessible for one user.
     '''
     request estimate time for order in process. if order is done or cancelled, return 0.
@@ -26,7 +27,7 @@ async def request_order_info(userid : str, orderid : str, session : Session = De
         return uow.orders.get_by_orderid(orderid = orderid)
 
 
-@app.post('/users/{userid}/orders', response_model = schemas.Order)
+@router.post('/users/{userid}/orders', response_model = schemas.Order)
 async def request_order(userid : str, order : Annotated[ schemas.Order, 
             Body(
                 examples = [
@@ -55,7 +56,7 @@ async def request_order(userid : str, order : Annotated[ schemas.Order,
     return order
 
 
-@app.put('/{orderid}', status_code = status.HTTP_204_NO_CONTENT)
+@router.put('/{orderid}', status_code = status.HTTP_204_NO_CONTENT)
 async def cancel_order(userid : str, orderid : str, session : Session = Depends(get_db)) :#-> schemas.Order :
     uow = SqlAlchemyUnitOfWork(session)
     

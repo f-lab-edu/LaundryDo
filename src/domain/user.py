@@ -13,13 +13,15 @@ class User(Base) :
 
     __tablename__ = 'user'
     
-    # id = Column('id', Integer, primary_key = True, autoincrement = True)
-    userid = Column('userid', String(20), primary_key = True)
+    id = Column('id', Integer, primary_key = True, autoincrement = True)
+    userid = Column('userid', String(20))
+    # password = Column('password', String(20))
     address = Column('address', String(255))
     orderlist = relationship('Order', backref = 'user')
 
     def __init__(self, userid: str, address: str, orderlist : List[Order] = []) :
         self.userid = userid
+        # self.password = password
         self.address = address
         self.orderlist = orderlist
 
