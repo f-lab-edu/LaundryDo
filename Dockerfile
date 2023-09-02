@@ -4,13 +4,20 @@ COPY requirements.txt requirements.txt
 
 ENV PYTHONDONTWRITEBYTECODE 1 # Not leaving any pycache
 ENV PYTHONUNBUFFERED 1
+ENV PROJECT_DIR laundrydo
 
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+RUN apt-get -y update && \
+    apt-get -y install \
+    apt-utils \
+    gcc && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 80
+COPY . /${PROJECT_DIR}
 
-COPY . /app
+WORKDIR /${PROJECT_DIR}
 
-WORKDIR /app
-
-CMD [ "uvicorn", "src.infrastructure.api.app:app",  "--host", "0.0.0.0", "--port", "80", "--reload" ] # "--proxy-headers",
+COPY run.sh /${PROJECT_DIR}/run.sh
+RUN chmod +x /${PROJECT_DIR}/run.sh
+CMD ["./run.sh"]

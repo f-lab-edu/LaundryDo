@@ -13,7 +13,6 @@ from src import domain
 from src.infrastructure.api import schemas
 from src.application import services
 
-import databases
 from src.infrastructure.db.sqlalchemy.setup import engine, session, SQLALCHEMY_DATABASE_URL
 from src.domain.base import Base
 

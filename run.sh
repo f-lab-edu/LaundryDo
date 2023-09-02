@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eu # exit if error or unset variables
+
 # run fastapi server
 HOST=${HOST:-"0.0.0.0"}
 PORT=${PORT:-8000}

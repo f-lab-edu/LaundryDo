@@ -11,9 +11,10 @@ MODEL_LOAD_PATTERN_PORT := 8000
 
 .PHONY: build
 build :
-	docker build \
-		-t $(DOCKER_REPOSITORY):$(PROJECT_NAME)_$(IMAGE_VERSION) \
-		-f $(DOCKERFILE)
+		docker build \
+			-t $(DOCKER_REPOSITORY):$(PROJECT_NAME)_$(IMAGE_VERSION) \
+			-f $(DOCKERFILE) \
+			.
 
 .PHONY: push
 push:
@@ -28,7 +29,7 @@ push_all: push
 .PHONY: c_build
 c_build: build_all
 
-.PHONY c_up
+.PHONY: c_up
 c_up :
 		docker-compose \
 				-f ./$(DOCKER_COMPOSE) \
