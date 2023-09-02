@@ -16,9 +16,11 @@ class OrderCannotbeCancelledError(Exception) :
     pass
 
 
-def request_order(uow : AbstractUnitOfWork, orderid, clothes_list, received_at, status) :
+def request_order(uow : AbstractUnitOfWork, userid, clothes_list, received_at) :
     with uow :
-        uow.orders.add(Order(orderid, [Clothes(**dict(clothes)) for clothes in clothes_list], received_at, status))
+        uow.orders.add(Order(userid = userid,
+                             clothes_list = [Clothes(**dict(clothes)) for clothes in clothes_list], 
+                             received_at = received_at))
         uow.commit()
 
 

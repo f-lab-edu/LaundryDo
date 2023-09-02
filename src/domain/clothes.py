@@ -28,12 +28,12 @@ class Clothes(Base) :
 
     __tablename__ = 'clothes'
 
-    # id = Column('id', Integer, primary_key = True, autoincrement = True)
-    clothesid = Column('clothesid', String(255), primary_key = True)
+    id = Column('id', Integer, primary_key = True, autoincrement = True)
+    clothesid = Column('clothesid', String(255))
     label = Column('label', sqlalchemy.Enum(LaundryLabel))
     volume = Column('volume', Float)
-    orderid = Column('orderid', String(255), ForeignKey('order.orderid'))
-    laundrybagid = Column('laundrybagid', String(255), ForeignKey('laundrybag.laundrybagid'), nullable = True)
+    orderid = Column('orderid', String(255), ForeignKey('order.id'))
+    laundrybagid = Column('laundrybagid', String(255), ForeignKey('laundrybag.id'), nullable = True)
     status = Column('status', sqlalchemy.Enum(ClothesState), default = ClothesState.PREPARING)
     received_at = Column('received_at', DateTime)
 
