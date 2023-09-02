@@ -12,7 +12,7 @@ from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
 from src import domain
 from src.domain.base import Base
-from src.infrastructure.fastapi.app import app, get_db
+from src.infrastructure.api.app import app, get_db
 
 
 SQLALCHEMY_DATABASE_URL = 'sqlite:///:memory:'

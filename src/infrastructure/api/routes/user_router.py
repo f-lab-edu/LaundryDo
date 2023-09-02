@@ -3,7 +3,7 @@ from starlette import status
 
 from datetime import datetime
 from typing import List, Annotated
-from src.infrastructure.fastapi import schemas
+from src.infrastructure.api import schemas
 from src.infrastructure.db.sqlalchemy.setup import session
 from src import domain
 from src.application.unit_of_work import SqlAlchemyUnitOfWork, get_uow
@@ -11,9 +11,7 @@ from src.application import services
 from sqlalchemy.orm import Session
 
 
-router = APIRouter(
-    prefix = '/user'
-)
+router = APIRouter()
 
 
 @router.get('/list', response_model = List[schemas.User])

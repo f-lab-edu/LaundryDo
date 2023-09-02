@@ -7,7 +7,7 @@ from src.infrastructure.db.sqlalchemy.orm import start_mappers
 from src.infrastructure.db.sqlalchemy.setup import metadata
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
-from src.infrastructure.fastapi.app import app
+from src.infrastructure.api.app import app
 from src.domain.base import Base
 
 from fastapi.testclient import TestClient

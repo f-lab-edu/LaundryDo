@@ -4,13 +4,13 @@ from enum import Enum
 from typing import List, Dict, Annotated
 from datetime import datetime
 
-from fastapi import FastAPI, Query, Body, Depends
+from fastapi import FastAPI
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session, Session
 
 from src import domain 
-from src.infrastructure.fastapi import schemas
+from src.infrastructure.api import schemas
 from src.application import services
 
 import databases
@@ -23,13 +23,13 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
-from src.infrastructure.fastapi.routes import user_router, order_router
+from src.infrastructure.api.routes import user_router, order_router
 
 
 app = FastAPI()
 
-app.include_router(user_router.router)
-app.include_router(order_router.router)
+app.include_router(user_router.router, prefix = '/user')
+app.include_router(order_router.router, prefix = '/order')
 
 
 uow = SqlAlchemyUnitOfWork(session)

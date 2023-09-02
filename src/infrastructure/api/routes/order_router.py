@@ -6,14 +6,12 @@ from typing import List, Dict, Annotated
 
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.infrastructure.db.sqlalchemy.setup import get_db
-from src.infrastructure.fastapi import schemas
+from src.infrastructure.api import schemas
 from src.application import services
 from sqlalchemy.orm import Session
 
 
-router = APIRouter(
-    prefix = '/order'
-)
+router = APIRouter()
 
 
 
