@@ -1,6 +1,7 @@
 import requests
 import pytest
-import config
+
+from config import APIConfigurations
 from datetime import datetime, date
 
 from fastapi.testclient import TestClient
@@ -11,8 +12,8 @@ from sqlalchemy.pool import StaticPool
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
 from src import domain
-from src.domain.base import Base
-from src.infrastructure.api.app import app, get_db
+from src.infrastructure.db.setup import Base, get_db
+from src.infrastructure.api.app import app
 
 
 SQLALCHEMY_DATABASE_URL = 'sqlite:///:memory:'
@@ -40,6 +41,75 @@ app.dependency_overrides[get_db] = override_get_db
 test_app = TestClient(app)  
 
 uow = SqlAlchemyUnitOfWork(TestingSessionLocal)
+
+
+route_path = f'/v{APIConfigurations.version}'
+    
+def teardown_function() :
+    pass
+
+def test_ping() :
+    response = test_app.get('/ping')
+
+    assert response.json() == 'pong'    
+    assert response.status_code == 200
+
+from fastapi import Depends
+
+def test_create_user() : 
+    response = test_app.post(f'{route_path}/user/create',
+                  json = {
+                      'userid' : 'eunsung',
+                      'address' : '서울시 송파구',
+                  }
+
+                  )
+    assert response.status_code == 204
+    
+
+def test_request_order() : 
+    userid = 'tom'
+    orderid = 'tom-test230809-1'
+
+
+    response = test_app.post(
+        f'{route_path}/user/sign-in/users/{userid}/orders',
+        json = {
+                'orderid' : orderid,
+                'userid' : userid,
+                'clothes_list' : [
+                    {
+                        'clothesid' : 'sample-clothes1',
+                        'label' : '드라이클리닝',
+                        'volume' : 3,
+                    }
+                ],
+                'received_at' : '2023-08-09',
+        }    
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    
+    # # put order in db
+    # order1 = order_factory()
+    # order1.request_order(clothes_list = [clothes_factory() for _ in range(5)])
+    # session.add(order1)
+    # session.commit()
+
+
+    pass
+
+def test_cancel_order() :
+    pass
+
+
+def test_request_order_progress() :
+    pass
+
+
+
 
 
 
@@ -91,66 +161,3 @@ uow = SqlAlchemyUnitOfWork(TestingSessionLocal)
     # for i in range(10) :
     #     machine = domain.Machine(machineid = f'machine_{i}')
     #     uow.machines.add(machine)
-    
-def teardown_function() :
-    pass
-
-def test_ping() :
-    response = test_app.get('/ping')
-
-    assert response.json() == 'pong'    
-    assert response.status_code == 200
-
-from fastapi import Depends
-
-def test_create_user() : 
-    response = test_app.post('/sign-in',
-                  json = {
-                      'userid' : 'eunsung',
-                      'address' : '서울시 송파구',
-                  }
-
-                  )
-    assert response.status_code == 200
-    
-
-def test_request_order() : 
-    userid = 'tom'
-    orderid = 'tom-test230809-1'
-
-
-    response = test_app.post(
-        f'/users/{userid}/orders',
-        json = {
-                'orderid' : orderid,
-                'userid' : userid,
-                'clothes_list' : [
-                    {
-                        'clothesid' : 'sample-clothes1',
-                        'label' : '드라이클리닝',
-                        'volume' : 3,
-                    }
-                ],
-                'received_at' : '2023-08-09',
-        }    
-    )
-
-    assert response.status_code == 200
-    data = response.json()
-
-    
-    # # put order in db
-    # order1 = order_factory()
-    # order1.request_order(clothes_list = [clothes_factory() for _ in range(5)])
-    # session.add(order1)
-    # session.commit()
-
-
-    pass
-
-def test_cancel_order() :
-    pass
-
-
-def test_request_order_progress() :
-    pass

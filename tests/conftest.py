@@ -3,12 +3,10 @@ from sqlalchemy.orm import sessionmaker, clear_mappers
 
 from src import domain 
 
-from src.infrastructure.db.sqlalchemy.orm import start_mappers
-from src.infrastructure.db.sqlalchemy.setup import metadata
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
 from src.infrastructure.api.app import app
-from src.domain.base import Base
+from src.infrastructure.db.setup import Base
 
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
@@ -131,24 +129,4 @@ def uow_factory(session_factory) :
 
 @pytest.fixture
 def test_app() -> TestClient : 
-    
-    with TestClient(app = app) as client :
-        yield client
-
-# def wait_for_webapp_to_come_up() :
-#     deadline = time.time() + 10
-#     url = config.get_api_url()
-#     while time.time() < deadline :
-#         try :
-#             return requests.get(url)
-#         except ConnectionError :
-#             time.sleep(0.5)
-#     pytest.fail('API never came up')
-
-
-# @pytest.fixture
-# def restart_api() :
-#     ###
-#     (Path(__file__).parent / 'app.py').touch()
-#     time.sleep(0.5)
-#     wait_for_webapp_to_come_up()
+    yield TestClient(app = app)

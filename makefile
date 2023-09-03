@@ -33,7 +33,7 @@ c_build: build_all
 c_up :
 		docker-compose \
 				-f ./$(DOCKER_COMPOSE) \
-				up -d
+				up
 
 .PHONY: c_down
 c_down:
