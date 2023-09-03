@@ -47,6 +47,9 @@ services:
       - DB_HOST=${DB_HOST}
       - DB_PASSWORD=${DB_PASSWORD}
       - API_HOST="app"
+      - API_TITLE="LAUNDRYDO"
+      - API_DESCRIPTION="laundry service"
+      - API_VERSION='0.1'
       - PYTHONDONTWRITEBYTECODE=1
     env_file : 
       - .env

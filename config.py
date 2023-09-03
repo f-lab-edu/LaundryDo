@@ -27,6 +27,12 @@ def get_db_url() :
     return f'mysql://{settings.DB_HOST}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_DATABASE}'
 
 
+class APIConfigurations :
+    title = os.getenv('API_TITLE', 'LAUNDRYDO')
+    description = os.getenv('API_DESCRIPTION', 'laundry service')
+    version = os.getenv('API_VERSION', '0.1')
+
+
 def get_api_url() :
     host = os.environ.get('API_HOST', 'localhost')
     port = 80 if host == 'localhost' else 5005

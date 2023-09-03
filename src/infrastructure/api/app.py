@@ -16,7 +16,7 @@ from src.application import services
 from src.infrastructure.db.sqlalchemy.setup import engine, session, SQLALCHEMY_DATABASE_URL
 from src.domain.base import Base
 
-import config
+from config import APIConfigurations
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -25,10 +25,15 @@ from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.infrastructure.api.routes import user_router, order_router
 
 
-app = FastAPI()
+app = FastAPI(
+    title = APIConfigurations.title,
+    description = APIConfigurations.description,
+    version = APIConfigurations.version
+)
 
-app.include_router(user_router.router, prefix = '/user')
-app.include_router(order_router.router, prefix = '/order')
+
+app.include_router(user_router.router, prefix = f'/v{APIConfigurations.version}/user')
+app.include_router(order_router.router, prefix = f'/v{APIConfigurations.version}/order')
 
 
 uow = SqlAlchemyUnitOfWork(session)
