@@ -1,5 +1,5 @@
 from .clothes import Clothes, ClothesState
-from .base import Base
+from src.infrastructure.db.setup import Base
 
 from enum import Enum
 from typing import List, Optional

@@ -4,9 +4,9 @@ from starlette import status
 from datetime import datetime
 from typing import List, Annotated
 from src.infrastructure.api import schemas
-from src.infrastructure.db.sqlalchemy.setup import session
+from src.infrastructure.db.setup import session, get_uow
 from src import domain
-from src.application.unit_of_work import SqlAlchemyUnitOfWork, get_uow
+from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.application import services
 from sqlalchemy.orm import Session
 
@@ -25,9 +25,9 @@ def list_user() :
     
 
 
-@router.post('/create', status_code = status.HTTP_204_NO_CONTENT)
-def user_create(_user_create : schemas.User) :
-    uow = SqlAlchemyUnitOfWork(session)
+@router.post('/create')
+def user_create(_user_create : schemas.User, uow : SqlAlchemyUnitOfWork = Depends(get_uow)) :
+    # uow = SqlAlchemyUnitOfWork(session)
     with uow :
         user = domain.User(userid = _user_create.userid,
                             address = _user_create.address)

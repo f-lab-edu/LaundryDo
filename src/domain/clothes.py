@@ -6,7 +6,7 @@ import sqlalchemy
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 
-from .base import Base
+from src.infrastructure.db.setup import Base
 
 
 class ClothesState(str, Enum):

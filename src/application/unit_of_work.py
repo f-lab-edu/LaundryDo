@@ -20,7 +20,7 @@ from src.infrastructure.repository import (
 
 
 from sqlalchemy.orm import Session
-from src.infrastructure.db.sqlalchemy.setup import session
+from src.infrastructure.db.setup import session
 from src.infrastructure.repository import (
     SqlAlchemyClothesRepository,
     SqlAlchemyLaundryBagRepository,
