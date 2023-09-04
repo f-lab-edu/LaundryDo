@@ -4,7 +4,7 @@ from starlette import status
 from datetime import datetime
 from typing import List, Annotated
 from src.infrastructure.api import schemas
-from src.infrastructure.db.setup import session, get_db
+from src.infrastructure.db.setup import session, get_db, get_session
 from src import domain
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.application import services
@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.get('/list', response_model = List[schemas.User])
-def list_user() :
+def list_user(session : Session = Depends(get_session)) :
     uow = SqlAlchemyUnitOfWork(session)
     with uow :
         all_users = uow.users.list()
@@ -28,8 +28,8 @@ def list_user() :
 
 
 @router.post('/create')
-def user_create(_user_create : schemas.User, uow : SqlAlchemyUnitOfWork = Depends(get_uow)) :
-    # uow = SqlAlchemyUnitOfWork(session)
+def user_create(_user_create : schemas.User, session : Session = Depends(get_session)) :
+    uow = SqlAlchemyUnitOfWork(session)
     with uow :
         user = domain.User(userid = _user_create.userid,
                             address = _user_create.address)
@@ -42,7 +42,7 @@ def user_create(_user_create : schemas.User, uow : SqlAlchemyUnitOfWork = Depend
 
 
 @router.get('/{userid}/orders', response_model = List[schemas.Order])
-def request_orderlist(userid : str) :
+def request_orderlist(userid : str, session : Session = Depends(get_session)) :
     uow = SqlAlchemyUnitOfWork(session)
     with uow :
         orders = uow.orders.get_by_userid(userid=userid)
@@ -64,7 +64,7 @@ def request_order(userid : str, _order : Annotated[ schemas.OrderCreate,
                             }
                         ])
                     ]         
-                ) :
+                , session : Session = Depends(get_session)) :
     uow = SqlAlchemyUnitOfWork(session)
     services.request_order(uow,
                             orderid = f'order-{userid}', # TODO need an unique orderid

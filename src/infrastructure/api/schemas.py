@@ -47,9 +47,9 @@ class Order(BaseModel):
 
 class OrderCreate(BaseModel) :
     model_config = ConfigDict(from_attributes = True)
-    userid : str
+    # userid : str
     clothes_list : List[Clothes]
-    received_at : str | None
+    # received_at : datetime | None
 
     
 
@@ -58,7 +58,7 @@ class User(BaseModel) :
     model_config = ConfigDict(from_attributes = True)
     userid : str
     address : str
-    orderlist : Optional[List[Order]]
+    orderlist : List[Order] | None = []
 
 
 # class UserCreate(User) :

@@ -2,19 +2,28 @@ import os
 
 from typing import Any
 from sqlalchemy.engine.url import URL
-from pydantic_settings import BaseSettings
+# from pydantic_settings import BaseSettings
 from functools import lru_cache
 
-class Settings(BaseSettings) :
-    DB_HOST : str
-    DB_PORT: Any
-    # DB_ROOT_PASSWORD : str
-    DB_DATABASE : str
-    DB_USER : str
-    DB_PASSWORD : str
+# class Settings(BaseSettings) :
+#     DB_HOST : str
+#     DB_PORT: Any
+#     # DB_ROOT_PASSWORD : str
+#     DB_DATABASE : str
+#     DB_USER : str
+#     DB_PASSWORD : str
 
-    class Config :
-        env_file = '.env'
+#     class Config :
+#         env_file = '.env'
+
+class Settings :
+    DB_HOST : str = os.getenv('DB_HOST')
+    DB_PORT: Any = os.getenv('DB_PORT')
+    # DB_ROOT_PASSWORD : str
+    DB_DATABASE : str = os.getenv('DB_DATABASE')
+    DB_USER : str = os.getenv('DB_USER')
+    DB_PASSWORD : str = os.getenv('DB_PASSWORD')
+
 
 class APIConfigurations :
     title = 'LaundryDo'

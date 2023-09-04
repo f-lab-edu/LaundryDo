@@ -8,17 +8,17 @@ from fastapi.testclient import TestClient
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import StaticPool, NullPool
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
 from src import domain
 from src.domain.base import Base
-from src.infrastructure.db.setup import get_db
+from src.infrastructure.db.setup import get_db, get_session
 from src.infrastructure.db.initialize import initialize_table
 from src.infrastructure.api.app import app
 
 
-SQLALCHEMY_DATABASE_URL = 'sqlite:///:memory:'
+SQLALCHEMY_DATABASE_URL = 'sqlite:///./test.db'
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
@@ -31,24 +31,20 @@ TestingSessionLocal = sessionmaker(autocommit = False, autoflush = False, bind =
 
 def override_get_db() :
     try :
-        db = TestingSessionLocal
+        db = TestingSessionLocal()
         yield db
     finally :
         db.close()
 
-def get_uow() :
-    return SqlAlchemyUnitOfWork(TestingSessionLocal)
+# def get_uow() :
+#     return SqlAlchemyUnitOfWork(TestingSessionLocal)
 
-def override_get_uow() :
-    try :
-        db = TestingSessionLocal
-        yield SqlAlchemyUnitOfWork(db)
-    finally :
-        db.close()
+def override_get_session() :
+    return TestingSessionLocal
 
 
 
-app.dependency_overrides[get_uow] = override_get_uow
+app.dependency_overrides[get_session] = override_get_session
 test_app = TestClient(app)  
 
 uow = SqlAlchemyUnitOfWork(TestingSessionLocal)
@@ -65,36 +61,46 @@ def test_ping() :
     assert response.json() == 'pong'    
     assert response.status_code == 200
 
-from fastapi import Depends
+def test_list_user() :
+    response = test_app.get(f'{route_path}/user/list')
+    assert response.status_code == 200
+    data = response.json()
 
 def test_create_user() : 
     response = test_app.post(f'{route_path}/user/create',
                   json = {
-                      'userid' : 'eunsung',
+                      'userid' : 'eunsung1',
                       'address' : '서울시 송파구',
                   }
 
-                  )
+                )
     assert response.status_code == 204
     
 
 def test_request_order() : 
     userid = 'tom'
-    orderid = 'tom-test230809-1'
+    # orderid = 'tom-test230809-1'
+    session = TestingSessionLocal()
+    print(session.query(domain.User).all())
 
+    with uow :
+        test_user = domain.User(userid = userid, address = '송파구')
+        uow.users.add(test_user)
+        uow.commit()
+        print(uow.users.list())
 
     response = test_app.post(
         f'{route_path}/user/{userid}/orders',
         json = {
-                'userid' : userid,
+                # 'userid' : userid,
                 'clothes_list' : [
                     {
                         'clothesid' : 'sample-clothes1',
                         'label' : '드라이클리닝',
-                        'volume' : 3,
+                        'volume' : 3.0,
                     }
                 ],
-                'received_at' : '2023-08-09',
+                # 'received_at' : '2023-08-09',
         }    
     )
 
