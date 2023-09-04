@@ -1,4 +1,4 @@
-from .clothes import LaundryLabel
+from src.domain.clothes import LaundryLabel
 from datetime import timedelta
 
 LAUNDRYBAG_MAXVOLUME = MACHINE_MAXVOLUME = 25

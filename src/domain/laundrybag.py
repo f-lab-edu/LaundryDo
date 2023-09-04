@@ -1,4 +1,4 @@
-from .spec import LAUNDRYBAG_MAXVOLUME, LAUNDRYBAG_MAX_WAITINGTIME
+from src.domain.spec import LAUNDRYBAG_MAXVOLUME, LAUNDRYBAG_MAX_WAITINGTIME
 from .clothes import Clothes, ClothesState, LaundryLabel
 
 from enum import Enum
@@ -10,7 +10,7 @@ from sqlalchemy import orm
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 
-from src.infrastructure.db.setup import Base
+from src.domain.base import Base
 
 
 class MaximumVolumeExceedError(Exception) :

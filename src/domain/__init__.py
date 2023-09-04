@@ -1,4 +1,4 @@
-from .spec import LAUNDRYBAG_MAXVOLUME, MACHINE_MAXVOLUME, time_required_for_volume, LaundryTimeTable
+# from spec import LAUNDRYBAG_MAXVOLUME, MACHINE_MAXVOLUME, time_required_for_volume, LaundryTimeTable
 
 from .user import User
 from .order import Order, OrderState

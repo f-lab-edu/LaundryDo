@@ -12,7 +12,9 @@ from sqlalchemy.pool import StaticPool
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
 from src import domain
-from src.infrastructure.db.setup import Base, get_db
+from src.domain.base import Base
+from src.infrastructure.db.setup import get_db
+from src.infrastructure.db.initialize import initialize_table
 from src.infrastructure.api.app import app
 
 
@@ -24,8 +26,8 @@ engine = create_engine(
     poolclass = StaticPool
 )
 
+initialize_table(engine=engine, checkfirst = True)
 TestingSessionLocal = sessionmaker(autocommit = False, autoflush = False, bind = engine)
-Base.metadata.create_all(bind = engine)
 
 def override_get_db() :
     try :

@@ -1,7 +1,7 @@
-from .spec import LAUNDRYBAG_MAXVOLUME, MACHINE_MAXVOLUME, LaundryTimeTable, time_required_for_volume
+from src.domain.spec import LAUNDRYBAG_MAXVOLUME, MACHINE_MAXVOLUME, LaundryTimeTable, time_required_for_volume
 from .clothes import ClothesState
 from .laundrybag import LaundryBag, LaundryBagState
-from src.infrastructure.db.setup import Base
+from src.domain.base import Base
 
 import sqlalchemy
 from sqlalchemy import orm

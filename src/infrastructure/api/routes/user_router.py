@@ -4,12 +4,14 @@ from starlette import status
 from datetime import datetime
 from typing import List, Annotated
 from src.infrastructure.api import schemas
-from src.infrastructure.db.setup import session, get_uow
+from src.infrastructure.db.setup import session, get_db
 from src import domain
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.application import services
 from sqlalchemy.orm import Session
 
+def get_uow() :
+    return SqlAlchemyUnitOfWork(session)
 
 router = APIRouter()
 

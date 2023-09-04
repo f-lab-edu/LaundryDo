@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List, Dict, Annotated
 
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
-from src.infrastructure.db.setup import get_db
+from src.infrastructure.db.setup import session, get_db
 from src.infrastructure.api import schemas
 from src.application import services
 from sqlalchemy.orm import Session

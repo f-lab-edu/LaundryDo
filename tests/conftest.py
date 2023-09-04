@@ -1,12 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
-
-from src import domain 
-
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
 from src.infrastructure.api.app import app
-from src.infrastructure.db.setup import Base
+from src.domain.base import Base
 
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
@@ -55,7 +52,7 @@ def clothes_factory() :
         #             ClothesState.RECLAIMED
         #         ]
         #     )
-        return domain.Clothes(clothesid=clothesid, label=label, volume=volume, status=status, received_at=received_at)
+        return Clothes(clothesid=clothesid, label=label, volume=volume, status=status, received_at=received_at)
     yield _clothes_factory
 
 @pytest.fixture
@@ -67,7 +64,7 @@ def laundrybag_factory() :
                             ):
         if laundrybagid is None : 
             laundrybagid = random_laundrybagid()
-        return domain.LaundryBag(laundrybagid = laundrybagid, 
+        return LaundryBag(laundrybagid = laundrybagid, 
                                  clothes_list = clothes_list, 
                                  created_at = created_at, 
                                  status = status)
@@ -90,7 +87,7 @@ def order_factory(clothes_factory) :
             orderid = random_orderid()
 
 
-        return domain.Order(userid = userid, 
+        return Order(userid = userid, 
                             orderid = orderid, 
                             clothes_list = clothes_list, 
                             received_at = received_at,
@@ -104,7 +101,7 @@ def user_factory() :
     def _user_factory(userid: str = None, address: str = 'test-adress', orderlist : List = []) :
         if userid is None :
             userid = random_userid()
-        return domain.User(userid = userid, address = address, orderlist = orderlist)
+        return User(userid = userid, address = address, orderlist = orderlist)
 
     yield _user_factory
 

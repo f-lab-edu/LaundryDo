@@ -20,7 +20,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.infrastructure.api.routes import user_router, order_router
-from src.infrastructure.db.setup import engine
 from src.infrastructure.db import initialize
 
 # initailize datbase tables

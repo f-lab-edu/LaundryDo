@@ -1,6 +1,6 @@
 from .clothes import ClothesState
 from .order import Order, OrderState
-from src.infrastructure.db.setup import Base
+from src.domain.base import Base
 
 from typing import List
 

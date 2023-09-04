@@ -105,7 +105,3 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
     def rollback(self):
         self.session.rollback()
-
-
-def get_uow(db_session : Session = session) : 
-    return SqlAlchemyUnitOfWork(db_session)
