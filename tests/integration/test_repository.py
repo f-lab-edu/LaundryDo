@@ -131,7 +131,7 @@ def test_memory_repo_recognize_clothes_machine_relationship(clothes_factory, lau
     assert memory_laundrybag_repo.get_by_status(status = LaundryBagState.READY)
 
     machine = Machine(machineid = 'sample-machine')
-    machine.start(laundrybag, datetime.now())
+    machine.start(laundrybag)
     memory_machine_repo.add(machine)
     session.commit()
 
@@ -161,7 +161,7 @@ def test_memoryrepo_recognize_orderstate_change_by_the_clothes(order_factory, la
 
     # put the laundrybag in machine
     machine = Machine(machineid = 'sample-machine')
-    machine.start(laundrybag, datetime.now())
+    machine.start(laundrybag)
     memory_machine_repo.add(machine)
     session.commit()
 

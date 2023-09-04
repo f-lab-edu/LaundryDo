@@ -41,7 +41,7 @@ class Machine(Base):
     contained = relationship('LaundryBag', backref = 'machine', uselist = False)
     # Column('laundrybagid', ForeignKey('laundrybag.id')),
     start_time = Column('start_time', DateTime, nullable = True)
-    lastupdateTime = Column('lastupdate_time', DateTime, onupdate = datetime.now())
+    lastupdateTime = Column('lastupdate_time', DateTime, default = datetime.now(), onupdate = datetime.now())
     status = Column('status', sqlalchemy.Enum(MachineState), default = MachineState.READY)
 
     def __init__(self, machineid: str):
@@ -49,7 +49,7 @@ class Machine(Base):
         self.contained = None  # LaundryBag
 
         self.start_time = None
-        self.lastupdateTime = None
+        # self.lastupdateTime =
         self._runtime = timedelta(minutes=0)
         self._requiredTime = None
         self._label = None

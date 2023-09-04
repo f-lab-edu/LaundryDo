@@ -50,6 +50,8 @@ def set_up_orders(uow_factory, order_factory, clothes_factory,
 ##################################################################
 
 def test_NO_laundrybag_is_ready_for_laundry(set_up_machines, uow_factory) :
+    with uow_factory :
+        print(uow_factory.machines.list())
     services.put_laundrybag_into_machine(uow_factory)    
     with uow_factory :
         assert len(uow_factory.machines.get_by_status(status = MachineState.READY)) == 10
