@@ -34,12 +34,21 @@ def override_get_db() :
         db = TestingSessionLocal
         yield db
     finally :
-        print('db down')
-        
-    # finally :
-    #     db.close()
+        db.close()
 
-app.dependency_overrides[get_db] = override_get_db
+def get_uow() :
+    return SqlAlchemyUnitOfWork(TestingSessionLocal)
+
+def override_get_uow() :
+    try :
+        db = TestingSessionLocal
+        yield SqlAlchemyUnitOfWork(db)
+    finally :
+        db.close()
+
+
+
+app.dependency_overrides[get_uow] = override_get_uow
 test_app = TestClient(app)  
 
 uow = SqlAlchemyUnitOfWork(TestingSessionLocal)
@@ -75,9 +84,8 @@ def test_request_order() :
 
 
     response = test_app.post(
-        f'{route_path}/user/sign-in/users/{userid}/orders',
+        f'{route_path}/user/{userid}/orders',
         json = {
-                'orderid' : orderid,
                 'userid' : userid,
                 'clothes_list' : [
                     {
@@ -90,7 +98,7 @@ def test_request_order() :
         }    
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 204
     data = response.json()
 
     

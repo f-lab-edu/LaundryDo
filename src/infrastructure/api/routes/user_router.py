@@ -49,12 +49,12 @@ def request_orderlist(userid : str) :
     return orders
 
 
-@router.post('/{userid}/order', status_code = status.HTTP_204_NO_CONTENT)
+@router.post('/{userid}/orders', status_code = status.HTTP_204_NO_CONTENT)
 def request_order(userid : str, _order : Annotated[ schemas.OrderCreate, 
                     Body(
                         examples = [
                             {   
-                            "description" : "세탁 요청한 옷들의 리스트가 담긴 주문 정보",
+                            # "description" : "세탁 요청한 옷들의 리스트가 담긴 주문 정보",
                             'clothes_list' : [{
                                         "clothesid" : "흰티셔츠",
                                         "label" : "드라이클리닝",
@@ -67,6 +67,7 @@ def request_order(userid : str, _order : Annotated[ schemas.OrderCreate,
                 ) :
     uow = SqlAlchemyUnitOfWork(session)
     services.request_order(uow,
+                            orderid = f'order-{userid}', # TODO need an unique orderid
                             userid = userid,
                             clothes_list = _order.clothes_list,
                             received_at = datetime.now()

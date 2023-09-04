@@ -15,12 +15,14 @@ from src.domain import (
 class Clothes(BaseModel):
     model_config = ConfigDict(from_attributes = True)
     clothesid : str
-    label: LaundryLabel
+    label: LaundryLabel 
     volume: float
-    orderid: Optional[str] = None
-    laundrybagid : Optional[str] = None
-    status: ClothesState = ClothesState.PREPARING
-    received_at: Optional[datetime] = None
+
+
+    # orderid: Optional[str] = None
+    # laundrybagid : Optional[str] = None
+    # status: ClothesState = ClothesState.PREPARING
+    # received_at: Optional[datetime] = None
     # model_config = {
     #     "json_schema_extra" : {
     #         "examples" : [
@@ -45,7 +47,9 @@ class Order(BaseModel):
 
 class OrderCreate(BaseModel) :
     model_config = ConfigDict(from_attributes = True)
-    clothes_list : List[Clothes] = []
+    userid : str
+    clothes_list : List[Clothes]
+    received_at : str | None
 
     
 
