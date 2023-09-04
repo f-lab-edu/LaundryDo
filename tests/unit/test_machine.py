@@ -1,9 +1,11 @@
 import pytest
 
-from pytest import MonkeyPatch
+
 from src.domain import Machine, LaundryLabel, MachineState
 from src.domain.machine import MaximumVolumeExceedError, BrokenError, AlreadyRunningError
 from datetime import datetime, timedelta
+from freezegun import freeze_time
+
 
 def test_machine_fail_to_put_laundrybag_exceeding_max_volume(laundrybag_factory, clothes_factory):
     machine1 = Machine(machineid="TROMM1")
@@ -65,22 +67,20 @@ def test_machine_returns_requiredTime(laundrybag_factory, clothes_factory):
 
     machine1.start(laundryBag)
 
-    assert machine1.requiredTime == 90
-
+    assert machine1.requiredTime == timedelta(minutes = 90)
 
 
 
 def test_machine_returns_runtime(laundrybag_factory, clothes_factory):
-    datetime.now.return_value = datetime(2023, 7, 14, 17, 50)
     machine1 = Machine(machineid="TROMM1")
     laundryBag = laundrybag_factory(clothes_list=[clothes_factory(label = LaundryLabel.WASH, volume = 3) for _ in range(5)])
 
-    machine1.start(laundryBag)
+    with freeze_time('2023-09-04 14:00:00') :
+        machine1.start(laundryBag)
     assert machine1.status == MachineState.RUNNING
-    machine1.start_time = datetime(2023, 7, 14, 17, 0)
 
-
-    assert machine1.get_runtime() == timedelta(minutes = 50)
+    with freeze_time('2023-09-04 14:00:00', tz_offset= timedelta(minutes = 50)) :
+        assert machine1.runtime == timedelta(minutes = 50)
 
 
 
@@ -88,24 +88,33 @@ def test_machine_returns_runtime(laundrybag_factory, clothes_factory):
 def test_machine_returns_remaining_time(laundrybag_factory, clothes_factory):
     machine1 = Machine(machineid="TROMM1")
     laundryBag = laundrybag_factory(clothes_list=[clothes_factory(label = LaundryLabel.WASH, volume = 3) for _ in range(5)])
+    
+    with freeze_time('2023-07-14 17:00:00') :
+        machine1.start(laundryBag)
 
-    machine1.start(laundryBag, exec_time=datetime(2023, 7, 14, 17, 0))
-
-    assert machine1.remainingTime(exec_time=datetime(2023, 7, 14, 17, 20)) == timedelta(minutes=70)
+    assert machine1.requiredTime == timedelta(minutes = 90) # 90 minutes for laundrylabel wash in volume 3.
+    with freeze_time('2023-07-14 17:00:00', tz_offset=timedelta(minutes = 20)) :
+        assert machine1.remainingTime == timedelta(minutes=70)
 
 
 def test_machine_stop_and_resume_returns_remaining_time(laundrybag_factory, clothes_factory):
     machine1 = Machine(machineid="TROMM1")
     laundryBag = laundrybag_factory(clothes_list=[clothes_factory(label = LaundryLabel.WASH, volume = 3) for _ in range(5)])
 
-    machine1.start(laundryBag, exec_time=datetime(2023, 7, 14, 17, 0))
-    machine1.stop(exec_time=datetime(2023, 7, 14, 17, 5))
+    with freeze_time('2023-07-14 17:00:00') :
+        machine1.start(laundryBag)
+    
+    with freeze_time('2023-07-14 17:05:00') : # stop after 5 minutes
+        machine1.stop()
     assert machine1.status == MachineState.STOP and \
-            machine1.remainingTime(exec_time=datetime(2023, 7, 14, 17, 10)) == timedelta(minutes=90 - 5)
+            machine1.remainingTime == timedelta(minutes=90 - 5)
 
-    machine1.resume(exec_time=datetime(2023, 7, 14, 17, 15))
-    assert machine1.status == MachineState.RUNNING and \
-        machine1.remainingTime(exec_time=datetime(2023, 7, 14, 17, 20)) == timedelta(minutes=90 - 10)
+    with freeze_time('2023-07-14 17:15:00') :
+        machine1.resume()
+
+    with freeze_time('2023-07-14 17:15:00', tz_offset = timedelta(minutes = 5)) :
+        assert machine1.status == MachineState.RUNNING and \
+            machine1.remainingTime == timedelta(minutes=90 - 10) # ran total 5 minutes
 
 
 
@@ -116,7 +125,7 @@ def test_fail_to_allocate_laundrybag_into_machine_if_broken_or_running(laundryba
     machine1.status = MachineState.BROKEN
 
     with pytest.raises(BrokenError):
-        machine1.start(laundryBag, datetime.now())
+        machine1.start(laundryBag)
 
 
 def test_running_machine_stops_if_requiredTime_passed():

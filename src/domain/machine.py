@@ -51,7 +51,7 @@ class Machine(Base):
         self.start_time = None
         self.lastupdateTime = None
         self._runtime = timedelta(minutes=0)
-        self._requiredTime = timedelta(minutes = 0)
+        self._requiredTime = None
         self._label = None
 
         self.status = MachineState.READY
@@ -97,7 +97,7 @@ class Machine(Base):
         self._requiredTime = time_required_for_volume(
             LaundryTimeTable[self.label], self.volume
         )
-        return self._requiredTime
+        return timedelta(minutes = self._requiredTime)
 
     @requiredTime.setter
     def requiredTime(self, time : timedelta) :
@@ -105,7 +105,7 @@ class Machine(Base):
     
     @property
     def remainingTime(self):
-        return timedelta(minutes=self.requiredTime) - self.runtime
+        return self.requiredTime - self.runtime
 
     @property
     def runtime(self):
