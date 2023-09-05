@@ -16,10 +16,13 @@ RUN apt-get -y update && \
     rm -rf /var/lib/apt/lists/* && \
     pip install --no-cache-dir -r requirements.txt
 
-COPY . /${PROJECT_DIR}
+
+# COPY . /${PROJECT_DIR}
 
 
 
 COPY run.sh /${PROJECT_DIR}/run.sh
+COPY run_dev.sh /${PROJECT_DIR}/run_dev.sh
 RUN chmod +x /${PROJECT_DIR}/run.sh
+RUN chmod +x /${PROJECT_DIR}/run_dev.sh
 CMD ["./run.sh"]

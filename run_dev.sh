@@ -12,4 +12,5 @@ uvicorn ${APP_NAME} \
     --host ${HOST} \
     --port ${PORT} \
     --workers ${WORKERS}
+    --reload
     

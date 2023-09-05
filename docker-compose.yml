@@ -51,9 +51,13 @@ services:
       - API_DESCRIPTION=laundry service
       - API_VERSION=0.1
       - PYTHONDONTWRITEBYTECODE=1
+    volumes :
+      - type: bind
+        source: ./
+        target: /laundrydo/
     env_file : 
       - .env
-    entrypoint: ["./run.sh"]
+    entrypoint: ["./run${DEV}.sh"]
     ports:
       - "8000:8000"
     

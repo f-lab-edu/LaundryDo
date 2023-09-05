@@ -29,6 +29,7 @@ push_all: push
 .PHONY: c_build
 c_build: build_all
 
+
 .PHONY: c_up
 c_up :
 		docker-compose \
