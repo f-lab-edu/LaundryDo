@@ -69,11 +69,11 @@ class Machine(Base):
         if self.status in [MachineState.STOP, MachineState.DONE, MachineState.BROKEN] or other.status in [MachineState.STOP, MachineState.DONE, MachineState.BROKEN] :
             raise NotImplementedError()
 
-        if self.status is MachineState.RUNNING and other.status is MachineState.RUNNING :
+        if self.status == MachineState.RUNNING and other.status == MachineState.RUNNING :
             return self.remainingTime > other.remainingTime
-        elif self.status is MachineState.RUNNING and other.status is not MachineState.RUNNING :
+        elif self.status != MachineState.RUNNING and other.status != MachineState.RUNNING :
             return True
-        elif other.status is MachineState.RUNNING and self.status is not MachineState.RUNNING:
+        elif other.status == MachineState.RUNNING and self.status != MachineState.RUNNING:
             return False
         elif self.status == MachineState.READY and other.status == MachineState.READY :
             return self.lastupdateTime > other.lastupdateTime

@@ -43,10 +43,10 @@ def user_create(_user_create : schemas.User, db : Session = Depends(get_db)) :
 
 
 @router.get('/{userid}/orders', response_model = List[schemas.Order])
-def request_orderlist(userid : str, session : Session = Depends(get_session)) :
-    uow = SqlAlchemyUnitOfWork(session)
-    with uow :
-        orders = uow.orders.get_by_userid(userid=userid)
+def request_orderlist(userid : str, db : Session = Depends(get_db)) :
+    order_repo = SqlAlchemyOrderRepository(db)
+
+    orders = order_repo.get_by_userid(userid = userid)
     return orders
 
 
