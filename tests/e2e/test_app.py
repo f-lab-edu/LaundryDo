@@ -44,7 +44,7 @@ def override_get_session() :
 
 
 
-app.dependency_overrides[get_session] = override_get_session
+app.dependency_overrides[get_db] = override_get_db
 test_app = TestClient(app)  
 
 uow = SqlAlchemyUnitOfWork(TestingSessionLocal)
@@ -75,57 +75,36 @@ def test_create_user() :
 
                 )
     assert response.status_code == 204
-    
+
+
 
 def test_request_order() : 
     userid = 'tom'
-    # orderid = 'tom-test230809-1'
-    session = TestingSessionLocal()
-    print(session.query(domain.User).all())
-
-    with uow :
-        test_user = domain.User(userid = userid, address = '송파구')
-        uow.users.add(test_user)
-        uow.commit()
-        print(uow.users.list())
 
     response = test_app.post(
         f'{route_path}/user/{userid}/orders',
-        json = {
+        json = 
+                {
                 # 'userid' : userid,
-                'clothes_list' : [
-                    {
-                        'clothesid' : 'sample-clothes1',
-                        'label' : '드라이클리닝',
-                        'volume' : 3.0,
+                'clothes_list' : [{
+                    'clothesid' : 'sample_clothes',
+                    'label' : '드라이클리닝',
+                    'volume' : float(3.0)
                     }
-                ],
-                # 'received_at' : '2023-08-09',
-        }    
+                ]
+            }    
     )
 
-    assert response.status_code == 204
+    assert response.status_code == 200
     data = response.json()
-
+    assert data['clothes_list'][0]['clothesid'] == 'sample_clothes'
     
-    # # put order in db
-    # order1 = order_factory()
-    # order1.request_order(clothes_list = [clothes_factory() for _ in range(5)])
-    # session.add(order1)
-    # session.commit()
-
-
-    pass
-
 def test_cancel_order() :
     pass
 
 
 def test_request_order_progress() :
     pass
-
-
-
 
 
 

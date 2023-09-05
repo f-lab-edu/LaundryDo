@@ -18,6 +18,7 @@ from config import APIConfigurations
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
+from src.domain.clothes import LaundryLabel
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.infrastructure.api.routes import user_router, order_router
 from src.infrastructure.db import initialize

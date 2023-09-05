@@ -15,7 +15,7 @@ from src.domain import (
 class Clothes(BaseModel):
     model_config = ConfigDict(from_attributes = True)
     clothesid : str
-    label: LaundryLabel 
+    label: LaundryLabel | None
     volume: float
 
 
@@ -48,7 +48,7 @@ class Order(BaseModel):
 class OrderCreate(BaseModel) :
     model_config = ConfigDict(from_attributes = True)
     # userid : str
-    clothes_list : List[Clothes]
+    clothes_list : List[Clothes] | None
     # received_at : datetime | None
 
     

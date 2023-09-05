@@ -3,6 +3,5 @@ __pycache__
 *.ipynb
 **/*.DS_Store
 mysql/
-db/
 *.db
 .env
