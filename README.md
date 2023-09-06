@@ -33,3 +33,62 @@ make build
 make c_up
 ```
 
+
+
+
+## API 엔드포인트
+
+- **user**
+    
+    ⇒ authentication
+    
+    - create_user : `POST`
+    - delete_user : `DELETE`
+    - update_user : `PUT`
+    - user_list : `GET`
+- **clothes**
+    - request_status : `GET`
+    
+    label, volume  
+    
+    - create_clothes : `POST`
+    - update_clothes : `POST`
+    - delete_clothes : `POST`
+- **order**
+    - request_order : `POST`
+    - update_order : `PUT` . clothes 추가, 변경, 삭제 path로 이동. ← 맨 마지막에
+    - cancel_order : `POST`
+    - request_order_status : `GET`
+    - order_list : `GET`
+- **laundrybag X**
+- **machine (From Laundry Manager)**
+    - check_machine_status : `GET`
+
+## FastAPI Pydantic Model 설정
+
+*각 endpoint의 Input, output에 필요한 모델들이 다를 수 있음.  
+
+### User
+
+- validation
+    - userid
+- authentication
+
+| User | attributes | Usage |
+| --- | --- | --- |
+| UserBase | [userid] | delete_user, user_list |
+| UserCreate | [userid, password, address] | create_user, update_user |
+
+| Clothes | attributes | Usage |
+| --- | --- | --- |
+| ClothesBase | [label, orderid, volume] | create_clothes, update_clothes, delete_clothes |
+| ClothesOut | [label, orderid, volume, status, received_at] | request_status |
+
+| Order | attributes | Usage |
+| --- | --- | --- |
+| OrderCreate | [clothes_list, userid, received_at] | request_order, update_order, cancel_order |
+| OrderOut | [clothes_list, userid, received_at, status] | request_order_status, order_list |
+
+| Machine | attributes | Usage |
+| --- | --- | --- |
+| Machine | [machineid, status, lastupdateTime] | check_machine_status |
