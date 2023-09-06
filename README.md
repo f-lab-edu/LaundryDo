@@ -5,6 +5,7 @@
 - [ ] pydantic model
   - [ ] define request, response
   - [ ] validation
+- [ ] apscheduler
 - [ ] authentication
 - [ ] make it async
   - [ ] async functions
