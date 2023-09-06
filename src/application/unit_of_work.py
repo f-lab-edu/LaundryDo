@@ -20,7 +20,7 @@ from src.infrastructure.repository import (
 
 
 from sqlalchemy.orm import Session
-from src.infrastructure.db.setup import session
+# from src.infrastructure.db.setup import session
 from src.infrastructure.repository import (
     SqlAlchemyClothesRepository,
     SqlAlchemyLaundryBagRepository,
@@ -84,7 +84,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     machines : SqlAlchemyMachineRepository
 
 
-    def __init__(self, session_factory = session):
+    def __init__(self, session_factory):
         self.session_factory = session_factory
 
     def __enter__(self):

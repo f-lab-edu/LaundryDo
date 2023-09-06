@@ -37,6 +37,9 @@ def test_machine_sorted_by_lastupdate_time(laundrybag_factory, clothes_factory) 
     less_recently_used_machine.lastupdateTime = exectime - timedelta(minutes = 30)
     recently_used_machine.lastupdateTime = exectime
 
+    assert less_recently_used_machine.status == MachineState.READY
+    assert recently_used_machine.status == MachineState.READY
+
     bag1 = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.DRY)])
     bag2 = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.DRY)])
 

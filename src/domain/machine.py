@@ -66,12 +66,14 @@ class Machine(Base):
         if not isinstance(other, self.__class__) :
             raise NotImplementedError()
         
-        if self.status in [MachineState.STOP, MachineState.DONE, MachineState.BROKEN] or other.status in [MachineState.STOP, MachineState.DONE, MachineState.BROKEN] :
-            raise NotImplementedError()
+        if self.status in [MachineState.STOP, MachineState.DONE, MachineState.BROKEN] :
+            return True
+        elif other.status in [MachineState.STOP, MachineState.DONE, MachineState.BROKEN] :
+            return False
 
-        if self.status == MachineState.RUNNING and other.status == MachineState.RUNNING :
+        elif self.status == MachineState.RUNNING and other.status == MachineState.RUNNING :
             return self.remainingTime > other.remainingTime
-        elif self.status != MachineState.RUNNING and other.status != MachineState.RUNNING :
+        elif self.status == MachineState.RUNNING and other.status != MachineState.RUNNING :
             return True
         elif other.status == MachineState.RUNNING and self.status != MachineState.RUNNING:
             return False
@@ -118,7 +120,11 @@ class Machine(Base):
     def runtime(self, time : timedelta) :
         self._runtime = time
 
+    def __hash__(self) :
+        return hash(self.machineid)
 
+    def __eq__(self, other) :
+        return self.__hash__ == other.__hash__
 
     def can_contain(self, laundryBag: LaundryBag):
         return laundryBag.volume <= MACHINE_MAXVOLUME

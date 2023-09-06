@@ -14,8 +14,9 @@ SQLALCHEMY_DATABASE_URL = 'mysql://{}:{}@{}:{}/{}'.format(
 )
 
 # DB_URL = 'sqlite:///./test.db'
-# TEMPORARY_LOCAL_URL = 'sqlite:///./laundrydo.db'
-engine = create_engine(SQLALCHEMY_DATABASE_URL) #  connect_args = {'check_same_thread' : False} only for sqlite
+TEMPORARY_LOCAL_URL = 'sqlite:///./laundrydo.db'
+SQLALCHEMY_DATABASE_URL
+engine = create_engine(TEMPORARY_LOCAL_URL) #  connect_args = {'check_same_thread' : False} only for sqlite
 
 session = sessionmaker(autocommit = False, autoflush = False, bind = engine)
 
