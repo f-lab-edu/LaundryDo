@@ -27,7 +27,6 @@ def test_machine_fail_to_resume_when_already_running(laundrybag_factory) :
 
 def test_machine_sorted_by_lastupdate_time(laundrybag_factory, clothes_factory) :
     exectime = datetime.now()
-
     less_recently_used_machine = Machine(machineid = 'rested_more_machine')
     recently_used_machine = Machine(machineid = 'tired_machine')
     currently_running_machine_more_remaining_time = Machine(machineid = 'busy_machine_with_more_time_remaining')
@@ -43,8 +42,10 @@ def test_machine_sorted_by_lastupdate_time(laundrybag_factory, clothes_factory) 
     bag1 = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.DRY)])
     bag2 = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.DRY)])
 
-    currently_running_machine_less_remaining_time.start(bag1)
-    currently_running_machine_more_remaining_time.start(bag2)
+    with freeze_time(datetime.now()) :
+        currently_running_machine_less_remaining_time.start(bag1)
+    with freeze_time(datetime.now(), tz_offset = timedelta(minutes= 39)) :
+        currently_running_machine_more_remaining_time.start(bag2)
     
     
     
@@ -52,7 +53,10 @@ def test_machine_sorted_by_lastupdate_time(laundrybag_factory, clothes_factory) 
     assert currently_running_machine_less_remaining_time.status == MachineState.RUNNING and \
             currently_running_machine_more_remaining_time.status == MachineState.RUNNING
 
-
+    print (sorted([recently_used_machine, 
+                   currently_running_machine_more_remaining_time, 
+                   currently_running_machine_less_remaining_time,
+                   less_recently_used_machine ]))
     assert sorted([recently_used_machine, 
                    currently_running_machine_more_remaining_time, 
                    currently_running_machine_less_remaining_time,

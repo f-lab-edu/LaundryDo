@@ -53,10 +53,10 @@ def test_order_allocated_to_new_laundrybag(uow_factory, order_factory, laundryba
         uow_factory.commit()
     # there is no laundrybag in wait
 
-    with uow_factory :
-        laundrybag_list = uow_factory.laundrybags.()
+    # with uow_factory :
+    #     laundrybag_list = uow_factory.laundrybags.()
 
-        clothes_list = uow_factory.clothes.get_by_status(ClothesState.PREPARING)
+    #     clothes_list = uow_factory.clothes.get_by_status(ClothesState.PREPARING)
 
 
 
