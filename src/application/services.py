@@ -6,6 +6,7 @@ from src.domain.machine import Machine, MachineState
 from src.domain.repository import AbstractOrderRepository, AbstractLaundryBagRepository, AbstractMachineRepository
 from src.application.unit_of_work import AbstractUnitOfWork
 
+from collections import deque
 from typing import List, Dict
 from datetime import datetime
 from uuid import uuid4
@@ -39,6 +40,40 @@ def cancel_order(uow : AbstractUnitOfWork, userid : str, orderid : str) :
 # get waiting laundrybags
 # sort order.clothes_list by label
 # put in laundrybag if laundrybag can contain the clothes, else make new laundrybag
+
+
+def allocate_clothes_in_laundrybag(uow : AbstractUnitOfWork) -> None :
+    with uow :
+        for label in LaundryLabel.__members__ :
+            clothes_list = uow.clothes.get_by_status_and_label(status = ClothesState.PREPARING, label = label)
+            clothes_list = deque(clothes_list)
+            while clothes_list :
+                clothes = clothes_list.popleft()
+                found = False
+                laundrybag_list = uow.laundrybags.get_by_status_and_label(status = LaundryBagState.COLLECTING, label = label)
+                print('load laundrybag list', laundrybag_list)
+                for laundrybag in laundrybag_list :
+                    if laundrybag.can_contain(clothes.volume) : 
+                        print('can contain')
+                        clothes.status = ClothesState.DISTRIBUTED
+                        laundrybag.append(clothes)
+                        found = True
+                        break
+                
+                
+                if not found :
+                    new_bag = LaundryBag(laundrybagid = f'bag-{label}-{len(laundrybag_list)}')
+                    print('new laundrybag registered ', new_bag.laundrybagid)
+                    clothes.status = ClothesState.DISTRIBUTED
+                    new_bag.append(clothes)
+                    print(new_bag.label)
+                    uow.laundrybags.add(new_bag)
+                
+                uow.commit()
+
+                print(uow.laundrybags.list())
+
+
 
 
 def update_orderstate(uow : AbstractUnitOfWork) :
@@ -95,24 +130,6 @@ def distribute_order(order_list : List[Order]) -> Dict[LaundryLabel, List[Clothe
     return laundrylabeldict
 
 
-def put_clothes_in_laundrybag(laundrybag : LaundryBag, clothes : Clothes) -> LaundryBag:
-    laundrybaglist = []
-    if laundrybag.can_contain(clothes.volume) :
-        laundrybag.append(clothes)
-        if laundrybag.volume == LAUNDRYBAG_MAXVOLUME :
-            laundrybag.status = LaundryBagState.READY
-    else :
-        # 더 이상 clothes를 담지 못한다면, 세탁기로 이동하기 위한 상태로 변경
-        laundrybag.status = LaundryBagState.READY
-        laundrybaglist.append(laundrybag)
-        laundrybag = LaundryBag(
-                        laundrybagid = f'bag-{clothes.label}-{str(uuid4())[:2]}-{int(laundrybag.laundrybagid.split("-")[-1]) + 1}',
-                        clothes_list = [clothes],
-                        created_at = datetime.now()
-                        )
-    laundrybaglist.append(laundrybag)
-
-    return laundrybaglist
 
 
     

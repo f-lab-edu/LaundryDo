@@ -4,12 +4,13 @@ from src.application import (
     request_order,
     cancel_order,
     distribute_order,
-    put_clothes_in_laundrybag,
     reclaim_clothes_into_order,
     get_clothes_in_process,
     allocate_laundrybag, 
     ship
 )
+
+from src.application import services
 
 from src.infrastructure.repository import FakeSession
 
@@ -35,37 +36,12 @@ def test_order_allocated_to_new_laundrybag(uow_factory, order_factory, laundryba
         uow_factory.orders.add(order)
         uow_factory.commit()
     # there is no laundrybag in wait
+    
+    # allocate clothes into laundrybag
+    services.allocate_clothes_in_laundrybag(uow_factory)
 
     with uow_factory :
-        for label in LaundryLabel.__members__ :
-            laundrybag_list = uow_factory.laundrybags.get_by_status_and_label(status = LaundryBagState.COLLECTING, label = label)
-            clothes_list = uow_factory.clothes.get_by_status_and_label(status = ClothesState.PREPARING, label = label)
-            assert not laundrybag_list
-
-            clothes_list = deque(clothes_list)
-            while clothes_list :
-                clothes = clothes_list.popleft()
-                bag = None
-
-                for laundrybag in laundrybag_list :
-                    if laundrybag.can_contain(clothes.volume) : 
-                        bag = laundrybag
-                        break
-                
-                if not bag :
-                    bag = LaundryBag(laundrybagid = f'bag-{label}-{len(laundrybag_list)}')
-                
-                bag.append(clothes)
-
-                uow_factory.laundrybags.add(bag)
-                uow_factory.commit()
-
-
-            if label == LaundryLabel.WASH :
-                assert len(clothes_list) == 1
-
-    with uow_factory :
-        len(uow_factory.laundrybags.list()) == 1
+        assert len(uow_factory.laundrybags.list()) == 1
 
 
 
@@ -101,60 +77,35 @@ def test_order_sort_by_laundrybags(order_factory, clothes_factory):
 
 
 ########TODO
-@pytest.mark.skip()
-def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(session, 
-                                                                           order_factory, 
-                                                                           laundrybag_factory, 
-                                                                           clothes_factory):
-    # 새로운 주문(물세탁 빨래 volume 5) 추가.
+# @pytest.mark.skip()
+def test_clothes_with_same_laundryLabel_but_from_different_order_allocated_into_same_laundrybag(session, 
+                                                                       uow_factory,
+                                                                       order_factory, 
+                                                                       laundrybag_factory, 
+                                                                       clothes_factory):
 
-    # uow = SqlAlchemyUnitOfWork(session_factory)
-
-    # with uow :
-    #     uow.orders.add(order_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 6)]))
-    #     uow.laundrybags.add(laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 20)]))
-    #     uow.commit()
-
-    # with uow :
-    #     allocate_laundrybag(uow)
-    #     uow.commit()
-
-    # assert len(uow.laundrybags.list()) == 2
-
-
-#################
-    order_repo = SqlAlchemyOrderRepository(session)    
-    order_repo.add(order_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 6)]))
-    session.commit()
-    assert len(order_repo.list()) == 1
-    # 기존의 LaundryBag(volume 20) 추가. max_volume 25. 
-    laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
-    laundrybag_repo.add(laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 20)]))
-    session.commit()
-    assert len(order_repo.list()) == 1
-
-
-
-    ## TODO [Order] : status를 Property로 바꾼 후, filter_by기능 작동 안함.
-    order_list = order_repo.get_by_status(status = OrderState.PREPARING)
-    assert len(order_list) == 1
-
-    laundrylabeldict = distribute_order(order_list)
-    assert len(list(laundrylabeldict.values())[0]) == 1 
-    for laundrylabel, clothes_list in laundrylabeldict.items() :
-        waiting_bag = laundrybag_repo.get_waitingbag_by_label(label = laundrylabel)
-
-        for clothes in clothes_list :
-            waiting_bag_list = put_clothes_in_laundrybag(waiting_bag, clothes)
-            assert len(waiting_bag_list) == 5
-            for waiting_bag in waiting_bag_list :
-                laundrybag_repo.add(waiting_bag)
-        session.commit()
     
+    order1 = order_factory(orderid = 'order-1', 
+                           clothes_list = [clothes_factory(clothesid = f'order-1-{label}', label = label, volume= 1)\
+                                                                 for label in LaundryLabel.__members__])
+    order2 = order_factory(orderid = 'order-2', 
+                           clothes_list = [clothes_factory(clothesid = f'order-2-{label}', label = label, volume= 1)\
+                                                                 for label in LaundryLabel.__members__])
 
-    laundrybags_in_ready = laundrybag_repo.get_by_status(status = LaundryBagState.READY)
-    assert len(laundrybags_in_ready) == 1
-    assert len(laundrybag_repo.list()) == 2
+    with uow_factory :
+        uow_factory.orders.add(order1)
+        uow_factory.orders.add(order2)
+        uow_factory.commit()
+
+    services.allocate_clothes_in_laundrybag(uow_factory)
+
+    with uow_factory :
+        laundrybag_list = uow_factory.laundrybags.list()
+
+        for laundrybag in laundrybag_list :
+            assert set(clothes.orderid for clothes in laundrybag.clothes_list) == set('order-1', 'order-2')
+
+    
 
 
 

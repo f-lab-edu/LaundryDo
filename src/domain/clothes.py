@@ -69,4 +69,4 @@ class Clothes(Base) :
         raise NotImplementedError
     
     def __repr__(self) :
-        return f'[clothes id = {self.clothesid}, orderid = {self.orderid}, status = {self.status}]'
+        return f'[clothes id = {self.clothesid}, label = {self.label} orderid = {self.orderid}, status = {self.status}]'

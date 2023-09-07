@@ -45,7 +45,9 @@ class LaundryBag(Base):
         self.created_at = datetime.now()
         self.status = status
         self.clothes_list = clothes_list
+        
 
+        # TODO remove this
         for clothes in self.clothes_list :
             clothes.status = ClothesState.DISTRIBUTED
         
@@ -76,6 +78,10 @@ class LaundryBag(Base):
     @property 
     def label(self):
         return next((clothes.label for clothes in self.clothes_list), None)
+    
+    @label.setter
+    def set_label(self, label : LaundryLabel) :
+        self.label = label
 
     def __lt__(self, other):
         if other.__class__ is self.__class__:
