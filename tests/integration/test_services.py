@@ -18,6 +18,8 @@ from src.application.unit_of_work import SqlAlchemyUnitOfWork, MemoryUnitOfWork
 from src.infrastructure.repository import MemoryOrderRepository, MemoryLaundryBagRepository
 from src.infrastructure.repository import SqlAlchemyOrderRepository, SqlAlchemyLaundryBagRepository
 
+from collections import deque
+
 import pytest
 from datetime import datetime
 from uuid import uuid4
@@ -36,13 +38,34 @@ def test_order_allocated_to_new_laundrybag(uow_factory, order_factory, laundryba
 
     with uow_factory :
         for label in LaundryLabel.__members__ :
-            laundrybag_list = uow_factory.laundrybags.get_waitingbags_by_label(label = label)
+            laundrybag_list = uow_factory.laundrybags.get_by_status_and_label(status = LaundryBagState.COLLECTING, label = label)
             clothes_list = uow_factory.clothes.get_by_status_and_label(status = ClothesState.PREPARING, label = label)
             assert not laundrybag_list
+
+            clothes_list = deque(clothes_list)
+            while clothes_list :
+                clothes = clothes_list.popleft()
+                bag = None
+
+                for laundrybag in laundrybag_list :
+                    if laundrybag.can_contain(clothes.volume) : 
+                        bag = laundrybag
+                        break
+                
+                if not bag :
+                    bag = LaundryBag(laundrybagid = f'bag-{label}-{len(laundrybag_list)}')
+                
+                bag.append(clothes)
+
+                uow_factory.laundrybags.add(bag)
+                uow_factory.commit()
+
 
             if label == LaundryLabel.WASH :
                 assert len(clothes_list) == 1
 
+    with uow_factory :
+        len(uow_factory.laundrybags.list()) == 1
 
 
 
@@ -224,7 +247,7 @@ def test_clothes_finished_laundry_reclaim_by_orderid(session_factory, clothes_fa
             for clothes in clothes_list:  # assign orderid to clothes
                 clothes.orderid = orderid
 
-            laundryBag = LaundryBag(laundrybagid = f'test-laundrybag_{i}', clothes_list = clothes_list, created_at=None)
+            laundryBag = LaundryBag(laundrybagid = f'test-laundrybag_{i}', clothes_list = clothes_list)
             
             laundryBag.status = LaundryBagState.DONE
 

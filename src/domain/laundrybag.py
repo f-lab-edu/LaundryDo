@@ -34,15 +34,15 @@ class LaundryBag(Base):
     status = Column('status', sqlalchemy.Enum(LaundryBagState), default = LaundryBagState.COLLECTING)
     # Column('clothesid', ForeignKey('clothes.id')),
     machineid = Column('machineid', ForeignKey('machine.id'), nullable = True)
-    created_at = Column('created_at', DateTime)
+    created_at = Column('created_at', DateTime, default = datetime.now())
     label = Column('label', sqlalchemy.Enum(LaundryLabel))
     clothes_list = relationship('Clothes', backref = 'laundrybag')
 
    
-    def __init__(self, laundrybagid, created_at, status = LaundryBagState.COLLECTING, clothes_list = []) : 
+    def __init__(self, laundrybagid,  status = LaundryBagState.COLLECTING, clothes_list = []) : 
         ## TODO : [LaundryBag] if clothes does not have orderid, it cannot be in laundrybag
         self.laundrybagid = laundrybagid
-        self.created_at = created_at
+        self.created_at = datetime.now()
         self.status = status
         self.clothes_list = clothes_list
 
@@ -54,7 +54,7 @@ class LaundryBag(Base):
         return self.volume + volume <= LAUNDRYBAG_MAXVOLUME
 
     def append(self, clothes) :
-        if self.can_contain(clothes.volume) and self.status is LaundryBagState.COLLECTING :
+        if self.can_contain(clothes.volume) and self.status == LaundryBagState.COLLECTING :
             clothes.status = ClothesState.DISTRIBUTED
             self.clothes_list.append(clothes)
             if self.volume == LAUNDRYBAG_MAXVOLUME :
@@ -86,4 +86,4 @@ class LaundryBag(Base):
             )
 
     def __repr__(self) :
-        return f'<laundrybag id={self.laundrybagid}, 무게:{self.volume}|라벨:{self.label}>'
+        return f'<laundrybag id={self.laundrybagid}, 부피:{self.volume}|라벨:{self.label}>'

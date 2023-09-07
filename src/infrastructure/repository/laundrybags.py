@@ -44,11 +44,11 @@ class SqlAlchemyLaundryBagRepository(AbstractLaundryBagRepository) :
     def get_by_status(self, status : LaundryBagState) -> list[LaundryBag] :
         return self.session.query(LaundryBag).filter_by(status = status).all()
 
-    def get_waitingbags_by_label(self, label : LaundryLabel) -> LaundryBag :
+    def get_by_status_and_label(self, status : LaundryBagState, label : LaundryLabel) -> LaundryBag :
         '''
         return a laundrybag that is LaundryBagState.COLLECTING and LaundryLabel
         '''
-        waiting_bags_by_label = self.session.query(LaundryBag).filter_by(status = LaundryBagState.COLLECTING).filter_by(label = label).all()
+        waiting_bags_by_label = self.session.query(LaundryBag).filter_by(status = status).filter_by(label = label).order_by(LaundryBag.created_at).all()
 
         # waiting_bag_by_label = [bag for bag in waiting_list if bag.label == label]
         # if not waiting_bag_by_label :

@@ -1,6 +1,6 @@
 from src.domain import ClothesState, LaundryLabel, LaundryBagState
 from datetime import datetime, timedelta
-
+from freezegun import freeze_time
 
 
 today = datetime.today()
@@ -15,9 +15,13 @@ def test_laundrybag_clothes_status_changed_to_distributed(laundrybag_factory, cl
 
 
 def test_laundrybags_sorted_by_time(laundrybag_factory):
-    longtimeago_laundryBag = laundrybag_factory(created_at= longtimeago)
-    yesterday_laundryBag = laundrybag_factory(created_at= yesterday)
-    today_laundryBag = laundrybag_factory(created_at= today)
+
+    with freeze_time(longtimeago) :
+        longtimeago_laundryBag = laundrybag_factory()
+    with freeze_time(yesterday) :
+        yesterday_laundryBag = laundrybag_factory()
+    with freeze_time(today) :
+        today_laundryBag = laundrybag_factory()
 
     assert sorted([today_laundryBag, yesterday_laundryBag, longtimeago_laundryBag]) \
                 == [longtimeago_laundryBag, yesterday_laundryBag, today_laundryBag,]

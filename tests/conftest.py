@@ -59,14 +59,12 @@ def clothes_factory() :
 def laundrybag_factory() :
     def _laundrybag_factory(laundrybagid: str = None,
                             clothes_list: List[Clothes] = [], 
-                            created_at: datetime = today,
                             status : LaundryBagState = LaundryBagState.COLLECTING,
                             ):
         if laundrybagid is None : 
             laundrybagid = random_laundrybagid()
         return LaundryBag(laundrybagid = laundrybagid, 
                                  clothes_list = clothes_list, 
-                                 created_at = created_at, 
                                  status = status)
 
     yield _laundrybag_factory
