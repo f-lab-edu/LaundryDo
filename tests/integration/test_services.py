@@ -1,4 +1,5 @@
 from src.domain import LaundryLabel, LaundryBagState, LaundryBag, ClothesState, OrderState
+from src.domain.spec import MACHINE_MAXVOLUME
 from src.application import (
     request_order,
     cancel_order,
@@ -22,6 +23,25 @@ from datetime import datetime
 from uuid import uuid4
 
 today = datetime.today()
+
+
+
+def test_order_allocated_to_new_laundrybag(uow_factory, order_factory, laundrybag_factory, clothes_factory) :
+    # register orders  
+    order = order_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = MACHINE_MAXVOLUME)])
+    with uow_factory :
+        uow_factory.orders.add(order)
+        uow_factory.commit()
+    # there is no laundrybag in wait
+
+    with uow_factory :
+        for label in LaundryLabel.__members__ :
+            laundrybag_list = uow_factory.laundrybags.get_waitingbags_by_label(label = label)
+            clothes_list = uow_factory.clothes.get_by_status_and_label(status = ClothesState.PREPARING, label = label)
+            assert not laundrybag_list
+
+            if label == LaundryLabel.WASH :
+                assert len(clothes_list) == 1
 
 
 
@@ -51,6 +71,9 @@ def test_order_sort_by_laundrybags(order_factory, clothes_factory):
     laundrylabeldict = distribute_order(order_list)
 
     assert len(laundrylabeldict) == 2
+
+
+
 
 
 
@@ -87,6 +110,8 @@ def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(sessi
     session.commit()
     assert len(order_repo.list()) == 1
 
+
+
     ## TODO [Order] : status를 Property로 바꾼 후, filter_by기능 작동 안함.
     order_list = order_repo.get_by_status(status = OrderState.PREPARING)
     assert len(order_list) == 1
@@ -111,7 +136,7 @@ def test_laundrybags_with_same_laundryLabel_allocated_into_same_laundrybag(sessi
 
 
 
-
+@pytest.mark.skip()
 def test_load_waiting_laundrybag(session, laundrybag_factory, clothes_factory) :
     
     

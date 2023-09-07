@@ -14,7 +14,7 @@ class User(Base) :
     __tablename__ = 'user'
     
     id = Column('id', Integer, primary_key = True, autoincrement = True)
-    userid = Column('userid', String(20))
+    userid = Column('userid', String(20), unique = True)
     # password = Column('password', String(20))
     address = Column('address', String(255))
     orderlist = relationship('Order', backref = 'user')

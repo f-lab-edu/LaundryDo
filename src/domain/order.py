@@ -83,7 +83,7 @@ class Order(Base):
     __tablename__ = 'order'
 
     id = Column('id', Integer, primary_key = True, autoincrement = True)
-    orderid = Column('orderid', String(20))
+    orderid = Column('orderid', String(20), unique = True)
     userid = Column('userid', String(20), ForeignKey('user.id'), nullable = True) # userid reference 방법?
     # status = Column('status', sqlalchemy.Enum(OrderState))
     clothes_list = relationship('Clothes', backref = 'order')

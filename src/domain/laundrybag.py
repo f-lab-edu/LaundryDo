@@ -30,7 +30,7 @@ class LaundryBag(Base):
     __tablename__ = 'laundrybag'
 
     id = Column('id', Integer, primary_key = True, autoincrement = True)
-    laundrybagid = Column('laundrybagid', String(255))
+    laundrybagid = Column('laundrybagid', String(255), unique = True)
     status = Column('status', sqlalchemy.Enum(LaundryBagState), default = LaundryBagState.COLLECTING)
     # Column('clothesid', ForeignKey('clothes.id')),
     machineid = Column('machineid', ForeignKey('machine.id'), nullable = True)

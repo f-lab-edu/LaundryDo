@@ -1,6 +1,6 @@
+from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.application import services
 from src.application import LaundryBagManager
-from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.domain import Machine, MachineState, LaundryBagState, LaundryLabel, OrderState, ClothesState
 from src.domain.spec import MACHINE_MAXVOLUME
 
@@ -26,25 +26,6 @@ def set_up_machines(uow_factory) :
 
 
 
-### uow가 공유되도록 짜야함
-@pytest.fixture()
-def set_up_orders(uow_factory, order_factory, clothes_factory, 
-                  labels : List[LaundryLabel], num_clothes_per_bag = 1, num_laundrybag = 1) : 
-    '''
-    create an order that is processed before `laundrybag->machine` process.
-    instances will be stored in uow_factory session.
-    '''
-    labels = labels * num_laundrybag
-    volume = MACHINE_MAXVOLUME // num_clothes_per_bag
-    
-    order = order_factory(clothes_list = [clothes_factory(label = labels[i], volume = volume) for i in range(len(labels))])
-    with uow_factory :
-        uow_factory.orders.add(order)
-        uow_factory.commit()
-    
-    services.allocate_laundrybag(uow_factory)
-
-
 ##################################################################
 # 1. put laundrybag(state == READY) into machine(state == READY) #
 ##################################################################
@@ -58,24 +39,26 @@ def test_NO_laundrybag_is_ready_for_laundry(set_up_machines, uow_factory) :
 
 
 
-@pytest.mark.skip()
-@pytest.mark.parametrize('set_up_orders', [
-                            [[LaundryLabel.DRY], 1, 1],
+# @pytest.mark.skip()
+# @pytest.mark.parametrize('set_up_orders', [
+#                             [[LaundryLabel.DRY], 1, 1],
                             
-                            ], 
-                         indirect= True)
-def test_set_up_orders(set_up_machines, set_up_orders, uow_factory) :
-    num_clothes_per_bag = 1
-    num_laundrybag = 1
-    with uow_factory : 
-        assert uow_factory.laundrybags.list() == num_laundrybag
-    services.put_laundrybag_into_machine(uow_factory)
+#                             ], 
+#                          indirect= True)
+def test_order_allocated_to_new_laundrybag(uow_factory, order_factory, laundrybag_factory, clothes_factory) :
+    # register orders  
+    order = order_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = MACHINE_MAXVOLUME)])
+    with uow_factory :
+        uow_factory.orders.add(order)
+        uow_factory.commit()
+    # there is no laundrybag in wait
 
     with uow_factory :
-        assert len(uow_factory.laundrybags.get_by_status(status = LaundryBagState.RUNNING)) == num_laundrybag
-        assert len(uow_factory.machines.get_by_status(status = MachineState.RUNNING)) == 1
-        assert len(uow_factory.orders.get_by_status(status = OrderState.WASHING)) == 1
-        assert len(uow_factory.clothes.get_by_status(status = ClothesState.PROCESSING)) == num_clothes_per_bag * num_laundrybag
+        laundrybag_list = uow_factory.laundrybags.()
+
+        clothes_list = uow_factory.clothes.get_by_status(ClothesState.PREPARING)
+
+
 
 
 @pytest.mark.skip()
