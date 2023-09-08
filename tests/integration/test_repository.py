@@ -205,3 +205,47 @@ def test_sa_repo_get_orderstate_determined_by_earliest_clothesstate(order_factor
     assert sa_order_repo.get_by_status(status = OrderState.RECLAIMING) == 3
 
 
+def test_get_laundrybag_by_label(session, laundrybag_factory, clothes_factory) :
+    '''
+    label of a Laundrybag is determined by containing clothes.
+    it is defined by property.
+    '''
+    laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
+    # when init laundrybag changes clothes state to DISTRIBUTE from PREPARING.
+
+    clothes_list = [clothes_factory(label = LaundryLabel.WASH) for _ in range(2)]
+    laundrybag1 = laundrybag_factory(clothes_list = clothes_list)
+
+
+    laundrybag_repo.add(laundrybag1)
+    session.commit()
+
+    assert [laundrybag1] == laundrybag_repo.get_by_status_and_label(status = LaundryBagState.COLLECTING, label = LaundryLabel.WASH) 
+    
+
+
+def test_get_laundrybag_by_label_w_uow(uow_factory, laundrybag_factory, clothes_factory) :
+    '''
+    label of a Laundrybag is determined by containing clothes.
+    it is defined by property.
+    '''
+
+    with uow_factory :
+        # when init laundrybag changes clothes state to DISTRIBUTE from PREPARING.
+
+        clothes_list = [clothes_factory(label = LaundryLabel.WASH) for _ in range(2)]
+        laundrybag1 = laundrybag_factory(clothes_list = clothes_list)
+
+
+        uow_factory.laundrybags.add(laundrybag1)
+        uow_factory.commit()
+
+        # put other clothes together
+        other_clothes_list = [clothes_factory(label = LaundryLabel.DRY) for _ in range(2)]
+        for clothes in other_clothes_list :
+            uow_factory.clothes.add(clothes)
+        uow_factory.commit()
+
+        assert clothes_list == uow_factory.clothes.get_by_status_and_label(status = ClothesState.DISTRIBUTED, label = LaundryLabel.WASH)
+    
+

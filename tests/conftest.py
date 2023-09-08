@@ -63,10 +63,12 @@ def laundrybag_factory() :
                             ):
         if laundrybagid is None : 
             laundrybagid = random_laundrybagid()
-        return LaundryBag(laundrybagid = laundrybagid, 
-                                 clothes_list = clothes_list, 
+        laundrybag = LaundryBag(laundrybagid = laundrybagid, 
                                  status = status)
-
+        for clothes in clothes_list :
+            
+            laundrybag.append(clothes)
+        return laundrybag
     yield _laundrybag_factory
 
 

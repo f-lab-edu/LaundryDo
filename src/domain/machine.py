@@ -126,8 +126,8 @@ class Machine(Base):
     def __eq__(self, other) :
         return self.__hash__ == other.__hash__
 
-    def can_contain(self, laundryBag: LaundryBag):
-        return laundryBag.volume <= MACHINE_MAXVOLUME
+    def can_contain(self, laundrybag: LaundryBag):
+        return laundrybag.volume <= MACHINE_MAXVOLUME
 
     def start(self, laundrybag: LaundryBag):
         # TODO : [Machine] Broken Machine -> Move LaundryBags to other Machine
@@ -137,7 +137,7 @@ class Machine(Base):
         elif not self.can_contain(laundrybag):
             raise MaximumVolumeExceedError("cannot contain the bag, too large.")
         elif self.status == MachineState.RUNNING :
-            raise AlreadyRunningError(f'{self.__repr__} is already running.')
+            raise AlreadyRunningError(f'Machine {self.id} is already running.')
         else :
             self.start_time = datetime.now()
             self.lastupdateTime = self.start_time

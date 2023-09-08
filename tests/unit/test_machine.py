@@ -7,16 +7,16 @@ from datetime import datetime, timedelta
 from freezegun import freeze_time
 
 
-def test_machine_fail_to_put_laundrybag_exceeding_max_volume(laundrybag_factory, clothes_factory):
-    machine1 = Machine(machineid="TROMM1")
-    laundryBag = laundrybag_factory(clothes_list=[clothes_factory(volume = 10) for _ in range(5)])
+# 머신에서 용량을 체크하기 전에, laundrybag 용량은 커지면 자동으로 나눠진다.
+# def test_machine_fail_to_put_laundrybag_exceeding_max_volume(laundrybag_factory, clothes_factory):
+#     machine1 = Machine(machineid="TROMM1")
+#     laundryBag = laundrybag_factory(clothes_list=[clothes_factory(volume = 10, label = LaundryLabel.WASH) for _ in range(5)])
+#     with pytest.raises(MaximumVolumeExceedError):
+    #     machine1.start(laundryBag)
 
-    with pytest.raises(MaximumVolumeExceedError):
-        machine1.start(laundryBag)
-
-def test_machine_fail_to_resume_when_already_running(laundrybag_factory) :
+def test_machine_fail_to_resume_when_already_running(laundrybag_factory, clothes_factory) :
     machine1 = Machine(machineid="TROMM1")
-    laundryBag = laundrybag_factory()
+    laundryBag = laundrybag_factory(clothes_list=[clothes_factory()])
 
     machine1.start(laundryBag)
 

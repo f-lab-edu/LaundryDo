@@ -91,7 +91,8 @@ def test_clothes_with_same_laundryLabel_but_from_different_order_allocated_into_
     order2 = order_factory(orderid = 'order-2', 
                            clothes_list = [clothes_factory(clothesid = f'order-2-{label}', label = label, volume= 1)\
                                                                  for label in LaundryLabel.__members__])
-
+    print(order1)
+    print(order2)
     with uow_factory :
         uow_factory.orders.add(order1)
         uow_factory.orders.add(order2)
@@ -99,11 +100,11 @@ def test_clothes_with_same_laundryLabel_but_from_different_order_allocated_into_
 
     services.allocate_clothes_in_laundrybag(uow_factory)
 
+    
     with uow_factory :
         laundrybag_list = uow_factory.laundrybags.list()
-
         for laundrybag in laundrybag_list :
-            assert set(clothes.orderid for clothes in laundrybag.clothes_list) == set('order-1', 'order-2')
+            assert [clothes.orderid for clothes in laundrybag.clothes_list] == ['order-1', 'order-2']
 
     
 
