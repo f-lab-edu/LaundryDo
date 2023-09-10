@@ -2,6 +2,7 @@
 설명 : 빨래 대행 서비스  
 
 ## TODO
+- [ ] 코드 리뷰가 필요한 부분 이슈로 정리하기
 - [ ] pydantic model
   - [ ] define request, response
   - [ ] validation
