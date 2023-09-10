@@ -18,11 +18,27 @@
 ### 어플리케이션 프로세스
 ![프로세스](<img/LaundryDO full process.png>)
 ---
+
 ### 개발 프로세스
 ![구상도](<img/LaundryDo Diagram.png>)
 ---
 ### ERD
-![ERD](<img/LaundryDo ERD.png>)
+![ERD](<img/LaundryDo_schema_diagram.png>)
+
+
+### 아키텍쳐
+![architecture](<img/LaundryDo_arcitecture_diagram.png>)
+
+### 도메인 레이어
+![domain](<img/LaundryDo_domain_diagram.png>)
+
+### 서비스 레이어
+![service](<img/LaundryDo_service_layer_diagram.png>)
+
+
+## API 엔트리포인트
+![api entrypoint](<img/LaundryDo_api_definition.png>)
+
 
 ## Getting Started
 ```
@@ -36,7 +52,6 @@ make c_up
 
 
 
-## API 엔드포인트
 
 - **user**
     
