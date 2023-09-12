@@ -2,25 +2,26 @@ import abc
 from abc import abstractmethod
 
 from src.domain.repository import  (
-    UserRepository,
-    OrderRepository,
-    ClothesRepository,
-    LaundryBagRepository,
-    MachineRepository
+    AbstractUserRepository,
+    AbstractOrderRepository,
+    AbstractClothesRepository,
+    AbstractLaundryBagRepository,
+    AbstractMachineRepository,
 )
 
-from src.infrastructure.db.memory.repository import (
+from src.infrastructure.repository import (
     MemoryClothesRepository,
     MemoryLaundryBagRepository,
     MemoryMachineRepository,
     MemoryOrderRepository,
-    MemoryUserRepository
+    MemoryUserRepository,
+    FakeSession
 )
 
 
-
-from src.infrastructure.db.sqlalchemy.setup import session
-from src.infrastructure.db.sqlalchemy.repository import (
+from sqlalchemy.orm import Session
+# from src.infrastructure.db.setup import session
+from src.infrastructure.repository import (
     SqlAlchemyClothesRepository,
     SqlAlchemyLaundryBagRepository,
     SqlAlchemyMachineRepository,
@@ -29,11 +30,11 @@ from src.infrastructure.db.sqlalchemy.repository import (
 )
 
 class AbstractUnitOfWork(abc.ABC):
-    users : UserRepository
-    orders : OrderRepository
-    clothes : ClothesRepository
-    laundrybags : LaundryBagRepository
-    machines : MachineRepository
+    users : AbstractUserRepository
+    orders : AbstractOrderRepository
+    clothes : AbstractClothesRepository
+    laundrybags : AbstractLaundryBagRepository
+    machines : AbstractMachineRepository
 
     def __enter__(self):
         return self
@@ -56,33 +57,34 @@ class MemoryUnitOfWork(AbstractUnitOfWork) :
     laundrybags : MemoryLaundryBagRepository
     machines : MemoryMachineRepository
 
-    def __init__(self, ) :
-        self.users = MemoryUserRepository()
-        self.orders = MemoryOrderRepository()
-        self.clothes = MemoryClothesRepository()
-        self.laundrybags = MemoryLaundryBagRepository()
-        self.machines = MemoryMachineRepository()
-        self.commited = False
+    def __init__(self, session : FakeSession) :
+        self.session = session
+        self.users = MemoryUserRepository(self.session)
+        self.orders = MemoryOrderRepository(self.session)
+        self.clothes = MemoryClothesRepository(self.session)
+        self.laundrybags = MemoryLaundryBagRepository(self.session)
+        self.machines = MemoryMachineRepository(self.session)
+        return super().__enter__()
 
     def __exit__(self, *args):
         self.rollback()
 
     def commit(self):
-        self.committed = True
+        self.session.commit()
 
     def rollback(self):
-        pass
+        self.session.rollback()
 
 
 class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
-    users : UserRepository
-    orders : OrderRepository
-    clothes : ClothesRepository
-    laundrybags : LaundryBagRepository
-    machines : MachineRepository
+    users : SqlAlchemyUserRepository
+    orders : SqlAlchemyOrderRepository
+    clothes : SqlAlchemyClothesRepository
+    laundrybags : SqlAlchemyLaundryBagRepository
+    machines : SqlAlchemyMachineRepository
 
 
-    def __init__(self, session_factory = session):
+    def __init__(self, session_factory):
         self.session_factory = session_factory
 
     def __enter__(self):

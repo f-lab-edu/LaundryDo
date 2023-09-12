@@ -7,43 +7,47 @@ services:
     environment:
       - MYSQL_HOST=${DB_HOST}
       - MYSQL_DATABASE=${DB_DATABASE}
-      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD} # replace by environment on CI
+      - MYSQL_USER=${DB_USER}
+      # - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD} # replace by environment on CI
+      - MYSQL_ALLOW_EMPTY_PASSWORD=''
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - TZ="Asia/Seoul"
-
+    env_file :
+      - .env
     expose :
       - 3306
-    volumes :
-      - ./mysql/conf.d:/etc/mysql/conf.d
-      - ./mysql/data:/var/lib/mysql
-      
-    env_file: .env
     restart : always
     healthcheck: 
-      test: curl -fsS mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE} || exit 1                                # ${DB_HOST}:${DB_PORT}/{DB_DATABASE} || exit 1
-      # test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      # timeout: 20s
-      # retries: 10
+      test: ["CMD", "mysqladmin" ,"ping"]
+      timeout: 20s
+      retries: 3
 
   
 
   
-  fastapi-server:
-    container_name: fastapi-server-container
+  laundrydo-server:
+    container_name: laundrydo-server
+    image: eshin94/laundrydo:LaundryDO_0.0.1
+    restart : always
     depends_on : 
-      db-server:
+      db-server :
         condition : service_healthy
+    links :
+      - db-server
     build :
       context: .
       dockerfile: Dockerfile
     environment:
       - DB_HOST=${DB_HOST}
       - DB_PASSWORD=${DB_PASSWORD}
-      - API_HOST="app"
+      - API_HOST=app
+      - API_TITLE=LAUNDRYDO
+      - API_DESCRIPTION=laundry service
+      - API_VERSION=0.1
       - PYTHONDONTWRITEBYTECODE=1
-    ports : 
-      - "80:80"
-    volumes :
-      - "./:/app"
-    restart : always
+    env_file : 
+      - .env
+    entrypoint: ["./run${DEV}.sh"]
+    ports:
+      - "8000:8000"
     

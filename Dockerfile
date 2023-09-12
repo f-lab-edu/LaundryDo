@@ -1,16 +1,26 @@
 FROM python:3.11
 
-COPY requirements.txt requirements.txt
+
 
 ENV PYTHONDONTWRITEBYTECODE 1 # Not leaving any pycache
 ENV PYTHONUNBUFFERED 1
+ENV PROJECT_DIR laundrydo
 
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+COPY requirements.txt /${PROJECT_DIR}/requirements.txt
+WORKDIR /${PROJECT_DIR}
+RUN apt-get -y update && \
+    apt-get -y install \
+    apt-utils \
+    gcc && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 80
 
-COPY . /app
+COPY . /${PROJECT_DIR}
 
-WORKDIR /app
 
-CMD [ "uvicorn", "src.infrastructure.fastapi.app:app",  "--host", "0.0.0.0", "--port", "80", "--reload" ] # "--proxy-headers",
+
+COPY run.sh /${PROJECT_DIR}/run.sh
+RUN chmod +x /${PROJECT_DIR}/run.sh
+CMD ["./run.sh"]

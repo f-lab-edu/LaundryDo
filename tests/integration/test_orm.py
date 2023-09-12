@@ -6,20 +6,23 @@ from src.domain import (
     ClothesState,
     LaundryBag,
     LaundryBagState,
-    Machine
+    Machine,
+    MachineState,
+    LaundryLabel
 )
 
-from datetime import datetime
+from sqlalchemy.sql import text
+from datetime import datetime, timedelta
+from freezegun import freeze_time
 
-from src.domain.machine import MachineState
 
 def test_user_create_orders(session, user_factory, order_factory) :
     user1 = user_factory()
 
     num_orders = 5
-    for _ in range(num_orders) :
+    for i in range(num_orders) :
         user1.request_order(order_factory())
-
+    
     session.add(user1)
     session.commit()
 
@@ -28,12 +31,13 @@ def test_user_create_orders(session, user_factory, order_factory) :
 
 def test_create_user(session) :
     session.execute(
+        text(
         'INSERT INTO user (userid, address) VALUES '
         '("user123", "서울시 중랑구"),'
         '("user456", "서울시 동작구"),'
         '("user789", "서울시 마포구")'
-    )
-
+            )
+        )
     expected = [
         User("user123", "서울시 중랑구"),
         User("user456", "서울시 동작구"),
@@ -56,13 +60,12 @@ def test_create_order(session, order_factory) :
             
 
 def test_order_creation_also_create_clothes_rows(session, order_factory, clothes_factory) :
-    order1 = order_factory(clothes_list = [clothes_factory() for _ in range(1)], status = OrderState.RECLAIMING)
-
-
+    order1 = order_factory(clothes_list = [clothes_factory() for _ in range(1)])#, status = OrderState.RECLAIMING)
+    order1.status = OrderState.RECLAIMING
     session.add(order1)
     session.commit()
 
-
+    assert len(session.query(Order).all()) == 1
     assert len(session.query(Clothes).all()) == 1
 
 
@@ -76,21 +79,30 @@ def test_laundrybag(session, laundrybag_factory) :
                 all([clothes.status == ClothesState.DISTRIBUTED for clothes in session.query(Clothes).all()])
     
 
-def test_machine_run_and_finish_laundry(session, laundrybag_factory) : 
+def test_machine_run_and_finish_laundry(session, laundrybag_factory, clothes_factory) : 
     machine = Machine(machineid = 'test-machine')
-    laundrybag = laundrybag_factory()
 
-    machine.put(laundrybag)
-    machine.start(datetime(2023, 7, 21, 10, 10))
+    # 5 clothes with volume 1 & HAND label => require 100minutes to launder
+    laundrybag = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.HAND, volume = 1) for _ in range(5)])
+    
+    with freeze_time('2023-07-21 10:10:00') :
+        machine.start(laundrybag)
     session.add(machine)
     session.commit()
 
     assert session.query(Machine).first().status == MachineState.RUNNING and \
-            session.query(LaundryBag).first().status == LaundryBagState.RUN
+            session.query(LaundryBag).first().status == LaundryBagState.RUNNING
 
-    machine.stop(datetime(2023, 7, 21, 11, 10))
+    with freeze_time('2023-07-21 10:10:00', tz_offset=timedelta(hours = 1)) : # suppose to run 100 minutes. 1 hour passed.
+        machine.stop()
     session.add(machine)
     session.commit()
 
-    assert session.query(Machine).first().status == MachineState.STOP and \
-            session.query(LaundryBag).first().status == LaundryBagState.RUN
+    assert session.query(Machine).filter_by(machineid = machine.machineid).one().status == MachineState.STOP and \
+            session.query(LaundryBag).first().status == LaundryBagState.RUNNING
+    
+    ## TODO status changed by remainingTime
+    # with freeze_time('2023-07-21 11:50:00') : # suppose to run 100 minutes
+    #     machine.stop()
+    # session.add(machine)
+    # session.commit()

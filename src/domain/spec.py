@@ -1,7 +1,9 @@
-from .clothes import LaundryLabel
+from src.domain.clothes import LaundryLabel
+from datetime import timedelta
 
 LAUNDRYBAG_MAXVOLUME = MACHINE_MAXVOLUME = 25
 LAUNDRY_MINVOLUME = 24
+LAUNDRYBAG_MAX_WAITINGTIME = timedelta(minutes = 30)
 
 LaundryTimeTable = {LaundryLabel.WASH: 60, LaundryLabel.DRY: 80, LaundryLabel.HAND: 100}
 
