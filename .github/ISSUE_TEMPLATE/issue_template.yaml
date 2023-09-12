@@ -19,7 +19,7 @@ body:
     id: 
     attributes:
       label: Code of Conduct
-      description: 
+      description: ''
       options:
         - label: Is Code line on this issue
           required: true 

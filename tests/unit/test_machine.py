@@ -53,10 +53,7 @@ def test_machine_sorted_by_lastupdate_time(laundrybag_factory, clothes_factory) 
     assert currently_running_machine_less_remaining_time.status == MachineState.RUNNING and \
             currently_running_machine_more_remaining_time.status == MachineState.RUNNING
 
-    print (sorted([recently_used_machine, 
-                   currently_running_machine_more_remaining_time, 
-                   currently_running_machine_less_remaining_time,
-                   less_recently_used_machine ]))
+
     assert sorted([recently_used_machine, 
                    currently_running_machine_more_remaining_time, 
                    currently_running_machine_less_remaining_time,

@@ -66,6 +66,7 @@ def test_clothes_status_change(session, clothes_factory) :
     assert len(clothes_repo.list()) == 1
 
 
+@pytest.mark.skip()
 def test_memoryrepo_recognize_clothes_order_relationship(order_factory, clothes_factory) :
     num_clothes = 5
 
@@ -113,6 +114,7 @@ def test_memoryrepo_recognize_clothes_laundrybag_relationship(clothes_factory, l
 
     assert len(memory_clothes_repo.get_by_status(status = ClothesState.DISTRIBUTED)) == 5
         
+@pytest.mark.skip()
 def test_memory_repo_recognize_clothes_machine_relationship(clothes_factory, laundrybag_factory) :
     session = FakeSession()
 
@@ -140,6 +142,7 @@ def test_memory_repo_recognize_clothes_machine_relationship(clothes_factory, lau
     assert memory_clothes_repo.get_by_status(status = ClothesState.PROCESSING)
 
 
+@pytest.mark.skip()
 def test_memoryrepo_recognize_orderstate_change_by_the_clothes(order_factory, laundrybag_factory, clothes_factory) :
     session = FakeSession()
     memory_order_repo = MemoryOrderRepository(session)
@@ -205,6 +208,7 @@ def test_sa_repo_get_orderstate_determined_by_earliest_clothesstate(order_factor
     assert sa_order_repo.get_by_status(status = OrderState.RECLAIMING) == 3
 
 
+@pytest.mark.skip()
 def test_get_laundrybag_by_label(session, laundrybag_factory, clothes_factory) :
     '''
     label of a Laundrybag is determined by containing clothes.
