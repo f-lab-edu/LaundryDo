@@ -64,7 +64,7 @@ def test_ping() :
 def test_list_user() :
     response = test_app.get(f'{route_path}/user/list')
     assert response.status_code == 200
-    data = response.json()
+
 
 def test_create_user() : 
     response = test_app.post(f'{route_path}/user/create',

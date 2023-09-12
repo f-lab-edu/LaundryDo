@@ -15,7 +15,6 @@ from src.infrastructure.repository import (
     SqlAlchemyOrderRepository,
 )
 
-
 router = APIRouter()
 
 

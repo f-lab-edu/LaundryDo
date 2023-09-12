@@ -1,75 +1,75 @@
-# name: Feature Request
-# description: Implement Feature
-# title: "[feature]: "
-# labels: ["feature"]
-# body:
-#   - type: markdown
-#     attributes:
-#       value: |
-#         For better documented Issue Specification.
-#   - type: input
-#     id: featurename
-#     attributes:
-#       label: Feature Detail
-#       description: What feature do you want to implement?
-#       placeholder: ex) APScheduler 구현
-#     validations:
-#       required: false
-#   - type: checkboxes
-#     id: 
-#     attributes:
-#       label: Code of Conduct
-#       description: 
-#       options:
-#         - label: Is Code line on this issue
-#           required: true 
-#   - type: textarea
-#     id: technical description
-#     attributes:
-#       label: how-to-implement
-#       description: how are you going to implement?
-#       placeholder: ex) apscheduler의 aioscheduler사용
-#     validations:
-#       required: true
-#   - type: textarea
-#     id: test-subjects/validation
-#     attributes:
-#       label: test-subjects
-#       description: what subjects are tested on this features?
-#       placeholder: ex) laundrybag->machine integration test.
-#     validations:
-#       required: true
-  # - type: dropdown
-  #   id: version
-  #   attributes:
-  #     label: Version
-  #     description: What version of our software are you running?
-  #     options:
-  #       - 1.0.2 (Default)
-  #       - 1.0.3 (Edge)
-  #   validations:
-  #     required: true
-  # - type: dropdown
-  #   id: browsers
-  #   attributes:
-  #     label: What browsers are you seeing the problem on?
-  #     multiple: true
-  #     options:
-  #       - Firefox
-  #       - Chrome
-  #       - Safari
-  #       - Microsoft Edge
-  # - type: textarea
-  #   id: logs
-  #   attributes:
-  #     label: Relevant log output
-  #     description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-  #     render: shell
-  # - type: checkboxes
-  #   id: terms
-  #   attributes:
-  #     label: Code of Conduct
-  #     description: By submitting this issue, you agree to follow our [Code of Conduct](https://example.com)
-  #     options:
-  #       - label: I agree to follow this project's Code of Conduct
-  #         required: true
+name: Feature Request
+description: Implement Feature
+title: "[feature]: "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For better documented Issue Specification.
+  - type: input
+    id: featurename
+    attributes:
+      label: Feature Detail
+      description: What feature do you want to implement?
+      placeholder: ex) APScheduler 구현
+    validations:
+      required: false
+  - type: checkboxes
+    id: 
+    attributes:
+      label: Code of Conduct
+      description: 
+      options:
+        - label: Is Code line on this issue
+          required: true 
+  - type: textarea
+    id: technical description
+    attributes:
+      label: how-to-implement
+      description: how are you going to implement?
+      placeholder: ex) apscheduler의 aioscheduler사용
+    validations:
+      required: true
+  - type: textarea
+    id: test-subjects/validation
+    attributes:
+      label: test-subjects
+      description: what subjects are tested on this features?
+      placeholder: ex) laundrybag->machine integration test.
+    validations:
+      required: true
+  - type: dropdown
+    id: version
+    attributes:
+      label: Version
+      description: What version of our software are you running?
+      options:
+        - 1.0.2 (Default)
+        - 1.0.3 (Edge)
+    validations:
+      required: true
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: What browsers are you seeing the problem on?
+      multiple: true
+      options:
+        - Firefox
+        - Chrome
+        - Safari
+        - Microsoft Edge
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://example.com)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
