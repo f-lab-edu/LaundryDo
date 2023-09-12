@@ -64,11 +64,7 @@ class LaundryBag(Base):
             self.clothes_list.append(clothes)
             if self.volume >= LAUNDRYBAG_MAXVOLUME :
                 self.status = LaundryBagState.READY
-        # else :
-        #     self.status = LaundryBagState.READY
-            
-            # raise MaximumVolumeExceedError
-    
+
 
     @property
     def volume(self):
@@ -76,18 +72,7 @@ class LaundryBag(Base):
             return sum(clothes.volume for clothes in self.clothes_list)
         else :
             return 0
-        
 
-    def update_clothes_status(self, status: ClothesState):
-        [setattr(clothes, "status", status) for clothes in self.clothes_list]
-
-    # @property 
-    # def label(self):
-    #     return next((clothes.label for clothes in self.clothes_list), None)
-    
-    # @label.setter
-    # def set_label(self, label : LaundryLabel) :
-    #     self.label = label
 
     def __lt__(self, other):
         if other.__class__ is self.__class__:

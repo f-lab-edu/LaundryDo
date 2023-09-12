@@ -15,6 +15,10 @@ from src.infrastructure.repository import (
     SqlAlchemyOrderRepository,
 )
 
+from logging import getLogger
+
+logger = getLogger(__name__)
+
 router = APIRouter()
 
 

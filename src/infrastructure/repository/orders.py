@@ -43,11 +43,7 @@ class SqlAlchemyOrderRepository(AbstractOrderRepository) :
         return self.session.query(Order).filter_by(orderid = orderid).one()
 
     def get_by_status(self, status : OrderState) -> List[Order] :
-        # return self.session.query(Order).filter(Order.status == status).all()
         return self.session.query(Order).filter_by(status = status).all()
-    
-        # return self.session.query(Clothes, Order).filter(Order.orderid == Clothes.orderid).filter(Order.status == status).all()
-        # return self.session.execute()#.all()
         
 
     def list(self) :

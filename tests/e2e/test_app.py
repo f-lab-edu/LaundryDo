@@ -18,7 +18,7 @@ from src.infrastructure.db.initialize import initialize_table
 from src.infrastructure.api.app import app
 
 
-SQLALCHEMY_DATABASE_URL = 'sqlite:///./test.db'
+SQLALCHEMY_DATABASE_URL = 'sqlite:///:memory:'
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,

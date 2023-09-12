@@ -90,8 +90,7 @@ def test_clothes_with_same_laundryLabel_but_from_different_order_allocated_into_
     order2 = order_factory(orderid = 'order-2', 
                            clothes_list = [clothes_factory(clothesid = f'order-2-{label}', label = label, volume= 1)\
                                                                  for label in LaundryLabel.__members__])
-    print(order1)
-    print(order2)
+
     with uow_factory :
         uow_factory.orders.add(order1)
         uow_factory.orders.add(order2)

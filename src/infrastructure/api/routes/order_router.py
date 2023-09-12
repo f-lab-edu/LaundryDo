@@ -9,7 +9,9 @@ from src.infrastructure.db.setup import session, get_db
 from src.infrastructure.api import schemas
 from src.application import services
 from sqlalchemy.orm import Session
+from logging import getLogger
 
+logger = getLogger(__name__)
 
 router = APIRouter()
 

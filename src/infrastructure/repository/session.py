@@ -11,10 +11,6 @@ class MapDict(dict) :
         [attrKey], [attrValue] = zip(*kwargs.items())
         return [v for v in self.values() if getattr(v, attrKey) == attrValue]
 
-        # filter by
-        # clothesid, status, 
-        # 
-
 class FakeSession :
 
     def __init__(self) :
@@ -97,9 +93,6 @@ class FakeSession :
 
     def update_order_from_machine(self, machine) :
         pass
-
-
-
 
 
     def rollback(self) :

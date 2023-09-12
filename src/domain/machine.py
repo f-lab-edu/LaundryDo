@@ -148,19 +148,6 @@ class Machine(Base):
             for clothes in laundrybag.clothes_list :
                 clothes.status = ClothesState.PROCESSING
 
-    # def start(self, exec_time: datetime):
-    #     if self.status == MachineState.RUNNING:
-    #         raise ValueError("machine is already running")
-    #     elif self.status == MachineState.BROKEN:
-    #         raise ValueError("machine is broken.")
-
-    #     if self.contained is None:
-    #         raise ValueError("No LaundryBag in the Machine")
-
-    #     self.start_time = exec_time
-    #     self.lastupdateTime = self.start_time
-    #     self.status = MachineState.RUNNING
-
     def resume(self):
         if self.status == MachineState.STOP:
             self.lastupdateTime = datetime.now()

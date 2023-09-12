@@ -18,13 +18,6 @@ class MemoryLaundryBagRepository(AbstractLaundryBagRepository) :
     def get_by_status(self, status : LaundryBagState) -> List[LaundryBag] :
         return self.session.query(LaundryBag).filter_by(status = status)
 
-    def get_waitingbag_by_label(self, label : LaundryLabel) -> LaundryBag :
-        waitingbag_by_label_list = self.session.query(LaundryBag).filter_by(status = LaundryBagState.COLLECTING).filter_by(label = label)
-        if waitingbag_by_label_list :
-            return waitingbag_by_label_list[0]
-        return
-        
-
     def list(self) :
         return list(self.session.query(LaundryBag).values())
     
@@ -49,12 +42,6 @@ class SqlAlchemyLaundryBagRepository(AbstractLaundryBagRepository) :
         return a laundrybag that is LaundryBagState.COLLECTING and LaundryLabel
         '''
         waiting_bags_by_label = self.session.query(LaundryBag).filter_by(status = status).filter_by(label = label).all() #.order_by(LaundryBag.created_at)
-
-        # waiting_bag_by_label = [bag for bag in waiting_list if bag.label == label]
-        # if not waiting_bag_by_label :
-        #     waiting_bag_by_label = LaundryBag(laundrybagid=f'bag-{label}-{str(uuid4())[:2]}-0', created_at = datetime.now())
-        # else :
-        #     waiting_bag_by_label = waiting_bag_by_label[0]
 
         return waiting_bags_by_label                  
 

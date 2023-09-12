@@ -12,15 +12,6 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship, column_property
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime, func, type_coerce
 
-# class ClothesState(str, Enum):
-#     CANCELLED = "취소"
-#     PREPARING = "준비중"
-#     DISTRIBUTED = "세탁전분류"  # 세탁 라벨에 따라 분류된 상태
-#     PROCESSING = "세탁중"
-#     STOPPED = "일시정지"  # 세탁기 고장이나 외부 요인으로 세탁 일시 중지
-#     DONE = "세탁완료"
-#     RECLAIMED = "세탁후분류"
-
 class OrderState(str, Enum) :
     CANCELLED = '취소'
     SENDING = '이동중'
@@ -55,23 +46,6 @@ def clothes_order_mapping(clothes_status) :
         orderstate = OrderState.SHIP_READY
     return orderstate
 
-from sqlalchemy import case 
-# clothes_status = func.max(Clothes.status)
-        # return (
-        #     case(
-                
-        #         (clothes_status == ClothesState.CANCELLED, OrderState.CANCELLED),
-        #         (clothes_status == ClothesState.PREPARING, OrderState.PREPARING),
-        #         (clothes_status == ClothesState.DISTRIBUTED, OrderState.PREPARING),
-        #         (clothes_status == ClothesState.PROCESSING, OrderState.WASHING),
-        #         (clothes_status == ClothesState.STOPPED, OrderState.WASHING), 
-        #         (clothes_status == ClothesState.DONE, OrderState.RECLAIMING),
-        #         (clothes_status == ClothesState.RECLAIMED, OrderState.SHIP_READY)
-        #         ,
-        #         else_ = None
-
-        #     )
-        # )
 
 
 
@@ -88,10 +62,6 @@ class Order(Base):
     # status = Column('status', sqlalchemy.Enum(OrderState))
     clothes_list = relationship('Clothes', backref = 'order')
     received_at = Column('received_at', DateTime, nullable = True)
-    # status = column_property(clothes_order_mapping(
-    #                             select(func.max(clothes_list))
-    #                             )
-    #                         )
     
     def __init__(self, 
                  orderid : str,

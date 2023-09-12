@@ -1,3 +1,4 @@
+from logging import getLogger
 from src.domain import Order
 from enum import Enum
 
