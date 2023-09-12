@@ -136,19 +136,19 @@ def distribute_order(order_list : List[Order]) -> Dict[LaundryLabel, List[Clothe
 
 
     
-def allocate_laundrybag(uow : AbstractUnitOfWork) :
-    with uow :
-        laundrylabeldict = distribute_order(uow.orders.get_by_status(status = OrderState.SENDING))
+# def allocate_laundrybag(uow : AbstractUnitOfWork) :
+#     with uow :
+#         laundrylabeldict = distribute_order(uow.orders.get_by_status(status = OrderState.SENDING))
 
-        for laundrylabel, clothes_list in laundrylabeldict.items() :
-            waiting_bag = uow.laundrybags.get_waitingbag_by_label(label = laundrylabel)
+#         for laundrylabel, clothes_list in laundrylabeldict.items() :
+#             waiting_bag = uow.laundrybags.get_waitingbag_by_label(label = laundrylabel)
             
-            for clothes in clothes_list :
-                waiting_bags = put_clothes_in_laundrybag(waiting_bag, clothes)
-                for bag in waiting_bags :
-                    uow.laundrybags.add(bag)
+#             for clothes in clothes_list :
+#                 waiting_bags = put_clothes_in_laundrybag(waiting_bag, clothes)
+#                 for bag in waiting_bags :
+#                     uow.laundrybags.add(bag)
 
-        uow.commit() 
+#         uow.commit() 
 
 
 

@@ -6,7 +6,6 @@ from src.application import (
     distribute_order,
     reclaim_clothes_into_order,
     get_clothes_in_process,
-    allocate_laundrybag, 
     ship
 )
 
