@@ -42,9 +42,9 @@ def test_machine_sorted_by_lastupdate_time(laundrybag_factory, clothes_factory) 
     bag1 = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.DRY)])
     bag2 = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.DRY)])
 
-    with freeze_time(datetime.now()) :
+    with freeze_time(exectime) :
         currently_running_machine_less_remaining_time.start(bag1)
-    with freeze_time(datetime.now(), tz_offset = timedelta(minutes= 39)) :
+    with freeze_time(exectime, tz_offset = timedelta(minutes= 39)) :
         currently_running_machine_more_remaining_time.start(bag2)
     
     
