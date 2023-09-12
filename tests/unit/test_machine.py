@@ -33,7 +33,7 @@ def test_machine_sorted_by_lastupdate_time(laundrybag_factory, clothes_factory) 
     currently_running_machine_less_remaining_time = Machine(machineid = 'busy_machine_with_less_time_remaining')
 
 
-    less_recently_used_machine.lastupdateTime = exectime - timedelta(minutes = 30)
+    less_recently_used_machine.lastupdateTime = exectime - timedelta(minutes = 20)
     recently_used_machine.lastupdateTime = exectime
 
     assert less_recently_used_machine.status == MachineState.READY
