@@ -156,7 +156,7 @@ def distribute_order(order_list : List[Order]) -> Dict[LaundryLabel, List[Clothe
 # Scheduling Jobs #
 ###################
 
-def put_laundrybag_into_machine(uow : AbstractUnitOfWork) :
+def allocate_laundrybag_to_machine(uow : AbstractUnitOfWork) :
     '''put laundrybag into available machine 
         ready_laundrybag_list = get_laundrybags()
         while get_available_machine() := machine :

@@ -33,9 +33,10 @@ def set_up_machines(uow_factory) :
 def test_NO_laundrybag_is_ready_for_laundry(set_up_machines, uow_factory) :
     with uow_factory :
         print(uow_factory.machines.list())
-    services.put_laundrybag_into_machine(uow_factory)    
+    services.allocate_laundrybag_to_machine(uow_factory)    
     with uow_factory :
         assert len(uow_factory.machines.get_by_status(status = MachineState.READY)) == 10
+
 
 
 
@@ -47,15 +48,18 @@ def test_NO_laundrybag_is_ready_for_laundry(set_up_machines, uow_factory) :
 #                          indirect= True)
 def test_order_allocated_to_new_laundrybag(uow_factory, order_factory, laundrybag_factory, clothes_factory) :
     # register orders  
-    order = order_factory(clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = MACHINE_MAXVOLUME)])
     with uow_factory :
-        uow_factory.orders.add(order)
+        for label in LaundryLabel.__members__ :
+            order = order_factory(clothes_list = [clothes_factory(label = label, volume = MACHINE_MAXVOLUME)])
+            uow_factory.orders.add(order)
         uow_factory.commit()
     # there is no laundrybag in wait
 
-    # with uow_factory :
-    #     laundrybag_list = uow_factory.laundrybags.()
-
+    services.allocate_clothes_in_laundrybag(uow_factory)
+    
+    # 라벨이 서로 다른 laundrybag을 3개 만든다.
+    with uow_factory :
+        assert len(uow_factory.laundrybags.list()) == 3
     #     clothes_list = uow_factory.clothes.get_by_status(ClothesState.PREPARING)
 
 
@@ -108,7 +112,7 @@ def test_laundrybag_ready_for_laundry_put_in_machine(set_up_machines, uow_factor
     #         uow_factory.laundrybags.add(laundrybag)
     #     uow_factory.commit()
         
-    # services.put_laundrybag_into_machine(uow_factory)
+    # services.allocate_laundrybag_to_machine(uow_factory)
 
 
     # with uow_factory :
