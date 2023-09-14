@@ -38,6 +38,29 @@ def test_NO_laundrybag_is_ready_for_laundry(set_up_machines, uow_factory) :
         assert len(uow_factory.machines.get_by_status(status = MachineState.READY)) == 10
 
 
+def test_laundrybag_put_on_machine(set_up_machines, laundrybag_factory, clothes_factory, uow_factory) :
+    num_laundrybags = 5
+    with uow_factory :
+        for _ in range(num_laundrybags) :
+            # 라벨 고정. 빨래 volume 최대(=> 바로 laundrybag 상태 READY 변경). 머신에 정상적으로 들어가고 작동하는지만 확인한다
+            clothes_list = [clothes_factory(label = LaundryLabel.WASH, volume = 25)] 
+            laundrybag = laundrybag_factory(clothes_list = clothes_list)
+            uow_factory.laundrybags.add(laundrybag)
+        uow_factory.commit()
+
+    services.allocate_laundrybag_to_machine(uow_factory)
+
+    
+    with uow_factory :
+        # Laundrybag status 확인
+        laundrybags = uow_factory.laundrybags.list()
+        assert all([lb.status == LaundryBagState.RUNNING for lb in laundrybags])
+    
+        # Machine status RUN 갯수 == 5 
+        assert len(uow_factory.machines.get_by_status(MachineState.RUNNING)) == num_laundrybags
+
+
+
 def test_order_allocated_to_new_laundrybag(uow_factory, order_factory, laundrybag_factory, clothes_factory) :
     # register orders  
     with uow_factory :

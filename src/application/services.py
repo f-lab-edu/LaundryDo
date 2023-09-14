@@ -174,7 +174,7 @@ def allocate_laundrybag_to_machine(uow : AbstractUnitOfWork) :
             print('matching laundrybag to machine...')
             machine = available_machines.popleft()
             laundrybag = laundrybags_in_ready.popleft()
-            machine.start(laundrybag, datetime.now())
+            machine.start(laundrybag)
             uow.machines.add(machine)
         uow.commit()
 
