@@ -31,12 +31,28 @@ def set_up_machines(uow_factory) :
 ##################################################################
 
 def test_NO_laundrybag_is_ready_for_laundry(set_up_machines, uow_factory) :
-    with uow_factory :
-        print(uow_factory.machines.list())
     services.allocate_laundrybag_to_machine(uow_factory)    
     with uow_factory :
         assert len(uow_factory.machines.get_by_status(status = MachineState.READY)) == 10
 
+def test_NO_Machine_is_available_for_laundrybag(uow_factory, laundrybag_factory) :
+    # No machine available
+    with uow_factory :
+        assert uow_factory.machines.list() == []
+
+    new_lb = laundrybag_factory()
+    with uow_factory :
+        uow_factory.laundrybags.add(new_lb)
+        uow_factory.commit()
+
+    services.allocate_laundrybag_to_machine(uow_factory)
+
+    with uow_factory :
+        assert len(uow_factory.laundrybags.get_by_status(status = LaundryBagState.COLLECTING)) == 1
+        assert len(uow_factory.laundrybags.get_by_status(status = LaundryBagState.RUNNING)) == 0
+
+
+    
 
 def test_laundrybag_put_on_machine(set_up_machines, laundrybag_factory, clothes_factory, uow_factory) :
     num_laundrybags = 5
