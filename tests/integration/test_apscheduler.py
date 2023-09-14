@@ -38,14 +38,6 @@ def test_NO_laundrybag_is_ready_for_laundry(set_up_machines, uow_factory) :
         assert len(uow_factory.machines.get_by_status(status = MachineState.READY)) == 10
 
 
-
-
-# @pytest.mark.skip()
-# @pytest.mark.parametrize('set_up_orders', [
-#                             [[LaundryLabel.DRY], 1, 1],
-                            
-#                             ], 
-#                          indirect= True)
 def test_order_allocated_to_new_laundrybag(uow_factory, order_factory, laundrybag_factory, clothes_factory) :
     # register orders  
     with uow_factory :
@@ -60,7 +52,7 @@ def test_order_allocated_to_new_laundrybag(uow_factory, order_factory, laundryba
     # 라벨이 서로 다른 laundrybag을 3개 만든다.
     with uow_factory :
         assert len(uow_factory.laundrybags.list()) == 3
-    #     clothes_list = uow_factory.clothes.get_by_status(ClothesState.PREPARING)
+
 
 
 
