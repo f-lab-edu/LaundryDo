@@ -43,7 +43,7 @@ class Order(BaseModel):
     userid : str
     clothes_list : List[Clothes] = []
     received_at : Optional[datetime] = None
-    status : OrderState = OrderState.PREPARING
+    status : OrderState = OrderState.SENDING
 
 class OrderCreate(BaseModel) :
     model_config = ConfigDict(from_attributes = True)

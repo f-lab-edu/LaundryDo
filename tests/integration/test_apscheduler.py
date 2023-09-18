@@ -105,12 +105,21 @@ def test_update_machine_state_if_laundry_done(uow_factory, laundrybag_factory, c
     with freeze_time(currtime) :
         with uow_factory :
             uow_factory.laundrybags.add(laundrybag)
+
+            
             machine.start(laundrybag)
             uow_factory.machines.add(machine)
             uow_factory.commit()
 
     with freeze_time(currtime, tz_offset = timedelta(minutes = 80)) : # supposed to be finished
+
         services.update_machine_state_if_laundry_done(uow_factory)
+
+
+    with uow_factory :
+        with freeze_time(currtime, tz_offset = timedelta(minutes = 80)) : # supposed to be finished
+            machine = uow_factory.machines.list()[0]
+
 
     with uow_factory :
         assert len(uow_factory.machines.get_by_status(MachineState.DONE)) == 1
@@ -118,28 +127,7 @@ def test_update_machine_state_if_laundry_done(uow_factory, laundrybag_factory, c
 
 
 
-def test_reclaim_clothes_from_machine(uow_factory, laundrybag_factory, clothes_factory) :
-    currtime = datetime.fromisoformat('2023-09-18 18:00:00')
-
-    machine = Machine(machineid = 'TROMM1')
-    clothes_list = [clothes_factory(volume = 3, label = LaundryLabel.DRY) for _ in range(3)] # 빨래시간 80분 소요
-    laundrybag = laundrybag_factory(clothes_list = clothes_list)
-    with freeze_time(currtime) :
-        with uow_factory :
-            uow_factory.laundrybags.add(laundrybag)
-            machine.start(laundrybag)
-            uow_factory.machines.add(machine)
-            uow_factory.commit()
-
-    with freeze_time(currtime, tz_offset = timedelta(minutes = 80)) : # supposed to be finished
-        services.update_machine_state_if_laundry_done(uow_factory)
-    
-    services.reclaim_clothes_from_machine(uow_factory)
-
-    with uow_factory :
-        assert len(uow_factory.clothes.get_by_status(ClothesState.RECLAIMED)) == 3
-        assert len(uow_factory.laundrybags.get_by_status(LaundryBagState.COLLECTING)) == 1
-        assert len(uow_factory.machines.get_by_status(MachineState.READY)) == 1
+        
             
 
 

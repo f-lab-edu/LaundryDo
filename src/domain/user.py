@@ -51,7 +51,7 @@ class User(Base) :
         ]
 
 
-        if selected_order and selected_order.status == OrderState.PREPARING :
+        if selected_order and (selected_order.status == OrderState.PREPARING or selected_order.status == OrderState.SENDING) :
             selected_order.status = OrderState.CANCELLED
             # update clothes status
             for clothes in selected_order.clothes_list :

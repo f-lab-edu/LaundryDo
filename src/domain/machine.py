@@ -52,8 +52,7 @@ class Machine(Base):
         self._requiredTime = None
         self._label = None
 
-        # 가장 첫번째 호출시에만 사용. DB에 등록되기 전
-        self.status = MachineState.READY
+        # self.status = MachineState.READY
 
         # TODO [Machine] sort by least recent used machine.
         # TODO [Machine] max volume may be different.
@@ -105,6 +104,9 @@ class Machine(Base):
         )
         return timedelta(minutes = self._requiredTime)
 
+    @requiredTime.setter
+    def requiredTime(self, time : timedelta) :
+        self._requiredTime = time
     
     def update_status(self) :
         if self.runtime >= self.requiredTime : # runtime이 requiredTime보다 더 커질 수도?
