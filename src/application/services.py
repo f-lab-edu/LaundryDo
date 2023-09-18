@@ -179,17 +179,18 @@ def allocate_laundrybag_to_machine(uow : AbstractUnitOfWork) :
         uow.commit()
 
 
-def update_machine_state_if_laundry_done(uow : AbstractUnitOfWork, exec_time : datetime) :
+def update_machine_state_if_laundry_done(uow : AbstractUnitOfWork) :
     '''
     update Machine(RUNNING), if the remainingTime == 0
     '''
     with uow : 
         machines_in_progress = uow.machines.get_by_status(status = MachineState.RUNNING)
         for machine in machines_in_progress :
-            if machine.remainingTime == 0 :
-                machine.status = MachineState.DONE
-                uow.machines.add(machine)
-                print(f'{machine} finished laundry.')
+            machine.update_runtime()
+            machine.update_status()
+            
+            
+            uow.machines.add(machine)
 
         uow.commit()
 

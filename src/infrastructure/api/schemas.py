@@ -85,8 +85,8 @@ class Machine(BaseModel) :
 
     machineid : str
     contained : List[LaundryBag]
-    start_time : Optional[datetime]
-    lastupdateTime : Optional[datetime]
+    start_at : Optional[datetime]
+    update_at : Optional[datetime]
     runtime : Optional[timedelta]
     status : MachineState
     volume : float

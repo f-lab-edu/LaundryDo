@@ -36,7 +36,7 @@ class SqlAlchemyLaundryBagRepository(AbstractLaundryBagRepository) :
 
     def get_by_status(self, status : LaundryBagState) -> list[LaundryBag] :
         return self.session.query(LaundryBag).filter_by(status = status).all()
-
+    
     def get_by_status_and_label(self, status : LaundryBagState, label : LaundryLabel) -> LaundryBag :
         '''
         return a laundrybag that is LaundryBagState.COLLECTING and LaundryLabel
