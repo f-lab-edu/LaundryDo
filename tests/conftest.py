@@ -78,9 +78,7 @@ def order_factory(clothes_factory) :
     def _order_factory(userid : str = None,
                        orderid: str = None, 
                        clothes_list: List[Clothes] = [clothes_factory(label=LaundryLabel.WASH, received_at = today)], 
-                       received_at: Optional[datetime] = None, 
-                       status : OrderState = OrderState.SENDING
-                    ) :
+                       received_at: Optional[datetime] = None) :
         if userid is None :
             userid = random_userid()
         if orderid is None :
@@ -90,8 +88,7 @@ def order_factory(clothes_factory) :
         return Order(userid = userid, 
                             orderid = orderid, 
                             clothes_list = clothes_list, 
-                            received_at = received_at,
-                            status = status)
+                            received_at = received_at)
 
     yield _order_factory
 

@@ -14,8 +14,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime, fun
 
 class OrderState(str, Enum) :
     CANCELLED = '취소'
-    SENDING = '이동중'
-    PREPARING = '준비중'
+    PREPARING = '준비중' 
     WASHING = '세탁중'
     RECLAIMING = '정리중'
     SHIP_READY = '배송준비완료'
@@ -29,25 +28,16 @@ def clothes_order_mapping(clothes_status) :
     orderstate = OrderState.CANCELLED
     if  clothes_status is None :
         return orderstate
-    
-    if clothes_status == ClothesState.CANCELLED :
-        orderstate = OrderState.CANCELLED
-    elif clothes_status == ClothesState.PREPARING :
-        orderstate = OrderState.SENDING                    
-    elif clothes_status == ClothesState.DISTRIBUTED :
-        orderstate = OrderState.PREPARING
-    elif clothes_status == ClothesState.PROCESSING :
-        orderstate = OrderState.WASHING
-    elif clothes_status == ClothesState.STOPPED :
-        orderstate = OrderState.WASHING
-    elif clothes_status == ClothesState.DONE :
-        orderstate = OrderState.RECLAIMING
-    elif clothes_status == ClothesState.RECLAIMED :
-        orderstate = OrderState.SHIP_READY
-    return orderstate
-
-
-
+    clothes_dict = {
+        ClothesState.CANCELLED : OrderState.CANCELLED,
+        ClothesState.PREPARING : OrderState.PREPARING,
+        ClothesState.DISTRIBUTED : OrderState.PREPARING,
+        ClothesState.PROCESSING : OrderState.WASHING,
+        ClothesState.STOPPED : OrderState.WASHING,
+        ClothesState.DONE : OrderState.RECLAIMING,
+        ClothesState.RECLAIMED : OrderState.SHIP_READY,
+    }
+    return clothes_dict[clothes_status]
 
 
 
@@ -59,7 +49,7 @@ class Order(Base):
     id = Column('id', Integer, primary_key = True, autoincrement = True)
     orderid = Column('orderid', String(20), unique = True)
     userid = Column('userid', String(20), ForeignKey('user.id'), nullable = True) # userid reference 방법?
-    # status = Column('status', sqlalchemy.Enum(OrderState))
+    status = Column('status', sqlalchemy.Enum(OrderState), default = OrderState.PREPARING)
     clothes_list = relationship('Clothes', backref = 'order')
     received_at = Column('received_at', DateTime, nullable = True)
     
@@ -67,46 +57,23 @@ class Order(Base):
                  orderid : str,
                  userid : str = None,
                  clothes_list : List[Clothes] = [],
-                 received_at : Optional[datetime] = None, 
-                 status : OrderState = OrderState.SENDING ) :
+                 received_at : Optional[datetime] = None) :
         self.userid = userid
         self.orderid = orderid
         self.clothes_list = clothes_list
         self.received_at = received_at
-        self._status = status
     
 
         for clothes in self.clothes_list :
             clothes.orderid = self.orderid
-            # clothes.status = ClothesState.PREPARING
             clothes.received_at = self.received_at
 
-    @hybrid_property
-    def status(self) -> OrderState :
+    def update_status(self) -> None :
         '''
         Get the max(earliest) value of Clothes Status. sqlalchemy doesn't know how to handle => define hybrid_property.expression
         '''
         clothes_state = max((clothes.status for clothes in self.clothes_list)) if self.clothes_list else None # max returns the earliest ClothesState of clothes_list
-        self._status = clothes_order_mapping(clothes_state)
-        return self._status
-        
-    # @status.inplace.setter
-    @status.setter
-    def status(self, status : OrderState) :
-        self._status = status
-
-
-    @status.expression
-    def status(cls) -> OrderState :
-        return clothes_order_mapping(func.max(select(Clothes.status).\
-                where(Clothes.orderid == cls.orderid)))
-                #.label('status_')
-    
-        
-    # return clothes_order_mapping(clothes_state)
-    def update_status_by_clothes(self) :
-        clothes_state = max((clothes.status for clothes in self.clothes_list)) if self.clothes_list else None # max returns the earliest ClothesState of clothes_list
-        self._status = clothes_order_mapping(clothes_state)
+        self.status = clothes_order_mapping(clothes_state)
 
     @property
     def volume(self) -> float :

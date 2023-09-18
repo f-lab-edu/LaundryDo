@@ -160,7 +160,7 @@ def test_multiple_orders_distributed_into_laundrybags(session, order_factory, cl
     assert  len(multiple_orders) == 2
     laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
 
-    order_list = order_repo.get_by_status(status = OrderState.SENDING)
+    order_list = order_repo.get_by_status(status = OrderState.PREPARING)
     
     laundrylabeldict = distribute_order(order_list)
 
