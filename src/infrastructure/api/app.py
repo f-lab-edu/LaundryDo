@@ -24,6 +24,8 @@ from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.infrastructure.api.routes import user_router, order_router
 from src.infrastructure.db import initialize
 
+
+logger = getLogger(__name__)
 # initailize datbase tables
 initialize.initialize_table(engine = engine, checkfirst = True)
 
