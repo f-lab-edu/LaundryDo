@@ -32,6 +32,23 @@ def set_up_machines(uow_factory) :
 # 1. put laundrybag(state == READY) into machine(state == READY) #
 ##################################################################
 
+def test_order_allocated_to_new_laundrybag(uow_factory, order_factory, laundrybag_factory, clothes_factory) :
+    # register orders  
+    with uow_factory :
+        for label in LaundryLabel.__members__ :
+            order = order_factory(clothes_list = [clothes_factory(label = label, volume = MACHINE_MAXVOLUME)])
+            uow_factory.orders.add(order)
+        uow_factory.commit()
+    # there is no laundrybag in wait
+
+    services.allocate_clothes_in_laundrybag(uow_factory)
+    
+    # 라벨이 서로 다른 laundrybag을 3개 만든다.
+    with uow_factory :
+        assert len(uow_factory.laundrybags.list()) == 3
+
+
+
 def test_NO_laundrybag_is_ready_for_laundry(set_up_machines, uow_factory) :
     services.allocate_laundrybag_to_machine(uow_factory)    
     with uow_factory :
@@ -77,22 +94,6 @@ def test_laundrybag_put_on_machine(set_up_machines, laundrybag_factory, clothes_
 
 
 
-def test_order_allocated_to_new_laundrybag(uow_factory, order_factory, laundrybag_factory, clothes_factory) :
-    # register orders  
-    with uow_factory :
-        for label in LaundryLabel.__members__ :
-            order = order_factory(clothes_list = [clothes_factory(label = label, volume = MACHINE_MAXVOLUME)])
-            uow_factory.orders.add(order)
-        uow_factory.commit()
-    # there is no laundrybag in wait
-
-    services.allocate_clothes_in_laundrybag(uow_factory)
-    
-    # 라벨이 서로 다른 laundrybag을 3개 만든다.
-    with uow_factory :
-        assert len(uow_factory.laundrybags.list()) == 3
-
-
 
 
 def test_update_machine_state_if_laundry_done(uow_factory, laundrybag_factory, clothes_factory) :
@@ -102,11 +103,10 @@ def test_update_machine_state_if_laundry_done(uow_factory, laundrybag_factory, c
     machine = Machine(machineid = 'TROMM1')
     clothes_list = [clothes_factory(volume = 3, label = LaundryLabel.DRY) for _ in range(3)] # 빨래시간 80분 소요
     laundrybag = laundrybag_factory(clothes_list = clothes_list)
+    
     with freeze_time(currtime) :
         with uow_factory :
             uow_factory.laundrybags.add(laundrybag)
-
-            
             machine.start(laundrybag)
             uow_factory.machines.add(machine)
             uow_factory.commit()

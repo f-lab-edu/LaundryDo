@@ -59,7 +59,7 @@ class Order(Base):
     id = Column('id', Integer, primary_key = True, autoincrement = True)
     orderid = Column('orderid', String(20), unique = True)
     userid = Column('userid', String(20), ForeignKey('user.id'), nullable = True) # userid reference 방법?
-    # status = Column('status', sqlalchemy.Enum(OrderState))
+    status = Column('status', sqlalchemy.Enum(OrderState))
     clothes_list = relationship('Clothes', backref = 'order')
     received_at = Column('received_at', DateTime, nullable = True)
     
@@ -81,27 +81,9 @@ class Order(Base):
             # clothes.status = ClothesState.PREPARING
             clothes.received_at = self.received_at
 
-    @hybrid_property
-    def status(self) -> OrderState :
-        '''
-        Get the max(earliest) value of Clothes Status. sqlalchemy doesn't know how to handle => define hybrid_property.expression
-        '''
+    def update_status(self) -> None :
         clothes_state = max((clothes.status for clothes in self.clothes_list)) if self.clothes_list else None # max returns the earliest ClothesState of clothes_list
         self._status = clothes_order_mapping(clothes_state)
-        return self._status
-        
-    # @status.inplace.setter
-    @status.setter
-    def status(self, status : OrderState) :
-        self._status = status
-
-
-    @status.expression
-    def status(cls) -> OrderState :
-        return clothes_order_mapping(func.max(select(Clothes.status).\
-                where(Clothes.orderid == cls.orderid)))
-                #.label('status_')
-    
         
     # return clothes_order_mapping(clothes_state)
     def update_status_by_clothes(self) :

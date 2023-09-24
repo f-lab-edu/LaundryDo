@@ -104,9 +104,11 @@ with uow :
         order.status = max([clothes.status for clothes in order.clothes_list])
 '''
 
+###################
+# Scheduling Jobs #
+###################
 
-
-def change_laundrybagstate_if_time_passed(uow : AbstractUnitOfWork) :
+def update_laundrybagstate(uow : AbstractUnitOfWork) :
     with uow :
         laundrybags_collecting = uow.laundrybags.get_by_status(status = LaundryBagState.COLLECTING)
         
@@ -155,9 +157,6 @@ def allocate_laundrybag_to_machine(uow : AbstractUnitOfWork) :
     update_orderstate(uow, orderstate = OrderState.PREPARING)
 
 
-###################
-# Scheduling Jobs #
-###################
 
 
 def update_machine_state_if_laundry_done(uow : AbstractUnitOfWork) :
