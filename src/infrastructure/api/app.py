@@ -48,7 +48,7 @@ def init_monitor():#session : Session = Depends(get_db)) :
 
     ## TODO apscheduler job에 대한 session이 중복되어 생기는 문제
 
-    scheduler.add_job(services.change_laundrybagstate_if_time_passed, 'cron', second = '*/10', args = [uow] )
+    scheduler.add_job(services.update_laundrybag_state, 'cron', second = '*/10', args = [uow] )
     # scheduler.add_job(services.allocate_laundrybag_to_machine, 'cron', second='*/10', args =[uow] )
     # scheduler.add_job(services.reclaim_clothes_from_machine, 'cron', second='*/10', args =[uow] )
     # scheduler.add_job(services.update_orderstate_fully_reclaimed, 'cron', second='*/10', args =[uow] )

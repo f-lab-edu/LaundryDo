@@ -191,7 +191,6 @@ def test_sa_repo_get_orderstate_determined_by_earliest_clothesstate(order_factor
         order.clothes_list.append(clothes[i])
     
     orderstates = [OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.SENDING, OrderState.SENDING]
-    print(orders)
     for i, order in enumerate(orders) :
         print(order.status)
         # order.update_status_by_clothes()

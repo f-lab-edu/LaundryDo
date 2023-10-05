@@ -62,10 +62,9 @@ def allocate_clothes_in_laundrybag(uow : AbstractUnitOfWork) -> None :
                 clothes = clothes_list.popleft()
                 found = False
                 laundrybag_list = uow.laundrybags.get_by_status_and_label(status = LaundryBagState.COLLECTING, label = label)
-                # print('load laundrybag list', laundrybag_list)
+                
                 for laundrybag in laundrybag_list :
                     if laundrybag.can_contain(clothes) : 
-                        # print('can contain')
                         clothes.status = ClothesState.DISTRIBUTED
                         laundrybag.append(clothes)
                         found = True
@@ -74,15 +73,14 @@ def allocate_clothes_in_laundrybag(uow : AbstractUnitOfWork) -> None :
                 
                 if not found :
                     new_bag = LaundryBag(laundrybagid = f'bag-{label}-{len(laundrybag_list)}')
-                    # print('new laundrybag registered ', new_bag.laundrybagid)
+
                     clothes.status = ClothesState.DISTRIBUTED
                     new_bag.append(clothes)
-                    # print(new_bag.label)
+
                     uow.laundrybags.add(new_bag)
                 
                 uow.commit()
 
-                # print(uow.laundrybags.list())
 
 
 
@@ -106,7 +104,7 @@ with uow :
 
 
 
-def change_laundrybagstate_if_time_passed(uow : AbstractUnitOfWork) :
+def update_laundrybag_state(uow : AbstractUnitOfWork) :
     with uow :
         laundrybags_collecting = uow.laundrybags.get_by_status(status = LaundryBagState.COLLECTING)
         
