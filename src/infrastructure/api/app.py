@@ -63,6 +63,26 @@ app.include_router(order_router.router, prefix = f'/v{APIConfigurations.version}
 
 uow = SqlAlchemyUnitOfWork(session)
 
+    
+@app.on_event('startup') # startup 말고 FastAPI에서 새로 사용하는 함수 있음.
+def init_monitor():#session : Session = Depends(get_db)) :
+    ## listening on db
+    # uow = SqlAlchemyUnitOfWork(session)
+    scheduler = BackgroundScheduler()
+
+    ## TODO apscheduler job에 대한 session이 중복되어 생기는 문제
+
+    scheduler.add_job(services.update_laundrybag_state, 'cron', second = '*/10', args = [uow] )
+    # scheduler.add_job(services.allocate_laundrybag_to_machine, 'cron', second='*/10', args =[uow] )
+    # scheduler.add_job(services.reclaim_clothes_from_machine, 'cron', second='*/10', args =[uow] )
+    # scheduler.add_job(services.update_orderstate_fully_reclaimed, 'cron', second='*/10', args =[uow] )
+    # scheduler.add_job(services.ship, 'cron', second='*/10', args =[uow] )
+    scheduler.start()
+
+@app.on_event('shutdown')
+def shutdown() :
+    pass
+
 @app.get('/ping')
 def ping() :
     return 'pong'

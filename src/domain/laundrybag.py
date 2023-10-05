@@ -35,7 +35,7 @@ class LaundryBag(Base):
     # Column('clothesid', ForeignKey('clothes.id')),
     machineid = Column('machineid', ForeignKey('machine.id'), nullable = True)
     created_at = Column('created_at', DateTime, default = datetime.now())
-    label = Column('label', sqlalchemy.Enum(LaundryLabel))
+    label = Column('label', sqlalchemy.Enum(LaundryLabel), nullable = True)
     clothes_list = relationship('Clothes', backref = 'laundrybag')
 
    
@@ -83,4 +83,4 @@ class LaundryBag(Base):
             )
 
     def __repr__(self) :
-        return f'<laundrybag id={self.laundrybagid}, 부피:{self.volume}|라벨:{self.label}>'
+        return f'<laundrybag id={self.laundrybagid}, 부피:{self.volume}|라벨:{self.label}|옷감:{self.clothes_list}>'

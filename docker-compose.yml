@@ -47,7 +47,7 @@ services:
       - PYTHONDONTWRITEBYTECODE=1
     env_file : 
       - .env
-    # entrypoint: ["./run.sh"]
+    entrypoint: ["./run.sh"]
     ports:
       - "8000:8000"
     

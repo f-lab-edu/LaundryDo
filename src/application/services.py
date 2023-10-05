@@ -62,10 +62,9 @@ def allocate_clothes_in_laundrybag(uow : AbstractUnitOfWork) -> None :
                 clothes = clothes_list.popleft()
                 found = False
                 laundrybag_list = uow.laundrybags.get_by_status_and_label(status = LaundryBagState.COLLECTING, label = label)
-                # print('load laundrybag list', laundrybag_list)
+                
                 for laundrybag in laundrybag_list :
                     if laundrybag.can_contain(clothes) : 
-                        # print('can contain')
                         clothes.status = ClothesState.DISTRIBUTED
                         laundrybag.append(clothes)
                         found = True
@@ -74,15 +73,14 @@ def allocate_clothes_in_laundrybag(uow : AbstractUnitOfWork) -> None :
                 
                 if not found :
                     new_bag = LaundryBag(laundrybagid = f'bag-{label}-{len(laundrybag_list)}')
-                    # print('new laundrybag registered ', new_bag.laundrybagid)
+
                     clothes.status = ClothesState.DISTRIBUTED
                     new_bag.append(clothes)
-                    # print(new_bag.label)
+
                     uow.laundrybags.add(new_bag)
                 
                 uow.commit()
 
-                # print(uow.laundrybags.list())
 
 
 
@@ -108,7 +106,8 @@ with uow :
 # Scheduling Jobs #
 ###################
 
-def update_laundrybagstate(uow : AbstractUnitOfWork) :
+
+def update_laundrybag_state(uow : AbstractUnitOfWork) :
     with uow :
         laundrybags_collecting = uow.laundrybags.get_by_status(status = LaundryBagState.COLLECTING)
         
@@ -117,18 +116,6 @@ def update_laundrybagstate(uow : AbstractUnitOfWork) :
                 laundrybag.status = LaundryBagState.READY
 
 
-
-def distribute_order(order_list : List[Order]) -> Dict[LaundryLabel, List[Clothes]]:
-    laundrylabeldict = {}
-
-    for order in order_list:
-        for clothes in order.clothes_list:
-            if clothes.label in laundrylabeldict:
-                laundrylabeldict[clothes.label].append(clothes)
-            else:
-                laundrylabeldict[clothes.label] = [clothes]
-
-    return laundrylabeldict
 
 
 

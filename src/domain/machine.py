@@ -52,7 +52,7 @@ class Machine(Base):
         self._requiredTime = None
         self._label = None
 
-        # self.status = MachineState.READY
+        self.status = MachineState.READY
 
         # TODO [Machine] sort by least recent used machine.
         # TODO [Machine] max volume may be different.
