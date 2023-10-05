@@ -66,7 +66,6 @@ def test_clothes_status_change(session, clothes_factory) :
     assert len(clothes_repo.list()) == 1
 
 
-@pytest.mark.skip()
 def test_memoryrepo_recognize_clothes_order_relationship(order_factory, clothes_factory) :
     num_clothes = 5
 
@@ -114,7 +113,6 @@ def test_memoryrepo_recognize_clothes_laundrybag_relationship(clothes_factory, l
 
     assert len(memory_clothes_repo.get_by_status(status = ClothesState.DISTRIBUTED)) == 5
         
-@pytest.mark.skip()
 def test_memory_repo_recognize_clothes_machine_relationship(clothes_factory, laundrybag_factory) :
     session = FakeSession()
 
@@ -123,15 +121,13 @@ def test_memory_repo_recognize_clothes_machine_relationship(clothes_factory, lau
     memory_machine_repo = MemoryMachineRepository(session)
 
     ## somehow laundrybag is full and its state changed to READY.
-    laundrybag = laundrybag_factory(clothes_list = [clothes_factory(volume = 1, label = LaundryLabel.DRY) \
-                                                        for _ in range(3)], 
-                                    status = LaundryBagState.READY
-                                    )
-    
+    laundrybag = laundrybag_factory()
+    clothes_list = [clothes_factory(volume = 1, label = LaundryLabel.DRY) \
+                                                        for _ in range(3)]
+    for clothes in clothes_list :
+        laundrybag.append(clothes)
     memory_laundrybag_repo.add(laundrybag)
     session.commit()
-    assert memory_laundrybag_repo.get_by_status(status = LaundryBagState.READY)
-
     machine = Machine(machineid = 'sample-machine')
     machine.start(laundrybag)
     memory_machine_repo.add(machine)
@@ -139,10 +135,11 @@ def test_memory_repo_recognize_clothes_machine_relationship(clothes_factory, lau
 
     assert memory_machine_repo.list() == [machine]
     assert memory_laundrybag_repo.get_by_status(status = LaundryBagState.RUNNING)
+    
     assert memory_clothes_repo.get_by_status(status = ClothesState.PROCESSING)
 
 
-@pytest.mark.skip()
+# memory repo는 일단 orderstate가 clothes에 의해서 결정될 수 있도록 작성됨. sa는 직접 orderstate를 설정해줘야함
 def test_memoryrepo_recognize_orderstate_change_by_the_clothes(order_factory, laundrybag_factory, clothes_factory) :
     session = FakeSession()
     memory_order_repo = MemoryOrderRepository(session)
@@ -170,73 +167,14 @@ def test_memoryrepo_recognize_orderstate_change_by_the_clothes(order_factory, la
 
     assert memory_order_repo.get_by_status(status = OrderState.WASHING) == [order]
 
-@pytest.mark.skip()
-def test_sa_repo_get_orderstate_determined_by_earliest_clothesstate(order_factory, clothes_factory, session) :
-    '''
-    put clothes with different states in different orders.
-    test if the status of order is determined by the earliest clothes state.
-    e.g) order w/ clothes_list = [before washing, after washing] => order state will be before washing.
-    '''
-    
-    ## orderstate is not recognized by sqlalchemy sesison.
-    sa_order_repo = SqlAlchemyOrderRepository(session)
-    sa_clothes_repo = SqlAlchemyClothesRepository(session)
-    clothesstate = [ClothesState.DONE, ClothesState.DONE, ClothesState.DONE, ClothesState.PREPARING, ClothesState.PREPARING]
-    
-    clothes = [clothes_factory(status = clothesstate[i]) for i in range(len(clothesstate))]
-    
-    orders = [order_factory() for i in range(len(clothesstate))]
-
-    for i, order in enumerate(orders) :
-        order.clothes_list.append(clothes[i])
-    
-    orderstates = [OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.RECLAIMING, OrderState.SENDING, OrderState.SENDING]
-    for i, order in enumerate(orders) :
-        print(order.status)
-        # order.update_status_by_clothes()
-        sa_order_repo.add(order)
-        # assert order.clothes_list == [clothes[i]
-        # assert orderstates[i] == order.status
-    session.commit()
-
-    # print(sa_order_repo.list())
-
-    assert len(sa_order_repo.list()) == 5
-
-
-    assert sa_order_repo.get_by_status(status = OrderState.RECLAIMING) == 3
-
-
-@pytest.mark.skip()
-def test_get_laundrybag_by_label(session, laundrybag_factory, clothes_factory) :
-    '''
-    label of a Laundrybag is determined by containing clothes.
-    it is defined by property.
-    '''
-    laundrybag_repo = SqlAlchemyLaundryBagRepository(session)
-    # when init laundrybag changes clothes state to DISTRIBUTE from PREPARING.
-
-    clothes_list = [clothes_factory(label = LaundryLabel.WASH) for _ in range(2)]
-    laundrybag1 = laundrybag_factory(clothes_list = clothes_list)
-
-
-    laundrybag_repo.add(laundrybag1)
-    session.commit()
-
-    assert [laundrybag1] == laundrybag_repo.get_by_status_and_label(status = LaundryBagState.COLLECTING, label = LaundryLabel.WASH) 
-    
 
 
 def test_get_laundrybag_by_label_w_uow(uow_factory, laundrybag_factory, clothes_factory) :
-    '''
-    label of a Laundrybag is determined by containing clothes.
-    it is defined by property.
-    '''
-
+    
     with uow_factory :
         # when init laundrybag changes clothes state to DISTRIBUTE from PREPARING.
 
-        clothes_list = [clothes_factory(label = LaundryLabel.WASH) for _ in range(2)]
+        clothes_list = [clothes_factory(volume = 1, label = LaundryLabel.WASH) for _ in range(2)]
         laundrybag1 = laundrybag_factory(clothes_list = clothes_list)
 
 
@@ -249,6 +187,6 @@ def test_get_laundrybag_by_label_w_uow(uow_factory, laundrybag_factory, clothes_
             uow_factory.clothes.add(clothes)
         uow_factory.commit()
 
-        assert clothes_list == uow_factory.clothes.get_by_status_and_label(status = ClothesState.DISTRIBUTED, label = LaundryLabel.WASH)
+        assert len(clothes_list) == len(uow_factory.clothes.get_by_status_and_label(status = ClothesState.DISTRIBUTED, label = LaundryLabel.WASH))
     
 

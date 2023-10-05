@@ -83,4 +83,4 @@ class LaundryBag(Base):
             )
 
     def __repr__(self) :
-        return f'<laundrybag id={self.laundrybagid}, 부피:{self.volume}|라벨:{self.label}>'
+        return f'<laundrybag id={self.laundrybagid}, 부피:{self.volume}|라벨:{self.label}|옷감:{self.clothes_list}>'
