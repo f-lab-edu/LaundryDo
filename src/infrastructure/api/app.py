@@ -40,7 +40,7 @@ app.include_router(order_router.router, prefix = f'/v{APIConfigurations.version}
 uow = SqlAlchemyUnitOfWork(session)
 
     
-@app.on_event('startup')
+@app.on_event('startup') # startup 말고 FastAPI에서 새로 사용하는 함수 있음.
 def init_monitor():#session : Session = Depends(get_db)) :
     ## listening on db
     # uow = SqlAlchemyUnitOfWork(session)

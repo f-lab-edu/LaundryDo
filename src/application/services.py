@@ -114,18 +114,6 @@ def update_laundrybag_state(uow : AbstractUnitOfWork) :
 
 
 
-def distribute_order(order_list : List[Order]) -> Dict[LaundryLabel, List[Clothes]]:
-    laundrylabeldict = {}
-
-    for order in order_list:
-        for clothes in order.clothes_list:
-            if clothes.label in laundrylabeldict:
-                laundrylabeldict[clothes.label].append(clothes)
-            else:
-                laundrylabeldict[clothes.label] = [clothes]
-
-    return laundrylabeldict
-
 
 
 def allocate_laundrybag_to_machine(uow : AbstractUnitOfWork) :
