@@ -19,12 +19,12 @@ load_dotenv()
 #         env_file = '.env'
 
 class Settings :
-    DB_HOST : str = os.getenv('DB_HOST')
-    DB_PORT: Any = os.getenv('DB_PORT')
+    DB_HOST : str = os.getenv('DB_HOST', 'localhost')
+    DB_PORT: Any = os.getenv('DB_PORT', 3306)
     # DB_ROOT_PASSWORD : str
-    DB_DATABASE : str = os.getenv('DB_DATABASE')
-    DB_USER : str = os.getenv('DB_USER')
-    DB_PASSWORD : str = os.getenv('DB_PASSWORD')
+    DB_DATABASE : str = os.getenv('DB_DATABASE', 'laundrydo')
+    DB_USER : str = os.getenv('DB_USER', 'test_user')
+    DB_PASSWORD : str = os.getenv('DB_PASSWORD', 'test1234')
 
 
 class APIConfigurations :
@@ -41,7 +41,7 @@ def get_setting() :
 def get_db_url() :
     settings = Settings()
     # DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_DATABASE
-    return f'mysql://{settings.DB_HOST}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_DATABASE}'
+    return f'mysql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_DATABASE}'
 
 
 def get_api_url() :
