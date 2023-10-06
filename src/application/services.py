@@ -108,6 +108,7 @@ with uow :
 
 
 def update_laundrybag_state(uow : AbstractUnitOfWork) :
+    print('update_laundrybag_state')
     with uow :
         laundrybags_collecting = uow.laundrybags.get_by_status(status = LaundryBagState.COLLECTING)
         
@@ -125,9 +126,10 @@ def allocate_laundrybag_to_machine(uow : AbstractUnitOfWork) :
         while get_available_machine() := machine :
             machine.start( ready_laundrybag_list.pop(), exec_time )
     '''
+    print('allocate laundrybag_to_machine')
     with uow :
         laundrybags_in_ready = deque(sorted(uow.laundrybags.get_by_status(status=LaundryBagState.READY)))
-        print('1. put_laundrybag_into_machine')
+        
         available_machines = deque(sorted(uow.machines.get_by_status(status = MachineState.READY)))
         
         print(f'available machines : {available_machines}')
@@ -150,6 +152,7 @@ def update_machine_state_if_laundry_done(uow : AbstractUnitOfWork) :
     '''
     update Machine(RUNNING), if the remainingTime == 0
     '''
+    print('update_machine_state_if_laundry_done')
     with uow : 
         machines_in_progress = uow.machines.get_by_status(status = MachineState.RUNNING)
         for machine in machines_in_progress :
@@ -175,9 +178,9 @@ def reclaim_clothes_from_machine(uow : AbstractUnitOfWork) :
         for clothes in machine.contained.clothes_list :
             clothes.status = DONE
     '''
+    print('reclaim_clothes_from_machine')
     with uow :
         finished_machines = uow.machines.get_by_status(status = MachineState.DONE)
-        print('2. reclaim_clothes_from_machine')
         for machine in finished_machines :
             for clothes in machine.contained.clothes_list :
                 clothes.status = ClothesState.RECLAIMED
@@ -202,4 +205,5 @@ def ship_finished_order(uow : AbstractUnitOfWork) :
     for order in reclaimed_orders :
         order.ship() # change order status to SHIP_READY
     '''
+    print('ship_finished_order')
     update_orderstate(uow, orderstate = OrderState.SHIP_READY)

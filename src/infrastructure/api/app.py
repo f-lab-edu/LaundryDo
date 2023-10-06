@@ -39,7 +39,7 @@ async def monitoring_job(app : FastAPI) :
 
     ## TODO apscheduler job에 대한 session이 중복되어 생기는 문제
 
-    scheduler.add_job(services.update_laundrybagstate, 'cron', second = '*/10', args = [uow])
+    scheduler.add_job(services.update_laundrybag_state, 'cron', second = '*/10', args = [uow])
     scheduler.add_job(services.allocate_laundrybag_to_machine, 'cron', second='*/10', args =[uow])
     scheduler.add_job(services.update_machine_state_if_laundry_done, 'cron', second='*/10', args =[uow] )
     scheduler.add_job(services.reclaim_clothes_from_machine, 'cron', second='*/10', args =[uow] )
