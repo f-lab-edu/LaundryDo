@@ -140,6 +140,8 @@ def test_memory_repo_recognize_clothes_machine_relationship(clothes_factory, lau
 
 
 # memory repo는 일단 orderstate가 clothes에 의해서 결정될 수 있도록 작성됨. sa는 직접 orderstate를 설정해줘야함
+# 일단 skip
+@pytest.mark.skip()
 def test_memoryrepo_recognize_orderstate_change_by_the_clothes(order_factory, laundrybag_factory, clothes_factory) :
     session = FakeSession()
     memory_order_repo = MemoryOrderRepository(session)

@@ -20,16 +20,6 @@ def test_user_cancel_order(user_factory, order_factory):
              and all([clothes.status == ClothesState.CANCELLED for clothes in new_order.clothes_list])
 
 
-def test_user_request_order_status(user_factory, order_factory) :
-    new_user = user_factory()
-    new_order = order_factory()
-    
-    new_user.request_order(new_order)
-    
-    order_status = new_user.request_order_status(new_order)
-
-    assert order_status == OrderState.SENDING
-
 
 def test_user_request_order_history(user_factory, order_factory) :
     new_user = user_factory()

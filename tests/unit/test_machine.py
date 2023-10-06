@@ -44,7 +44,7 @@ def test_machine_sorted_by_lastupdate_time(laundrybag_factory, clothes_factory) 
 
     with freeze_time(exectime) :
         currently_running_machine_less_remaining_time.start(bag1)
-    with freeze_time(exectime, tz_offset = timedelta(minutes= 20)) :
+    with freeze_time(exectime, tz_offset = timedelta(minutes= 21)) :
         currently_running_machine_more_remaining_time.start(bag2)
     
     
