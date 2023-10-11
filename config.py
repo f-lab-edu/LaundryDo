@@ -7,21 +7,11 @@ from functools import lru_cache
 from dotenv import load_dotenv
 
 load_dotenv()
-# class Settings(BaseSettings) :
-#     DB_HOST : str
-#     DB_PORT: Any
-#     # DB_ROOT_PASSWORD : str
-#     DB_DATABASE : str
-#     DB_USER : str
-#     DB_PASSWORD : str
 
-#     class Config :
-#         env_file = '.env'
 
 class Settings :
     DB_HOST : str = os.getenv('DB_HOST', 'localhost')
     DB_PORT: Any = os.getenv('DB_PORT', 3306)
-    # DB_ROOT_PASSWORD : str
     DB_DATABASE : str = os.getenv('DB_DATABASE', 'laundrydo')
     DB_USER : str = os.getenv('DB_USER', 'test_user')
     DB_PASSWORD : str = os.getenv('DB_PASSWORD', 'test1234')

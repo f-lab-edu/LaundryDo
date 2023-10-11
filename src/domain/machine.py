@@ -40,15 +40,15 @@ class Machine(Base):
     machineid = Column('machineid', String(255), unique = True)
     contained = relationship('LaundryBag', backref = 'machine', uselist = False)
     runtime = Column('runtime', Interval, default = timedelta(0))
-    start_at = Column('start_at', DateTime, nullable = True)
-    update_at = Column('lastupdate_time', DateTime, default = datetime.now(), onupdate = datetime.now())
+    started_at = Column('started_at', DateTime, nullable = True)
+    updated_at = Column('lastupdate_time', DateTime, default = datetime.now(), onupdate = datetime.now())
     status = Column('status', sqlalchemy.Enum(MachineState), default = MachineState.READY)
 
     def __init__(self, machineid: str):
         self.machineid = machineid
         self.contained = None  # LaundryBag
 
-        self.start_at = None
+        self.started_at = None
         self._requiredTime = None
         self._label = None
 
@@ -73,15 +73,15 @@ class Machine(Base):
 
         elif self.status == MachineState.RUNNING and other.status == MachineState.RUNNING :
             exectime = datetime.now()
-            own_remainingTime = self.requiredTime - ((exectime - self.update_at ) + self.runtime )
-            other_remainingTime = other.requiredTime - ((exectime - other.update_at ) + other.runtime )
+            own_remainingTime = self.requiredTime - ((exectime - self.updated_at ) + self.runtime )
+            other_remainingTime = other.requiredTime - ((exectime - other.updated_at ) + other.runtime )
             return own_remainingTime > other_remainingTime
         elif self.status == MachineState.RUNNING and other.status != MachineState.RUNNING :
             return True
         elif other.status == MachineState.RUNNING and self.status != MachineState.RUNNING:
             return False
         elif self.status == MachineState.READY and other.status == MachineState.READY :
-            return self.update_at > other.update_at
+            return self.updated_at > other.updated_at
 
     @property
     def volume(self):
@@ -114,8 +114,8 @@ class Machine(Base):
             self.contained.status = LaundryBagState.DONE
     
     def update_runtime(self) :
-        if self.update_at and self.status == MachineState.RUNNING:
-            self.runtime += (datetime.now() - self.update_at)
+        if self.updated_at and self.status == MachineState.RUNNING:
+            self.runtime += (datetime.now() - self.updated_at)
         elif self.status == MachineState.DONE :
             self.runtime = timedelta(0)
             self.contained.status = LaundryBagState.DONE
@@ -141,7 +141,7 @@ class Machine(Base):
             raise AlreadyRunningError(f'Machine {self.id} is already running.')
         else :
             self.start_at = datetime.now()
-            self.update_at = self.start_at
+            self.updated_at = self.start_at
             self.runtime = timedelta(0)
             self.status = MachineState.RUNNING
 
@@ -152,7 +152,7 @@ class Machine(Base):
 
     def resume(self):
         if self.status == MachineState.STOP:
-            self.update_at = datetime.now()
+            self.updated_at = datetime.now()
             self.status = MachineState.RUNNING
         else:
             raise AlreadyRunningError(f"cannot resume when {self.status}")
@@ -162,8 +162,8 @@ class Machine(Base):
             self.status = MachineState.STOP
             exec_time = datetime.now()
 
-            self.runtime += exec_time - self.update_at
-            self.update_at = exec_time
+            self.runtime += exec_time - self.updated_at
+            self.updated_at = exec_time
         else:
             raise ValueError(f"cannot stop when {self.status}")
         

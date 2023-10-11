@@ -49,7 +49,7 @@ def update_orderstate(uow : AbstractUnitOfWork, orderstate : OrderState) :
         orders = uow.orders.get_by_status(status = orderstate)
         for order in orders :
             order.update_status()
-            uow.orders.add(order)
+            uow.commit()
         uow.commit()
 
 

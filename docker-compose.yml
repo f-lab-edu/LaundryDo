@@ -22,7 +22,7 @@ services:
 
   laundrydo-server:
     container_name: laundrydo-server
-    # image: eshin94/laundrydo:LaundryDO_0.0.1
+    build : .
     restart : always
     depends_on : 
       db-server :
