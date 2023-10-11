@@ -7,7 +7,7 @@ from datetime import datetime
 
 import sqlalchemy
 from sqlalchemy import orm
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 
 from src.domain.base import Base

@@ -28,12 +28,6 @@ def get_setting() :
     return Settings()
 
 
-def get_db_url() :
-    settings = Settings()
-    # DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_DATABASE
-    return f'mysql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_DATABASE}'
-
-
 def get_api_url() :
     host = os.environ.get('API_HOST', 'localhost')
     port = 80 if host == 'localhost' else 5005

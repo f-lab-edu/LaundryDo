@@ -6,11 +6,9 @@ services:
     image : 'mysql'
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
-      # - MYSQL_ROOT_USER=root
-      - MYSQL_HOST=${DB_HOST}
       # - MYSQL_ALLOW_EMPTY_PASSWORD='yes'
-      # - MYSQL_USER=${DB_USER}
-      # - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
       - TZ="Asia/Seoul"
     ports:
       - '3306:3306'
@@ -27,9 +25,6 @@ services:
     depends_on : 
       db-server :
         condition : service_healthy
-    build :
-      context: .
-      dockerfile: Dockerfile
     environment:
       - API_HOST=app
       - API_TITLE=LAUNDRYDO

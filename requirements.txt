@@ -11,3 +11,7 @@ databases[aiosqlite]
 requests
 ipython
 httpx
+pymysql
+cryptography
+python-dotenv
+alembic
