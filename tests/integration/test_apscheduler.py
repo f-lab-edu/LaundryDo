@@ -45,7 +45,7 @@ def test_order_allocated_to_new_laundrybag(uow_factory, order_factory, laundryba
     
     # 라벨이 서로 다른 laundrybag을 3개 만든다.
     with uow_factory :
-        assert len(uow_factory.laundrybags.list()) == 3
+        assert len(uow_factory.laundrybags.list()) == 4
 
 
 

@@ -19,6 +19,7 @@ class ClothesState(str, Enum):
     RECLAIMED = "세탁후분류"
 
 class LaundryLabel(str, Enum):
+    UNDEFINED = "미정"
     WASH = "물세탁"
     DRY = "드라이클리닝"
     HAND = "손세탁"

@@ -35,7 +35,7 @@ class LaundryBag(Base):
     # Column('clothesid', ForeignKey('clothes.id')),
     machineid = Column('machineid', ForeignKey('machine.id'), nullable = True)
     created_at = Column('created_at', DateTime, default = datetime.now())
-    label = Column('label', sqlalchemy.Enum(LaundryLabel), nullable = True)
+    label = Column('label', sqlalchemy.Enum(LaundryLabel), default = LaundryLabel.UNDEFINED)
     clothes_list = relationship('Clothes', backref = 'laundrybag')
 
    
