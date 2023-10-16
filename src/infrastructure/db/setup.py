@@ -5,6 +5,7 @@ import config
 
 
 settings = config.get_setting()
+
 SQLALCHEMY_DATABASE_URL = 'mysql+pymysql://{}:{}@{}:{}/{}'.format(
     settings.DB_USER,
     settings.DB_PASSWORD,
@@ -13,8 +14,17 @@ SQLALCHEMY_DATABASE_URL = 'mysql+pymysql://{}:{}@{}:{}/{}'.format(
     settings.DB_DATABASE
 )
 
-TEMPORARY_URL = 'sqlite:///./laundrydo.db'
-engine = create_engine(TEMPORARY_URL, echo_pool = 'debug') # only for sqlite
+
+SQLALCHEMY_ASYNC_DATABASE_URL = 'mysql+aiomysql://{}:{}@{}:{}/{}'.format(
+    settings.DB_USER,
+    settings.DB_PASSWORD,
+    settings.DB_HOST,
+    settings.DB_PORT,
+    settings.DB_DATABASE
+)
+
+TEMPORARY_URL = 'mysql+pymysql:///./laundrydo.db'
+engine = create_engine(SQLALCHEMY_DATABASE_URL, echo_pool = 'debug') # only for sqlite
 
 session = sessionmaker(autocommit = False, autoflush = False, bind = engine)
 
@@ -29,6 +39,3 @@ def get_db() :
 
 def get_session() :
     return session
-
-
-
