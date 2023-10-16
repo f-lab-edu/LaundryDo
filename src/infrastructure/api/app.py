@@ -18,7 +18,7 @@ from src.infrastructure.db.setup import engine, session, SQLALCHEMY_DATABASE_URL
 from config import APIConfigurations
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from contextlib import asynccontextmanager
+from contextlib import contextmanager, asynccontextmanager
 
 from src.domain.clothes import LaundryLabel
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
@@ -28,12 +28,27 @@ from src.infrastructure.db import initialize
 
 logger = getLogger(__name__)
 # initailize datbase tables
-initialize.initialize_table(engine = engine, checkfirst = True)
+# initialize.initialize_table(engine = engine, checkfirst = True)
 
 
 
-@asynccontextmanager
-async def monitoring_job(app : FastAPI) :
+
+
+app = FastAPI(
+    title = APIConfigurations.title,
+    description = APIConfigurations.description,
+    version = APIConfigurations.version,
+    # lifespan = monitoring_job
+)
+
+app.include_router(user_router.router, prefix = f'/v{APIConfigurations.version}/user')
+app.include_router(order_router.router, prefix = f'/v{APIConfigurations.version}/order')
+
+
+uow = SqlAlchemyUnitOfWork(session)
+
+@app.on_event('startup')
+def monitoring_job() :
     # monitoring job
     scheduler = BackgroundScheduler()
 
@@ -46,22 +61,7 @@ async def monitoring_job(app : FastAPI) :
     scheduler.add_job(services.ship_finished_order, 'cron', second='*/10', args =[uow] )
     scheduler.start()
 
-    yield
-
-
-
-app = FastAPI(
-    title = APIConfigurations.title,
-    description = APIConfigurations.description,
-    version = APIConfigurations.version,
-    lifespan = monitoring_job
-)
-
-app.include_router(user_router.router, prefix = f'/v{APIConfigurations.version}/user')
-app.include_router(order_router.router, prefix = f'/v{APIConfigurations.version}/order')
-
-
-uow = SqlAlchemyUnitOfWork(session)
+    return
 
 @app.get('/ping')
 def ping() :

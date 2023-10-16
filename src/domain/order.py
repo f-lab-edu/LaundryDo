@@ -58,7 +58,7 @@ class Order(Base):
 
     id = Column('id', Integer, primary_key = True, autoincrement = True)
     orderid = Column('orderid', String(20), unique = True)
-    userid = Column('userid', String(20), ForeignKey('user.id'), nullable = True) # userid reference 방법?
+    userid = Column('userid', Integer, ForeignKey('user.id'), nullable = True) # userid reference 방법?
     status = Column('status', sqlalchemy.Enum(OrderState), default = OrderState.SENDING)
     clothes_list = relationship('Clothes', backref = 'order')
     received_at = Column('received_at', DateTime, nullable = True)

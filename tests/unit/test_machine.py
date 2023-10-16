@@ -1,6 +1,4 @@
 import pytest
-
-
 from src.domain import Machine, LaundryLabel, MachineState
 from src.domain.machine import MaximumVolumeExceedError, BrokenError, AlreadyRunningError
 from datetime import datetime, timedelta
@@ -39,12 +37,12 @@ def test_machine_sorted_by_lastupdate_time(laundrybag_factory, clothes_factory) 
     assert less_recently_used_machine.status == MachineState.READY
     assert recently_used_machine.status == MachineState.READY
 
-    bag1 = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.DRY)])
-    bag2 = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.DRY)])
+    bag1 = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.DRY, volume = 5)])
+    bag2 = laundrybag_factory(clothes_list = [clothes_factory(label = LaundryLabel.DRY, volume = 5)])
 
     with freeze_time(exectime) :
         currently_running_machine_less_remaining_time.start(bag1)
-    with freeze_time(exectime, tz_offset = timedelta(minutes= 21)) :
+    with freeze_time(exectime, tz_offset = timedelta(minutes= 25)) :
         currently_running_machine_more_remaining_time.start(bag2)
     
     

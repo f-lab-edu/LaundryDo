@@ -13,7 +13,7 @@ from src.domain import (
 
 
 class Clothes(BaseModel):
-    model_config = ConfigDict(from_attributes = True)
+    model_config = ConfigDict(from_attributes = True, use_enum_values = True)
     clothesid : str
     label: LaundryLabel | None
     volume: float
@@ -40,7 +40,7 @@ class Clothes(BaseModel):
 class Order(BaseModel):
     model_config = ConfigDict(from_attributes = True)
     orderid : str
-    userid : str
+    userid : int
     clothes_list : List[Clothes] = []
     received_at : Optional[datetime] = None
     status : OrderState = OrderState.SENDING

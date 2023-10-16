@@ -32,8 +32,8 @@ class Clothes(Base) :
     clothesid = Column('clothesid', String(255), unique = True)
     label = Column('label', sqlalchemy.Enum(LaundryLabel))
     volume = Column('volume', Float)
-    orderid = Column('orderid', String(255), ForeignKey('order.orderid'))
-    laundrybagid = Column('laundrybagid', String(255), ForeignKey('laundrybag.id'), nullable = True)
+    orderid = Column('orderid', Integer, ForeignKey('order.id'))
+    laundrybagid = Column('laundrybagid', Integer, ForeignKey('laundrybag.id'), nullable = True)
     status = Column('status', sqlalchemy.Enum(ClothesState), default = ClothesState.PREPARING)
     received_at = Column('received_at', DateTime)
 

@@ -41,8 +41,6 @@ def user_create(_user_create : schemas.User, db : Session = Depends(get_db)) :
     user_repo.add(user)
     db.commit()
 
-    return _user_create
-    
 
 
 @router.get('/{userid}/orders', response_model = List[schemas.Order])
@@ -53,8 +51,8 @@ def request_orderlist(userid : str, db : Session = Depends(get_db)) :
     return orders
 
 
-@router.post('/{userid}/orders', response_model = schemas.OrderCreate)
-def request_order(userid : str, order : schemas.OrderCreate, db : Session = Depends(get_db)) :
+@router.post('/{userid}/orders', status_code = status.HTTP_204_NO_CONTENT)
+def request_order(userid : int, order : schemas.OrderCreate, db : Session = Depends(get_db)) :
                     # Body(
                     #     examples = [
                     #         {   
@@ -70,10 +68,13 @@ def request_order(userid : str, order : schemas.OrderCreate, db : Session = Depe
                 
     # TODO if userid not found, raise Error
     order_repo = SqlAlchemyOrderRepository(db)
-    
+
     new_order = domain.Order(orderid = f'orderid-{userid}',
                              userid = userid,
-                             clothes_list = [domain.Clothes(**dict(clothes)) for clothes in order.clothes_list],
+                             clothes_list = [domain.Clothes(clothesid = clothes.clothesid,
+                                                            label = clothes.label,
+                                                            volume = clothes.volume,
+                                                                   ) for clothes in order.clothes_list],
                              received_at = datetime.now()
                              )
 
@@ -81,4 +82,3 @@ def request_order(userid : str, order : schemas.OrderCreate, db : Session = Depe
     order_repo.add(new_order)
     db.commit()
     
-    return new_order
