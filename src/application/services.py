@@ -115,6 +115,7 @@ def update_laundrybag_state(uow : AbstractUnitOfWork) :
         for laundrybag in laundrybags_collecting : 
             if laundrybag.created_at - datetime.now() >= LAUNDRYBAG_MAX_WAITINGTIME :
                 laundrybag.status = LaundryBagState.READY
+                uow.commit()
 
 
 
@@ -140,7 +141,6 @@ def allocate_laundrybag_to_machine(uow : AbstractUnitOfWork) :
             machine = available_machines.popleft()
             laundrybag = laundrybags_in_ready.popleft()
             machine.start(laundrybag)
-            uow.machines.add(machine)
         uow.commit()
     # update order state
     update_orderstate(uow, orderstate = OrderState.PREPARING)
@@ -159,10 +159,7 @@ def update_machine_state_if_laundry_done(uow : AbstractUnitOfWork) :
             machine.update_runtime()
             machine.update_status()
 
-            
-            uow.machines.add(machine)
-
-        uow.commit()
+            uow.commit()
 
     update_orderstate(uow, orderstate = OrderState.WASHING)
 
@@ -191,9 +188,6 @@ def reclaim_clothes_from_machine(uow : AbstractUnitOfWork) :
             laundrybag.status = LaundryBagState.COLLECTING
             machine.contained = None
             machine.status = MachineState.READY
-
-            uow.laundrybags.add(laundrybag)
-            uow.machines.add(machine)
         uow.commit()
     update_orderstate(uow, orderstate = OrderState.RECLAIMING)
 
