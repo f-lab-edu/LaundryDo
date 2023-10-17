@@ -17,7 +17,9 @@ from src.infrastructure.db.setup import engine, session, SQLALCHEMY_DATABASE_URL
 
 from config import APIConfigurations
 
+from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.blocking import BlockingScheduler
 from contextlib import contextmanager, asynccontextmanager
 
 from src.domain.clothes import LaundryLabel
@@ -50,7 +52,12 @@ uow = SqlAlchemyUnitOfWork(session)
 @app.on_event('startup')
 def monitoring_job() :
     # monitoring job
-    scheduler = BackgroundScheduler()
+
+    executors = {
+        'default' : ThreadPoolExecutor(1)
+    }
+
+    scheduler = BackgroundScheduler(executors = executors)
 
     ## TODO apscheduler job에 대한 session이 중복되어 생기는 문제
 
