@@ -35,6 +35,11 @@ services:
       - API_VERSION=0.1
       - PYTHONDONTWRITEBYTECODE=1
     command : ["sh", "./run.sh"]
+    volumes :
+      - type : bind
+        source : src
+        target : /laundrydo/src
+
     networks :
       - my_network
     ports:
