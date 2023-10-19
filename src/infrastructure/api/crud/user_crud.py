@@ -15,3 +15,9 @@ def create_user(db : Session, user_create : schemas.UserCreate) :
     
     db.add(db_user)
     db.commit()
+
+
+def get_existing_user(db : Session, user_create : schemas.UserCreate) : 
+    return db.query(User).filter(
+        User.userid == user_create.userid
+    ).first()
