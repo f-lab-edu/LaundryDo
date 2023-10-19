@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List, Dict, Annotated
 
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
-from src.infrastructure.db.setup import session, get_db
+from src.infrastructure.db.setup import session, get_db, get_session
 from src.infrastructure.api import schemas
 from src.application import services
 from sqlalchemy.orm import Session
@@ -14,6 +14,10 @@ from logging import getLogger
 logger = getLogger(__name__)
 
 router = APIRouter()
+
+
+def get_uow(session_factory : Depends(get_session)) : 
+    return SqlAlchemyUnitOfWork(session_factory)
 
 
 
@@ -57,9 +61,7 @@ async def request_order(userid : str, order : Annotated[ schemas.Order,
 
 
 @router.put('/{orderid}', status_code = status.HTTP_204_NO_CONTENT)
-async def cancel_order(userid : str, orderid : str, session : Session = Depends(get_db)) :#-> schemas.Order :
-    uow = SqlAlchemyUnitOfWork(session)
-    
+async def cancel_order(userid : str, orderid : str, uow : SqlAlchemyUnitOfWork = Depends(get_uow)) :#-> schemas.Order :
     with uow :
         order = services.cancel_order(uow, userid, orderid)
         order = schemas.Order.model_validate(order)
