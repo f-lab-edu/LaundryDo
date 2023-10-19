@@ -21,3 +21,7 @@ def get_existing_user(db : Session, user_create : schemas.UserCreate) :
     return db.query(User).filter(
         User.userid == user_create.userid
     ).first()
+
+def get_user(db : Session, userid : str) :
+    return db.query(User).filter(User.userid == userid).first()
+

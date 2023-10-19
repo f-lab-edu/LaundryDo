@@ -15,7 +15,7 @@ class User(Base) :
     
     id = Column('id', Integer, primary_key = True, autoincrement = True)
     userid = Column('userid', String(20))
-    password = Column('password', String(20), nullable = False)
+    password = Column('password', String(255), nullable = False)
     phone_number = Column('phone_number', String(20))
     address = Column('address', String(255))
     orderlist = relationship('Order', backref = 'user')

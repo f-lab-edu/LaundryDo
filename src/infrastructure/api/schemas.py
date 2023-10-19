@@ -83,6 +83,12 @@ class UserCreate(BaseModel) :
         return v
     
 
+class Token(BaseModel) :
+    access_token : str
+    token_type : str
+    userid : str
+
+
 class LaundryBag(BaseModel):
     model_config = ConfigDict(from_attributes = True)
 
