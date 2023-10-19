@@ -15,7 +15,7 @@ from src.domain import (
 class Clothes(BaseModel):
     model_config = ConfigDict(from_attributes = True, use_enum_values = True)
     clothesid : str
-    label: LaundryLabel | None
+    label: LaundryLabel = LaundryLabel.UNDEFINED
     volume: float
 
 

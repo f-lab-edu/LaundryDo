@@ -31,7 +31,7 @@ class Clothes(Base) :
 
     id = Column('id', Integer, primary_key = True, autoincrement = True)
     clothesid = Column('clothesid', String(255), unique = True)
-    label = Column('label', sqlalchemy.Enum(LaundryLabel))
+    label = Column('label', sqlalchemy.Enum(LaundryLabel), default = LaundryLabel.UNDEFINED)
     volume = Column('volume', Float)
     orderid = Column('orderid', Integer, ForeignKey('order.id'))
     laundrybagid = Column('laundrybagid', Integer, ForeignKey('laundrybag.id'), nullable = True)
