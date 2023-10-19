@@ -15,13 +15,15 @@ class User(Base) :
     
     id = Column('id', Integer, primary_key = True, autoincrement = True)
     userid = Column('userid', String(20))
-    # password = Column('password', String(20))
+    password = Column('password', String(20), nullable = False)
+    phone_number = Column('phone_number', String(20))
     address = Column('address', String(255))
     orderlist = relationship('Order', backref = 'user')
 
-    def __init__(self, userid: str, address: str, orderlist : List[Order] = []) :
+    def __init__(self, userid: str, address: str, password : str, phone_number : str, orderlist : List[Order] = []) :
         self.userid = userid
-        # self.password = password
+        self.password = password
+        self.phone_number = phone_number
         self.address = address
         self.orderlist = orderlist
 
