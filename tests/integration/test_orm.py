@@ -30,6 +30,7 @@ def test_user_create_orders(session, user_factory, order_factory) :
     
 
 def test_create_user(session) :
+    from src.infrastructure.api.crud.user_crud import pwd_context
     session.execute(
         text(
         'INSERT INTO user (userid, address, password, phone_number) VALUES '
@@ -39,11 +40,12 @@ def test_create_user(session) :
             )
         )
     expected = [
-        User("user123", "서울시 중랑구", "test-password", "test-phonenum"),
-        User("user456", "서울시 동작구", "test-password", "test-phonenum"),
-        User("user789", "서울시 마포구", "test-password", "test-phonenum")
+        User("user123", "서울시 중랑구", pwd_context.hash("test-password"), "test-phonenum"),
+        User("user456", "서울시 동작구", pwd_context.hash("test-password"), "test-phonenum"),
+        User("user789", "서울시 마포구", pwd_context.hash("test-password"), "test-phonenum")
     ]
-
+    
+    # this does not guarantee Users have same information as long as they have same userid. Look for src.domain.user.User
     assert session.query(User).all() == expected
 
 
