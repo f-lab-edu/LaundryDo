@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, validator, ConfigDict
 from typing import List, Optional
 from datetime import datetime, timedelta
 
@@ -61,8 +61,26 @@ class User(BaseModel) :
     orderlist : List[Order] | None = []
 
 
-# class UserCreate(User) :
-#     password : str
+
+class UserCreate(BaseModel) :
+    model_config = ConfigDict(from_attributes = True)
+    userid : str
+    password1 : str
+    password2 : str
+    phone_number : str
+    address : str
+
+    @validator('userid', 'password1', 'password2', 'phone_number', 'address')
+    def not_empty(cls, v) :
+        if not v or not v.strip() :
+            raise ValueError('빈 값은 허용되지 않습니다.')
+        return v
+
+    @validator('password2')
+    def passwords_match(cls, v, values) :
+        if 'password1' in values and v != values['password1'] :
+            raise ValueError('비밀번호가 일치하지 않습니다.')
+        return v
     
 
 class LaundryBag(BaseModel):

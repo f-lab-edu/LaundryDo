@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session, Session
 
 from src import domain 
 from src.infrastructure.api import schemas
-from src.application import services
+from src.infrastructure.api.crud import background_crud
 
 from src.infrastructure.db.setup import engine, session, SQLALCHEMY_DATABASE_URL
 
@@ -61,11 +61,11 @@ def monitoring_job() :
 
     ## TODO apscheduler job에 대한 session이 중복되어 생기는 문제
 
-    scheduler.add_job(services.update_laundrybag_state, 'cron', second = '*/10', args = [uow])
-    scheduler.add_job(services.allocate_laundrybag_to_machine, 'cron', second='*/10', args =[uow])
-    scheduler.add_job(services.update_machine_state_if_laundry_done, 'cron', second='*/10', args =[uow] )
-    scheduler.add_job(services.reclaim_clothes_from_machine, 'cron', second='*/10', args =[uow] )
-    scheduler.add_job(services.ship_finished_order, 'cron', second='*/10', args =[uow] )
+    scheduler.add_job(background_crud.update_laundrybag_state, 'cron', second = '*/10', args = [uow])
+    scheduler.add_job(background_crud.allocate_laundrybag_to_machine, 'cron', second='*/10', args =[uow])
+    scheduler.add_job(background_crud.update_machine_state_if_laundry_done, 'cron', second='*/10', args =[uow] )
+    scheduler.add_job(background_crud.reclaim_clothes_from_machine, 'cron', second='*/10', args =[uow] )
+    scheduler.add_job(background_crud.ship_finished_order, 'cron', second='*/10', args =[uow] )
     scheduler.start()
 
     return

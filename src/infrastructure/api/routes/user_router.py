@@ -7,8 +7,12 @@ from typing import List, Annotated
 from src.infrastructure.api import schemas
 from src.infrastructure.db.setup import session, get_db, get_session
 from src import domain
+
+
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.application import services
+from src.infrastructure.api.crud import user_crud
+
 from sqlalchemy.orm import Session
 
 from src.infrastructure.repository import (
@@ -34,13 +38,8 @@ def list_user(db : Session = Depends(get_db)) :
 
 
 @router.post('/create', status_code = status.HTTP_204_NO_CONTENT)
-def user_create(_user_create : schemas.User, db : Session = Depends(get_db)) :
-    user_repo = SqlAlchemyUserRepository(db)
-    
-    user = domain.User(userid = _user_create.userid,
-                        address = _user_create.address)
-    user_repo.add(user)
-    db.commit()
+def user_create(_user_create : schemas.UserCreate, db : Session = Depends(get_db)) :
+    user_crud.create_user(db, _user_create)
 
 
 
