@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Body, Depends
 from starlette import status
 
+from uuid import uuid4
 from datetime import datetime
 from typing import List, Annotated
 from src.infrastructure.api import schemas
@@ -69,7 +70,7 @@ def request_order(userid : int, order : schemas.OrderCreate, db : Session = Depe
     # TODO if userid not found, raise Error
     order_repo = SqlAlchemyOrderRepository(db)
 
-    new_order = domain.Order(orderid = f'orderid-{userid}',
+    new_order = domain.Order(orderid = f'orderid-{userid}-{str(uuid4())[:4]}',
                              userid = userid,
                              clothes_list = [domain.Clothes(clothesid = clothes.clothesid,
                                                             label = clothes.label,

@@ -10,6 +10,7 @@ from src.infrastructure.api import schemas
 from src.application import services
 from sqlalchemy.orm import Session
 from logging import getLogger
+from uuid import uuid4
 
 logger = getLogger(__name__)
 
@@ -28,7 +29,7 @@ async def request_order_info(userid : str, orderid : str, session : Session = De
 
 
 @router.post('/users/{userid}/orders', response_model = schemas.Order)
-async def request_order(userid : str, order : Annotated[ schemas.Order, 
+async def request_order(userid : int, order : Annotated[ schemas.Order, 
             Body(
                 examples = [
                     {   
@@ -50,7 +51,12 @@ async def request_order(userid : str, order : Annotated[ schemas.Order,
     ) :
     uow = SqlAlchemyUnitOfWork(session)
     with uow :
-        services.request_order(uow,**dict(order))
+        services.request_order(uow,
+                               orderid = f'user-{userid}-order-{str(uuid4())[:4]}',
+                               userid = userid,
+                               clothes_list = order.clothes_list, 
+                               received_at = datetime.now()
+                               )
         uow.commit()
 
     return order
