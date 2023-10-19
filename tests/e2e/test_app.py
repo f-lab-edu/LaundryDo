@@ -71,12 +71,26 @@ def test_create_user() :
                   json = {
                       'userid' : 'eunsung1',
                       'address' : '서울시 송파구',
+                      'password1' : 'test_password',
+                      'password2' : 'test_password',
+                      'phone_number' : 'test_phone_number'
                   }
 
                 )
     assert response.status_code == 204
 
+def test_fail_create_user() :
+    response = test_app.post(f'{route_path}/user/create',
+                  json = {
+                      'userid' : 'eunsung1',
+                      'address' : '서울시 송파구',
+                      'password1' : 'test_password',
+                      'password2' : 'test_password123',
+                      'phone_number' : 'test_phone_number'
+                  }
 
+                )
+    assert response.status_code == 422, '패스워드가 서로 다름'
 
 def test_request_order() : 
     userid = 1
