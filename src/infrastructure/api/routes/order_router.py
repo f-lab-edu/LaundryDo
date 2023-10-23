@@ -17,7 +17,7 @@ logger = getLogger(__name__)
 router = APIRouter()
 
 
-def get_uow(session_factory : Depends(get_session)) : 
+def get_uow(session_factory : Session = Depends(get_session)) : 
     return SqlAlchemyUnitOfWork(session_factory)
 
 
@@ -67,9 +67,10 @@ async def request_order(userid : int, order : Annotated[ schemas.Order,
 
 
 @router.put('/{orderid}', status_code = status.HTTP_204_NO_CONTENT)
-async def cancel_order(userid : str, orderid : str, uow : SqlAlchemyUnitOfWork = Depends(get_uow)) :#-> schemas.Order :
+async def cancel_order(userid : str, orderid : str, uow : SqlAlchemyUnitOfWork = Depends(get_uow)) :
     with uow :
         order = services.cancel_order(uow, userid, orderid)
         order = schemas.Order.model_validate(order)
         order.commit()
+    return
 
