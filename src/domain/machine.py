@@ -7,7 +7,7 @@ import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime, Interval
 
 
 from enum import Enum
@@ -39,18 +39,16 @@ class Machine(Base):
     id =  Column('id', Integer, primary_key = True, autoincrement = True)
     machineid = Column('machineid', String(255), unique = True)
     contained = relationship('LaundryBag', backref = 'machine', uselist = False)
-    # Column('laundrybagid', ForeignKey('laundrybag.id')),
-    start_time = Column('start_time', DateTime, nullable = True)
-    lastupdateTime = Column('lastupdate_time', DateTime, default = datetime.now(), onupdate = datetime.now())
+    runtime = Column('runtime', Interval, default = timedelta(0))
+    started_at = Column('started_at', DateTime, nullable = True)
+    updated_at = Column('lastupdate_time', DateTime, default = datetime.now(), onupdate = datetime.now())
     status = Column('status', sqlalchemy.Enum(MachineState), default = MachineState.READY)
 
     def __init__(self, machineid: str):
         self.machineid = machineid
         self.contained = None  # LaundryBag
 
-        self.start_time = None
-        # self.lastupdateTime =
-        self._runtime = timedelta(minutes=0)
+        self.started_at = None
         self._requiredTime = None
         self._label = None
 
@@ -71,14 +69,19 @@ class Machine(Base):
         elif other.status in [MachineState.STOP, MachineState.DONE, MachineState.BROKEN] :
             return False
 
+        
+
         elif self.status == MachineState.RUNNING and other.status == MachineState.RUNNING :
-            return self.remainingTime > other.remainingTime
+            exectime = datetime.now()
+            own_remainingTime = self.requiredTime - ((exectime - self.updated_at ) + self.runtime )
+            other_remainingTime = other.requiredTime - ((exectime - other.updated_at ) + other.runtime )
+            return own_remainingTime > other_remainingTime
         elif self.status == MachineState.RUNNING and other.status != MachineState.RUNNING :
             return True
         elif other.status == MachineState.RUNNING and self.status != MachineState.RUNNING:
             return False
         elif self.status == MachineState.READY and other.status == MachineState.READY :
-            return self.lastupdateTime > other.lastupdateTime
+            return self.updated_at > other.updated_at
 
     @property
     def volume(self):
@@ -105,20 +108,18 @@ class Machine(Base):
     def requiredTime(self, time : timedelta) :
         self._requiredTime = time
     
-    @property
-    def remainingTime(self):
-        return self.requiredTime - self.runtime
-
-    @property
-    def runtime(self):
-        if self.lastupdateTime and self.status == MachineState.RUNNING:
-            return self._runtime + (datetime.now() - self.lastupdateTime)
-        else:
-            return self._runtime
+    def update_status(self) :
+        if self.runtime >= self.requiredTime : # runtime이 requiredTime보다 더 커질 수도?
+            self.status = MachineState.DONE
+            self.contained.status = LaundryBagState.DONE
     
-    @runtime.setter
-    def runtime(self, time : timedelta) :
-        self._runtime = time
+    def update_runtime(self) :
+        if self.updated_at and self.status == MachineState.RUNNING:
+            self.runtime += (datetime.now() - self.updated_at)
+        elif self.status == MachineState.DONE :
+            self.runtime = timedelta(0)
+            self.contained.status = LaundryBagState.DONE
+            
 
     def __hash__(self) :
         return hash(self.machineid)
@@ -139,8 +140,9 @@ class Machine(Base):
         elif self.status == MachineState.RUNNING :
             raise AlreadyRunningError(f'Machine {self.id} is already running.')
         else :
-            self.start_time = datetime.now()
-            self.lastupdateTime = self.start_time
+            self.start_at = datetime.now()
+            self.updated_at = self.start_at
+            self.runtime = timedelta(0)
             self.status = MachineState.RUNNING
 
             laundrybag.status = LaundryBagState.RUNNING
@@ -150,7 +152,7 @@ class Machine(Base):
 
     def resume(self):
         if self.status == MachineState.STOP:
-            self.lastupdateTime = datetime.now()
+            self.updated_at = datetime.now()
             self.status = MachineState.RUNNING
         else:
             raise AlreadyRunningError(f"cannot resume when {self.status}")
@@ -160,8 +162,8 @@ class Machine(Base):
             self.status = MachineState.STOP
             exec_time = datetime.now()
 
-            self._runtime += exec_time - self.lastupdateTime
-            self.lastupdateTime = exec_time
+            self.runtime += exec_time - self.updated_at
+            self.updated_at = exec_time
         else:
             raise ValueError(f"cannot stop when {self.status}")
         

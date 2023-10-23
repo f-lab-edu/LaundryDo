@@ -34,15 +34,15 @@ class FakeSession :
 
     def commit(self) :
         for buffer_key, buffer_dict in self.buffers.items() :
-            
+            print('buffer dict', buffer_dict)
             self.map_dict[buffer_key].update(buffer_dict)
             # clothes -> # clothes만 따로 들어오는 일은 없어야한다. clothes는 항상 order 단위로 input
-            if buffer_key is Clothes :
-                continue
+            # if buffer_key is Clothes :
+            #     continue
 
             # order -> user.orderlist
             # order -> clothes_list
-            elif buffer_key is Order :
+            if buffer_key is Order :
                 # update order
                 
                 for order in buffer_dict.values() :
@@ -54,7 +54,7 @@ class FakeSession :
             
 
             elif buffer_key is LaundryBag :
-
+                
                 for laundrybag in buffer_dict.values() :
                     # update clothes
                     self.update_clothes_from_laundrybag(laundrybag)
@@ -83,6 +83,8 @@ class FakeSession :
         pass
 
     def update_clothes_from_laundrybag(self, laundrybag : LaundryBag) :
+        print('register clothes in laundrybag')
+        print(laundrybag)
         self.map_dict[Clothes].update({clothes.clothesid : clothes for clothes in laundrybag.clothes_list})
 
     def update_clothes_from_machine(self, machine : Machine) :

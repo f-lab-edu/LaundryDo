@@ -2,52 +2,43 @@ version: "3"
 
 services:
   db-server:
-    container_name: db
     image : 'mysql'
     environment:
-      - MYSQL_HOST=${DB_HOST}
-      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MYSQL_USER=${DB_USER}
-      # - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD} # replace by environment on CI
-      - MYSQL_ALLOW_EMPTY_PASSWORD=''
       - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
       - TZ="Asia/Seoul"
-    env_file :
-      - .env
-    expose :
+    # ports:
+    #   - '3306:3306'
+    expose : 
       - 3306
     restart : always
     healthcheck: 
       test: ["CMD", "mysqladmin" ,"ping"]
       timeout: 20s
       retries: 3
+    networks :
+      - my_network
 
-  
-
-  
   laundrydo-server:
     container_name: laundrydo-server
-    image: eshin94/laundrydo:LaundryDO_0.0.1
+    build : .
     restart : always
     depends_on : 
       db-server :
         condition : service_healthy
-    links :
-      - db-server
-    build :
-      context: .
-      dockerfile: Dockerfile
     environment:
-      - DB_HOST=${DB_HOST}
-      - DB_PASSWORD=${DB_PASSWORD}
       - API_HOST=app
       - API_TITLE=LAUNDRYDO
       - API_DESCRIPTION=laundry service
       - API_VERSION=0.1
       - PYTHONDONTWRITEBYTECODE=1
-    env_file : 
-      - .env
-    entrypoint: ["./run${DEV}.sh"]
+    command : ["sh", "./run.sh"]
+    networks :
+      - my_network
     ports:
       - "8000:8000"
     
+networks:
+  my_network:

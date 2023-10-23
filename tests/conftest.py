@@ -66,7 +66,6 @@ def laundrybag_factory() :
         laundrybag = LaundryBag(laundrybagid = laundrybagid, 
                                  status = status)
         for clothes in clothes_list :
-            
             laundrybag.append(clothes)
         return laundrybag
     yield _laundrybag_factory

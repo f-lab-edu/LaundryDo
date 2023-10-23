@@ -6,7 +6,7 @@ from typing import List
 
 import sqlalchemy
 from sqlalchemy import orm
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String
 
 class User(Base) :
