@@ -23,4 +23,4 @@ COPY . /${PROJECT_DIR}
 
 COPY run.sh /${PROJECT_DIR}/run.sh
 RUN chmod +x /${PROJECT_DIR}/run.sh
-CMD ["./run.sh"]
+# CMD ["./run.sh"]

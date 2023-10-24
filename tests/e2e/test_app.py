@@ -79,7 +79,7 @@ def test_create_user() :
 
 
 def test_request_order() : 
-    userid = 'tom'
+    userid = 1
 
     response = test_app.post(
         f'{route_path}/user/{userid}/orders',
@@ -95,9 +95,8 @@ def test_request_order() :
             }    
     )
 
-    assert response.status_code == 200
-    data = response.json()
-    assert data['clothes_list'][0]['clothesid'] == 'sample_clothes'
+    assert response.status_code == 204
+    
     
 def test_cancel_order() :
     pass

@@ -19,6 +19,7 @@ class ClothesState(str, Enum):
     RECLAIMED = "세탁후분류"
 
 class LaundryLabel(str, Enum):
+    UNDEFINED = "미정"
     WASH = "물세탁"
     DRY = "드라이클리닝"
     HAND = "손세탁"
@@ -30,10 +31,10 @@ class Clothes(Base) :
 
     id = Column('id', Integer, primary_key = True, autoincrement = True)
     clothesid = Column('clothesid', String(255), unique = True)
-    label = Column('label', sqlalchemy.Enum(LaundryLabel))
+    label = Column('label', sqlalchemy.Enum(LaundryLabel), default = LaundryLabel.UNDEFINED)
     volume = Column('volume', Float)
-    orderid = Column('orderid', String(255), ForeignKey('order.orderid'))
-    laundrybagid = Column('laundrybagid', String(255), ForeignKey('laundrybag.id'), nullable = True)
+    orderid = Column('orderid', Integer, ForeignKey('order.id'))
+    laundrybagid = Column('laundrybagid', Integer, ForeignKey('laundrybag.id'), nullable = True)
     status = Column('status', sqlalchemy.Enum(ClothesState), default = ClothesState.PREPARING)
     received_at = Column('received_at', DateTime)
 
