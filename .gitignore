@@ -5,3 +5,4 @@ __pycache__
 mysql/
 *.db
 .env
+migrations/*

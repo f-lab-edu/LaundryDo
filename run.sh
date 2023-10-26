@@ -13,5 +13,5 @@ APP_NAME=${APP_NAME:-'src.infrastructure.api.app:app'}
 uvicorn ${APP_NAME} \
     --host ${HOST} \
     --port ${PORT} \
-    --workers ${WORKERS}
-    
+    --workers ${WORKERS} \
+    --reload

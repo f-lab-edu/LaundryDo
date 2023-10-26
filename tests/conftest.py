@@ -100,7 +100,10 @@ def user_factory() :
     def _user_factory(userid: str = None, address: str = 'test-adress', orderlist : List = []) :
         if userid is None :
             userid = random_userid()
-        return User(userid = userid, address = address, orderlist = orderlist)
+        return User(userid = userid, 
+                    password = 'test-password', 
+                    phone_number = 'test-phonenum', 
+                    address = address, orderlist = orderlist)
 
     yield _user_factory
 

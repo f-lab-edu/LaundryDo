@@ -23,7 +23,7 @@ SQLALCHEMY_ASYNC_DATABASE_URL = 'mysql+aiomysql://{}:{}@{}:{}/{}'.format(
     settings.DB_DATABASE
 )
 
-TEMPORARY_URL = 'mysql+pymysql:///./laundrydo.db'
+TEMPORARY_URL = 'sqlite:///./laundrydo.db'
 engine = create_engine(SQLALCHEMY_DATABASE_URL) # only for sqlite
 
 session = sessionmaker(autocommit = False, autoflush = False, bind = engine)
