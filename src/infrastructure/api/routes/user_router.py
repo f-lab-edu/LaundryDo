@@ -125,8 +125,7 @@ def request_orderlist(userid : str,
 
 
 @router.post('/{userid}/orders', status_code = status.HTTP_204_NO_CONTENT)
-def request_order(userid : int, 
-                  order : schemas.OrderCreate, 
+def request_order(order : schemas.OrderCreate, 
                   db : Session = Depends(get_db),
                   current_user : domain.User = Depends(get_current_user)) :
                     # Body(
@@ -145,7 +144,7 @@ def request_order(userid : int,
     # TODO if userid not found, raise Error
     order_repo = SqlAlchemyOrderRepository(db)
 
-    new_order = domain.Order(orderid = f'orderid-{userid}-{str(uuid4())[:4]}',
+    new_order = domain.Order(orderid = f'orderid-{current_user.userid}-{str(uuid4())[:4]}',
                              userid = current_user.userid,
                              clothes_list = [domain.Clothes(clothesid = clothes.clothesid,
                                                             label = clothes.label,

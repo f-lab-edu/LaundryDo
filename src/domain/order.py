@@ -26,25 +26,19 @@ class OrderState(str, Enum) :
 
 
 def clothes_order_mapping(clothes_status) : 
+    clothes_order_dict = {
+                ClothesState.CANCELLED : OrderState.CANCELLED,
+                ClothesState.PREPARING : OrderState.SENDING,
+                ClothesState.DISTRIBUTED : OrderState.PREPARING,
+                ClothesState.PROCESSING : OrderState.WASHING,
+                ClothesState.STOPPED : OrderState.WASHING,
+                ClothesState.DONE : OrderState.RECLAIMING,
+                ClothesState.RECLAIMED : OrderState.SHIP_READY}
     orderstate = OrderState.CANCELLED
     if  clothes_status is None :
         return orderstate
-    
-    if clothes_status == ClothesState.CANCELLED :
-        orderstate = OrderState.CANCELLED
-    elif clothes_status == ClothesState.PREPARING :
-        orderstate = OrderState.SENDING                    
-    elif clothes_status == ClothesState.DISTRIBUTED :
-        orderstate = OrderState.PREPARING
-    elif clothes_status == ClothesState.PROCESSING :
-        orderstate = OrderState.WASHING
-    elif clothes_status == ClothesState.STOPPED :
-        orderstate = OrderState.WASHING
-    elif clothes_status == ClothesState.DONE :
-        orderstate = OrderState.RECLAIMING
-    elif clothes_status == ClothesState.RECLAIMED :
-        orderstate = OrderState.SHIP_READY
-    return orderstate
+    return clothes_order_dict[clothes_status]
+
 
 
 
@@ -52,8 +46,6 @@ def clothes_order_mapping(clothes_status) :
 
 
 class Order(Base):
-    # TODO [Order] order should only be generated from user.
-    # TODO : [Order] received time by each status?
     __tablename__ = 'order'
 
     id = Column('id', Integer, primary_key = True, autoincrement = True)
