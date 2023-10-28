@@ -1,27 +1,32 @@
 from sqlalchemy.orm import Session
+from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
-from src.domain.user import User
+from src import domain
 from src.infrastructure.api import schemas
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated = "auto")
 
-def create_user(db : Session, user_create : schemas.UserCreate) :
-    db_user = User(userid = user_create.userid, 
-         password = pwd_context.hash(user_create.password1),
-         phone_number = user_create.phone_number,
-         address = user_create.address
-         )
+def create_user(uow : SqlAlchemyUnitOfWork, user_create : schemas.UserCreate) :
     
-    db.add(db_user)
-    db.commit()
+    with uow :
+        db_user = domain.User(userid = user_create.userid, 
+            password = pwd_context.hash(user_create.password1),
+            phone_number = user_create.phone_number,
+            address = user_create.address
+            )
+        uow.users.add(db_user)
+        uow.commit()
 
+def get_existing_user(uow: SqlAlchemyUnitOfWork, user_create : schemas.UserCreate) : 
+    with uow :
+        existed_user = uow.users.get(userid = user_create.userid)
+    return existed_user
+    
 
-def get_existing_user(db : Session, user_create : schemas.UserCreate) : 
-    return db.query(User).filter(
-        User.userid == user_create.userid
-    ).first()
-
-def get_user(db : Session, userid : str) -> User :
-    return db.query(User).filter(User.userid == userid).first()
+def get_user(uow: SqlAlchemyUnitOfWork, userid : str) -> domain.User :
+    with uow :
+        existed_user = uow.users.get(userid = userid)
+    return existed_user
+    
 

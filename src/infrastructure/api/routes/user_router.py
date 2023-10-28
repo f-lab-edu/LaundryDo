@@ -1,35 +1,34 @@
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 from starlette import status
 
-from uuid import uuid4
 from datetime import datetime
 from datetime import timedelta
-from typing import List, Annotated
+from typing import List
 from src.infrastructure.api import schemas
 from src.infrastructure.api.crud.user_crud import pwd_context
-from src.infrastructure.db.setup import session, get_db, get_session
+from src.infrastructure.db.setup import get_uow
 from src import domain
 
 
 
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.application import services
-from src.infrastructure.api.crud import user_crud
+from src.infrastructure.api.crud import user_crud, order_crud
 
 from sqlalchemy.orm import Session
 
-from src.infrastructure.repository import (
-    SqlAlchemyUserRepository,
-    SqlAlchemyOrderRepository,
-)
 from config import APIConfigurations
 
 
 from logging import getLogger
 
 logger = getLogger(__name__)
+
+
+
+
 
 router = APIRouter()
 
@@ -38,13 +37,15 @@ SECRET_KEY = "65cea85d36060df1841ba5689840b0da447100ed823ab7e3b610c447c9a497d0" 
 ALGORITHM = "HS256"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl = f'/v{APIConfigurations.version}/user/login')
 
-@router.post("/login", response_model = schemas.Token)
+
+
+@router.post("/login")
 def login_for_access_token(form_data : OAuth2PasswordRequestForm = Depends(),
-                           db : Session = Depends(get_db)
-                           ) :
+                           uow : SqlAlchemyUnitOfWork = Depends(get_uow)
+                           ) -> schemas.Token :
     
     # check user and password
-    user = user_crud.get_user(db, form_data.username)
+    user = user_crud.get_user(uow, form_data.username)
     if not user or not pwd_context.verify(form_data.password, user.password) :
         raise HTTPException(
             status_code = status.HTTP_401_UNAUTHORIZED,
@@ -68,30 +69,31 @@ def login_for_access_token(form_data : OAuth2PasswordRequestForm = Depends(),
 
 
 
-@router.get('/list', response_model = List[schemas.User])
-def list_user(db : Session = Depends(get_db)) :
-    user_repo = SqlAlchemyUserRepository(db)
-    all_users = user_repo.list()
-    all_users = [schemas.User.model_validate(user) for user in all_users]
+@router.get('/list')
+def list_user(uow : SqlAlchemyUnitOfWork = Depends(get_uow)) -> List[schemas.User] :
+    with uow :
+        all_users = uow.users.list()
+        all_users = [schemas.User.model_validate(user) for user in all_users]
     return all_users
+    
     
     
 
 
 @router.post('/create', status_code = status.HTTP_204_NO_CONTENT)
-def user_create(_user_create : schemas.UserCreate, db : Session = Depends(get_db)) :
-    user = user_crud.get_existing_user(db, user_create = _user_create)
+def user_create(_user_create : schemas.UserCreate, uow : SqlAlchemyUnitOfWork = Depends(get_uow)) :
+    user = user_crud.get_existing_user(uow, user_create = _user_create)
     if user :
         raise HTTPException(status_code = status.HTTP_409_CONFLICT,
                                 detail = "이미 존재하는 사용자입니다.")
 
-    user_crud.create_user(db, _user_create)
+    user_crud.create_user(uow, _user_create)
 
 
 
 def get_current_user(token : str = Depends(oauth2_scheme),
-                     db : Session = Depends(get_db)
-                     ) :
+                     uow : Session = Depends(get_uow)
+                     ) -> schemas.User :
     credentials_exception = HTTPException(
         status_code = status.HTTP_401_UNAUTHORIZED,
         detail = "Could not validate credentials",
@@ -105,55 +107,29 @@ def get_current_user(token : str = Depends(oauth2_scheme),
     except JWTError :
         raise credentials_exception
     else :
-        user = user_crud.get_user(db, userid = userid)
+        user = user_crud.get_user(uow, userid = userid)
         if user is None :
             raise credentials_exception
         return user
 
 
-
-
-
-@router.get('/{userid}/orders', response_model = List[schemas.Order])
+@router.get('/{userid}/orders')
 def request_orderlist(userid : str, 
-                      db : Session = Depends(get_db), 
-                      current_user : domain.User = Depends(get_current_user)) :
-    order_repo = SqlAlchemyOrderRepository(db)
+                      uow : Session = Depends(get_uow), 
+                      current_user : domain.User = Depends(get_current_user)) -> List[schemas.Order] :
+    with uow :
+        orders = uow.orders.get_by_userid(userid = current_user.userid)
 
-    orders = order_repo.get_by_userid(userid = current_user.userid)
     return orders
 
 
 @router.post('/{userid}/orders', status_code = status.HTTP_204_NO_CONTENT)
 def request_order(order : schemas.OrderCreate, 
-                  db : Session = Depends(get_db),
+                  uow : Session = Depends(get_uow),
                   current_user : domain.User = Depends(get_current_user)) :
-                    # Body(
-                    #     examples = [
-                    #         {   
-                    #         # "description" : "세탁 요청한 옷들의 리스트가 담긴 주문 정보",
-                    #         'clothes_list' : [{
-                    #                     "clothesid" : "흰티셔츠",
-                    #                     "label" : "드라이클리닝",
-                    #                     "volume" : 3,
-                    #                 }],
-                    #         }
-                    #     ])
-                    # ]         
-                
-    # TODO if userid not found, raise Error
-    order_repo = SqlAlchemyOrderRepository(db)
-
-    new_order = domain.Order(orderid = f'orderid-{current_user.userid}-{str(uuid4())[:4]}',
-                             userid = current_user.userid,
-                             clothes_list = [domain.Clothes(clothesid = clothes.clothesid,
-                                                            label = clothes.label,
-                                                            volume = clothes.volume,
-                                                                   ) for clothes in order.clothes_list],
-                             received_at = datetime.now()
-                             )
-
-    
-    order_repo.add(new_order)
-    db.commit()
+ 
+    order_crud.create_order(uow, 
+                            userid = current_user.userid,
+                            clothes_list = order.clothes_list,
+                            )
     

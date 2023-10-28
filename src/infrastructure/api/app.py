@@ -19,7 +19,6 @@ from config import APIConfigurations
 
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.schedulers.blocking import BlockingScheduler
 from contextlib import contextmanager, asynccontextmanager
 
 from src.domain.clothes import LaundryLabel

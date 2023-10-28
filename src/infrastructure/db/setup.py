@@ -1,6 +1,8 @@
 from sqlalchemy import Table, MetaData, Column, String, Float, Date, ForeignKey
 from sqlalchemy import create_engine
 from sqlalchemy.orm import mapper, relationship, Session, sessionmaker
+from fastapi import Depends
+from src.application.unit_of_work import SqlAlchemyUnitOfWork
 import config
 
 
@@ -39,3 +41,7 @@ def get_db() :
 
 def get_session() :
     return session
+
+
+def get_uow(session_factory : Session = Depends(get_session)) : 
+    return SqlAlchemyUnitOfWork(session_factory)
