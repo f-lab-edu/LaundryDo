@@ -61,12 +61,12 @@ route_path = f'/v{APIConfigurations.version}'
 
 
 def test_list_user() :
-    response = test_app.get(f'{route_path}/user/list')
+    response = test_app.get(f'{route_path}/users')
     assert response.status_code == 200
 
 
 def test_create_user() : 
-    response = test_app.post(f'{route_path}/user/create',
+    response = test_app.post(f'{route_path}/users',
                   json = {
                       'userid' : 'eunsung',
                       'address' : '서울시 송파구',
@@ -79,7 +79,7 @@ def test_create_user() :
     assert response.status_code == 204
 
 def test_fail_create_user() :
-    response = test_app.post(f'{route_path}/user/create',
+    response = test_app.post(f'{route_path}/users',
                   json = {
                       'userid' : 'eunsung',
                       'address' : '서울시 송파구',
@@ -94,7 +94,7 @@ def test_fail_create_user() :
 def test_request_order() : 
     userid = 'test'
 
-    test_app.post(f'{route_path}/user/create', 
+    test_app.post(f'{route_path}/users/', 
                   json = {
                       'userid' : userid,
                       'address' : '서울시 송파구',
@@ -105,11 +105,11 @@ def test_request_order() :
                   )
 
     response = test_app.post(
-        f'{route_path}/user/{userid}/orders',
+        f'{route_path}/users/{userid}/orders',
         json = 
                 {
                 'clothes_list' : [{
-                    'clothesid' : 'sample_clothes',
+                    'clothesid' : 'sample_clothes1',
                     'label' : '드라이클리닝',
                     'volume' : float(3.0)
                     }
@@ -117,11 +117,34 @@ def test_request_order() :
             }    
     )
 
-    assert response.status_code == 204
+    assert response.status_code == 200
     
     
 def test_cancel_order() :
-    pass
+    
+    userid = 'test'
+    # request order
+    response = test_app.post(
+        f'{route_path}/users/{userid}/orders',
+        json = 
+                {
+                'clothes_list' : [{
+                    'clothesid' : 'sample_clothes2',
+                    'label' : '드라이클리닝',
+                    'volume' : float(3.0)
+                    }
+                ]
+            }    
+    )
+
+    orderid = response.json()
+    fake_orderid = 'fake-order'
+
+    correct_response = test_app.delete(f'{route_path}/users/{userid}/orders/{orderid}')
+    fake_response = test_app.delete(f'{route_path}/users/{userid}/orders/{fake_orderid}')
+
+    assert correct_response.status_code == 200
+    assert fake_response.status_code == 404
 
 
 def test_request_order_progress() :
