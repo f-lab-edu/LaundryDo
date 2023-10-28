@@ -1,12 +1,9 @@
-from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.application import services
-from src.application import LaundryBagManager
-from src.domain import Machine, MachineState, LaundryBagState, LaundryLabel, OrderState, ClothesState
+from src.domain import Machine, MachineState, LaundryBagState, LaundryLabel
 from src.domain.spec import MACHINE_MAXVOLUME
 
 from datetime import datetime, timedelta
 from freezegun import freeze_time
-from typing import List
 import pytest
 
 '''

@@ -1,23 +1,16 @@
-import requests
-import pytest
-
 from config import APIConfigurations
-from datetime import datetime, date
 
 from fastapi import Depends
 from fastapi.testclient import TestClient
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import StaticPool, NullPool
+from sqlalchemy.pool import StaticPool
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
 from src import domain
-from src.domain.base import Base
-from src.infrastructure.db.setup import get_db, get_session
-from src.infrastructure.api.routes.user_router import get_current_user, oauth2_scheme
+from src.infrastructure.db.setup import get_uow
+from src.infrastructure.api.routes.user_router import get_current_user
 
-from src.infrastructure.api.crud import user_crud
 
 from src.infrastructure.db.initialize import initialize_table
 from src.infrastructure.api.app import app
@@ -53,8 +46,10 @@ def override_get_current_user() :
                        )
     
 
+def override_get_uow(session_factory : Session = Depends(override_get_session)) :
+    return SqlAlchemyUnitOfWork(session_factory)
 
-app.dependency_overrides[get_db] = override_get_db
+app.dependency_overrides[get_uow] = override_get_uow
 app.dependency_overrides[get_current_user] = override_get_current_user
 
 test_app = TestClient(app)  
@@ -73,7 +68,7 @@ def test_list_user() :
 def test_create_user() : 
     response = test_app.post(f'{route_path}/user/create',
                   json = {
-                      'userid' : 'eunsung1',
+                      'userid' : 'eunsung',
                       'address' : '서울시 송파구',
                       'password1' : 'test_password',
                       'password2' : 'test_password',
@@ -86,7 +81,7 @@ def test_create_user() :
 def test_fail_create_user() :
     response = test_app.post(f'{route_path}/user/create',
                   json = {
-                      'userid' : 'eunsung1',
+                      'userid' : 'eunsung',
                       'address' : '서울시 송파구',
                       'password1' : 'test_password',
                       'password2' : 'test_password123',
@@ -104,7 +99,7 @@ def test_request_order() :
                       'userid' : userid,
                       'address' : '서울시 송파구',
                       'password1' : 'test_password',
-                      'password2' : 'test_password123',
+                      'password2' : 'test_password',
                       'phone_number' : 'test_phone_number'
                   }
                   )
