@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from src.application.unit_of_work import AbstractUnitOfWork
 from src.domain.order import OrderState
 from src import domain
@@ -15,9 +16,10 @@ def update_orderstate(uow : AbstractUnitOfWork, orderstate : OrderState) :
             uow.commit()
         uow.commit()
 
-def create_order(uow : AbstractUnitOfWork, userid : str, clothes_list : List[schemas.Clothes]) :
+def create_order(uow : AbstractUnitOfWork, userid : str, clothes_list : List[schemas.Clothes]) -> str :
     with uow :
-        new_order = domain.Order(orderid = f'orderid-{userid}-{str(uuid4())[:4]}',
+        orderid = f'orderid-{userid}-{str(uuid4())[:4]}'
+        new_order = domain.Order(orderid = orderid,
                              userid = userid,
                              clothes_list = [domain.Clothes(clothesid = clothes.clothesid,
                                                             label = clothes.label,
@@ -25,4 +27,15 @@ def create_order(uow : AbstractUnitOfWork, userid : str, clothes_list : List[sch
                                                             for clothes in clothes_list],
                              received_at = datetime.now())
         uow.orders.add(new_order)
+        uow.commit()
+    return orderid
+
+
+def cancel_order(uow : AbstractUnitOfWork, orderid : str) :
+    with uow :
+        selected_order = uow.orders.get(orderid = orderid)
+        if selected_order is None :
+            raise HTTPException(status_code = 404, detail = 'Order Not Found.')
+        selected_order.status = OrderState.CANCELLED
+
         uow.commit()
