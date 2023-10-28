@@ -23,7 +23,7 @@ class SqlAlchemyUserRepository(AbstractUserRepository) :
         self.session = session
 
     def get(self, userid : str) -> User:
-        return self.session.query(User).filter_by(userid = userid).one()
+        return self.session.query(User).filter_by(userid = userid).first()
 
     def list(self) :
         return self.session.query(User).all()
