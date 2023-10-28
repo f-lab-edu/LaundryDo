@@ -3,9 +3,9 @@ from src.application.unit_of_work import SqlAlchemyUnitOfWork
 
 from src import domain
 from src.infrastructure.api import schemas
-from passlib.context import CryptContext
+from src.infrastructure.api.auth import pwd_context
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated = "auto")
+
 
 def create_user(uow : SqlAlchemyUnitOfWork, user_create : schemas.UserCreate) :
     
