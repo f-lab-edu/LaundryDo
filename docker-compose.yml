@@ -32,11 +32,11 @@ services:
       - API_DESCRIPTION=laundry service
       - API_VERSION=0.1
       - PYTHONDONTWRITEBYTECODE=1
+    # volumes :
+    #   - type : bind
+    #     source : src
+    #     target : /laundrydo/src
     command : ["sh", "./run.sh"]
-    volumes :
-      - type : bind
-        source : src
-        target : /laundrydo/src
 
     networks :
       - my_network
