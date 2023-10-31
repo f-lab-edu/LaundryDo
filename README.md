@@ -81,13 +81,13 @@ make c_up
     - check_machine_status : `GET`
 
 
-(10/28) API 엔드포인트 정리
-/login/
-/users/ get
-/users/ post
-/users/{userid}/orders/ get
-/users/{userid}/orders/ post
-/users/{userid}/orders/{orderid} delete 
+(10/28) API 엔드포인트 정리  
+/login/  
+/users/ get  
+/users/ post  
+/users/{userid}/orders/ get  
+/users/{userid}/orders/ post  
+/users/{userid}/orders/{orderid} delete   
 
 
 ## FastAPI Pydantic Model 설정
