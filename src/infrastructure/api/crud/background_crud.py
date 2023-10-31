@@ -1,19 +1,16 @@
-from src.domain.spec import LAUNDRYBAG_MAXVOLUME, LAUNDRY_MINVOLUME, LAUNDRYBAG_MAX_WAITINGTIME
-from src.domain.clothes import Clothes, ClothesState, LaundryLabel
-from src.domain.order import Order, OrderState, clothes_order_mapping
-from src.domain.laundrybag import LaundryBag, LaundryBagState
-from src.domain.machine import Machine, MachineState
-from src.domain.repository import AbstractOrderRepository, AbstractLaundryBagRepository, AbstractMachineRepository
-from src.application.unit_of_work import AbstractUnitOfWork
+from src.domain.spec import LAUNDRYBAG_MAX_WAITINGTIME
+from src.domain.clothes import ClothesState
+from src.domain.order import  OrderState
+from src.domain.laundrybag import LaundryBagState
+from src.domain.machine import MachineState
 
+from src.application.unit_of_work import AbstractUnitOfWork
 from src.infrastructure.api.crud import order_crud
 
 from collections import deque
-from typing import List, Dict
 from datetime import datetime
-from uuid import uuid4
 
-from collections import deque, defaultdict
+from collections import deque
 
 ###################
 # Scheduling Jobs #

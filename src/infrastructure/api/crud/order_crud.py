@@ -39,3 +39,12 @@ def cancel_order(uow : AbstractUnitOfWork, orderid : str) :
         selected_order.status = OrderState.CANCELLED
 
         uow.commit()
+    
+
+def get_order_status(uow : AbstractUnitOfWork, orderid : str) : 
+    with uow :
+        selected_order = uow.orders.get(orderid = orderid)
+        if selected_order is None :
+            raise HTTPException(status_code = 404, detail = 'Order Not Found.')
+    
+    return schemas.OrderDisplay.from_orm(selected_order)
