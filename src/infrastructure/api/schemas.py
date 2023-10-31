@@ -51,7 +51,13 @@ class OrderCreate(BaseModel) :
     clothes_list : List[Clothes] | None
     # received_at : datetime | None
 
-    
+
+class OrderDisplay(BaseModel) :
+    model_config = ConfigDict(from_attributes = True)
+    orderid : str
+    clothes_list : List[Clothes] = []
+    received_at : Optional[datetime] = None
+    status : OrderState = OrderState.SENDING
 
 
 class User(BaseModel) :

@@ -111,3 +111,15 @@ def cancel_order(userid : str,
     order_crud.cancel_order(uow,
                             orderid
                             )
+
+@router.get('/{userid}/orders/{orderid}')
+def request_orderstatus(userid : str,
+                        orderid : str,
+                        uow : Session = Depends(get_uow),
+                        current_user : domain.User = Depends(get_current_user)) -> schemas.OrderDisplay :
+    if userid != current_user.userid :
+        raise HTTPException(status_code = 403, detial = 'Not authorized')
+    
+    displayed_order = order_crud.get_order_status(uow, orderid)
+
+    return displayed_order
