@@ -34,7 +34,11 @@ logger = getLogger(__name__)
 # initialize.initialize_table(engine = engine, checkfirst = True)
 
 
+executors = {
+        'default' : ThreadPoolExecutor(1)
+    }
 
+scheduler = BackgroundScheduler(executors = executors)
 
 
 app = FastAPI(
@@ -54,11 +58,7 @@ uow = SqlAlchemyUnitOfWork(session)
 def monitoring_job() :
     # monitoring job
 
-    executors = {
-        'default' : ThreadPoolExecutor(1)
-    }
-
-    scheduler = BackgroundScheduler(executors = executors)
+    
 
     ## TODO apscheduler job에 대한 session이 중복되어 생기는 문제
 
@@ -71,9 +71,10 @@ def monitoring_job() :
 
     return
 
-@app.get('/ping')
-def ping() :
-    return 'pong'
+
+@app.on_event('shutdown')
+def shutdown() :
+    scheduler.shutdown()
 
 @app.get('/')
 async def root() :
