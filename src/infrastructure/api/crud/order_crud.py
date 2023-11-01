@@ -14,7 +14,6 @@ def update_orderstate(uow : AbstractUnitOfWork, orderstate : OrderState) :
         for order in orders :
             order.update_status()
             uow.commit()
-        uow.commit()
 
 def create_order(uow : AbstractUnitOfWork, userid : str, clothes_list : List[schemas.Clothes]) -> str :
     with uow :
