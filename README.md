@@ -66,6 +66,16 @@ make c_up
 - **machine (From Laundry Manager)**
     - check_machine_status : `GET`
 
+
+(10/28) API 엔드포인트 정리  
+/login/  
+/users/ get  
+/users/ post  
+/users/{userid}/orders/ get  
+/users/{userid}/orders/ post  
+/users/{userid}/orders/{orderid} delete   
+
+
 ## FastAPI Pydantic Model 설정
 
 *각 endpoint의 Input, output에 필요한 모델들이 다를 수 있음.  

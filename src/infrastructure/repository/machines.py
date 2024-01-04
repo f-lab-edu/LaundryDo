@@ -29,7 +29,7 @@ class SqlAlchemyMachineRepository(AbstractMachineRepository) :
         self.session = session
 
     def get(self, machineid : str) -> Machine:
-        return self.session.query(Machine).filter_by(machineid = machineid).one()
+        return self.session.query(Machine).filter_by(machineid = machineid).first()
 
     def get_by_status(self, status : MachineState) -> List[Machine] :
         return self.session.query(Machine).filter_by(status = status).all()

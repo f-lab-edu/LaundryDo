@@ -1,84 +1,125 @@
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from jose import jwt, JWTError
 from starlette import status
 
-from datetime import datetime
-from typing import List, Annotated
+from typing import List
 from src.infrastructure.api import schemas
-from src.infrastructure.db.setup import session, get_db, get_session
+
+from src.infrastructure.db.setup import get_uow
 from src import domain
+
+
+
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.application import services
+from src.infrastructure.api.crud import user_crud, order_crud
+from src.infrastructure.api.auth import oauth2_scheme, SECRET_KEY, ALGORITHM
+
 from sqlalchemy.orm import Session
 
-from src.infrastructure.repository import (
-    SqlAlchemyUserRepository,
-    SqlAlchemyOrderRepository,
-)
+
 
 from logging import getLogger
 
 logger = getLogger(__name__)
 
+
+
+
+
 router = APIRouter()
 
 
-@router.get('/list', response_model = List[schemas.User])
-def list_user(db : Session = Depends(get_db)) :
-    user_repo = SqlAlchemyUserRepository(db)
-    all_users = user_repo.list()
-    all_users = [schemas.User.model_validate(user) for user in all_users]
+
+@router.get('/')
+def list_user(uow : SqlAlchemyUnitOfWork = Depends(get_uow)) -> List[schemas.User] :
+    with uow :
+        all_users = uow.users.list()
+        all_users = [schemas.User.model_validate(user) for user in all_users]
     return all_users
     
     
-
-
-@router.post('/create', status_code = status.HTTP_204_NO_CONTENT)
-def user_create(_user_create : schemas.User, db : Session = Depends(get_db)) :
-    user_repo = SqlAlchemyUserRepository(db)
     
-    user = domain.User(userid = _user_create.userid,
-                        address = _user_create.address)
-    user_repo.add(user)
-    db.commit()
+
+
+@router.post('/', status_code = status.HTTP_204_NO_CONTENT)
+def user_create(_user_create : schemas.UserCreate, uow : SqlAlchemyUnitOfWork = Depends(get_uow)) :
+    user = user_crud.get_existing_user(uow, user_create = _user_create)
+    if user :
+        raise HTTPException(status_code = status.HTTP_409_CONFLICT,
+                                detail = "이미 존재하는 사용자입니다.")
+
+    user_crud.create_user(uow, _user_create)
 
 
 
-@router.get('/{userid}/orders', response_model = List[schemas.Order])
-def request_orderlist(userid : str, db : Session = Depends(get_db)) :
-    order_repo = SqlAlchemyOrderRepository(db)
+def get_current_user(token : str = Depends(oauth2_scheme),
+                     uow : Session = Depends(get_uow)
+                     ) -> schemas.User :
+    credentials_exception = HTTPException(
+        status_code = status.HTTP_401_UNAUTHORIZED,
+        detail = "Could not validate credentials",
+        headers = {"WWW-Authenticate" : "Bearer"},
+    )
+    try :
+        payload = jwt.decode(token, SECRET_KEY, algorithms = [ALGORITHM])
+        userid = str = payload.get('sub')
+        if userid is None :
+            raise credentials_exception
+    except JWTError :
+        raise credentials_exception
+    else :
+        user = user_crud.get_user(uow, userid = userid)
+        if user is None :
+            raise credentials_exception
+        return user
 
-    orders = order_repo.get_by_userid(userid = userid)
+
+@router.get('/{userid}/orders')
+def request_orderlist(userid : str, 
+                      uow : Session = Depends(get_uow), 
+                      current_user : domain.User = Depends(get_current_user)) -> List[schemas.Order] :
+    with uow :
+        orders = uow.orders.get_by_userid(userid = current_user.userid)
+
     return orders
 
 
-@router.post('/{userid}/orders', status_code = status.HTTP_204_NO_CONTENT)
-def request_order(userid : int, order : schemas.OrderCreate, db : Session = Depends(get_db)) :
-                    # Body(
-                    #     examples = [
-                    #         {   
-                    #         # "description" : "세탁 요청한 옷들의 리스트가 담긴 주문 정보",
-                    #         'clothes_list' : [{
-                    #                     "clothesid" : "흰티셔츠",
-                    #                     "label" : "드라이클리닝",
-                    #                     "volume" : 3,
-                    #                 }],
-                    #         }
-                    #     ])
-                    # ]         
-                
-    # TODO if userid not found, raise Error
-    order_repo = SqlAlchemyOrderRepository(db)
+@router.post('/{userid}/orders')
+def request_order(userid : str,
+                  order : schemas.OrderCreate, 
+                  uow : Session = Depends(get_uow),
+                  current_user : domain.User = Depends(get_current_user)) -> str :
+    if userid != current_user.userid :
+        raise HTTPException(status_code = 403, detial = 'Not authorized')
+    orderid = order_crud.create_order(uow, 
+                            userid = current_user.userid,
+                            clothes_list = order.clothes_list,
+                            )
 
-    new_order = domain.Order(orderid = f'orderid-{userid}',
-                             userid = userid,
-                             clothes_list = [domain.Clothes(clothesid = clothes.clothesid,
-                                                            label = clothes.label,
-                                                            volume = clothes.volume,
-                                                                   ) for clothes in order.clothes_list],
-                             received_at = datetime.now()
-                             )
+    return orderid
+    
 
+@router.delete('/{userid}/orders/{orderid}')
+def cancel_order(userid : str,
+                 orderid : str,
+                 uow : Session = Depends(get_uow),
+                 current_user : domain.User = Depends(get_current_user)) :
+    if userid != current_user.userid :
+        raise HTTPException(status_code = 403, detial = 'Not authorized')
     
-    order_repo.add(new_order)
-    db.commit()
+    order_crud.cancel_order(uow,
+                            orderid
+                            )
+
+@router.get('/{userid}/orders/{orderid}')
+def request_orderstatus(userid : str,
+                        orderid : str,
+                        uow : Session = Depends(get_uow),
+                        current_user : domain.User = Depends(get_current_user)) -> schemas.OrderDisplay :
+    if userid != current_user.userid :
+        raise HTTPException(status_code = 403, detial = 'Not authorized')
     
+    displayed_order = order_crud.get_order_status(uow, orderid)
+
+    return displayed_order

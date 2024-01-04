@@ -32,7 +32,7 @@ class SqlAlchemyLaundryBagRepository(AbstractLaundryBagRepository) :
         self.session = session
 
     def get(self, laundrybagid : str) -> LaundryBag:
-        return self.session.query(LaundryBag).filter_by(laundrybagid = laundrybagid).one()
+        return self.session.query(LaundryBag).filter_by(laundrybagid = laundrybagid).first()
 
     def get_by_status(self, status : LaundryBagState) -> list[LaundryBag] :
         return self.session.query(LaundryBag).filter_by(status = status).all()

@@ -34,13 +34,13 @@ class SqlAlchemyOrderRepository(AbstractOrderRepository) :
         self.session = session
 
     def get(self, orderid : str) -> Order:
-        return self.session.query(Order).filter_by(orderid = orderid).one()
+        return self.session.query(Order).filter_by(orderid = orderid).first()
 
     def get_by_userid(self, userid : str) -> List[Order] :
         return self.session.query(Order).filter_by(userid = userid).all()
 
     def get_by_orderid(self, orderid : str) -> Order :
-        return self.session.query(Order).filter_by(orderid = orderid).one()
+        return self.session.query(Order).filter_by(orderid = orderid).first()
 
     def get_by_status(self, status : OrderState) -> List[Order] :
         return self.session.query(Order).filter_by(status = status).all()

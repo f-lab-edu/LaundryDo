@@ -32,7 +32,6 @@ class LaundryBag(Base):
     id = Column('id', Integer, primary_key = True, autoincrement = True)
     laundrybagid = Column('laundrybagid', String(255), unique = True)
     status = Column('status', sqlalchemy.Enum(LaundryBagState), default = LaundryBagState.COLLECTING)
-    # Column('clothesid', ForeignKey('clothes.id')),
     machineid = Column('machineid', ForeignKey('machine.id'), nullable = True)
     created_at = Column('created_at', DateTime, default = datetime.now())
     label = Column('label', sqlalchemy.Enum(LaundryLabel), default = LaundryLabel.UNDEFINED)

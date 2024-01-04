@@ -31,7 +31,7 @@ class SqlAlchemyClothesRepository(AbstractClothesRepository) :
         self.session = session
 
     def get(self, clothesid : str) -> Clothes :
-        return self.session.query(Clothes).filter_by(clothesid = clothesid).one()
+        return self.session.query(Clothes).filter_by(clothesid = clothesid).first()
 
     def get_by_status(self, status : ClothesState) -> List[Clothes] :
         return self.session.query(Clothes).filter_by(status = status).all()
